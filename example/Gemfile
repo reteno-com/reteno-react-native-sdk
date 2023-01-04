@@ -1,0 +1,18 @@
+source 'https://rubygems.org'
+
+# You may use http://rbenv.org/ or https://rvm.io/ to install and use this version
+ruby '2.7.5'
+
+gem 'cocoapods', '~> 1.11', '>= 1.11.2'
+
+source "https://rubygems.org"
+
+gem "fastlane", "~> 2.0", :groups => [:default, :local]
+
+# CI-related gems. Do not change versions unless approved by CI maintainers or you really know what you're doing.
+gem "danger-gitlab", "~> 8.0", :groups => [:default, :ci]
+gem 'danger-swiftlint', "~> 0.1", :groups => [:default, :ci]
+gem "danger", "~> 8.0", :groups => [:default, :ci]
+
+plugins_path = File.join(File.dirname(__FILE__), 'fastlane', 'Pluginfile')
+eval_gemfile(plugins_path) if File.exist?(plugins_path)

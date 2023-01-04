@@ -1,0 +1,17 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+  package="com.retenosdk">
+  <application>
+    <receiver
+      android:name="com.retenosdk.RetenoPushReceiver"
+      android:enabled="true"
+      android:exported="true">
+      <intent-filter>
+        <action android:name="com.reteno.custom-push" />
+      </intent-filter>
+    </receiver>
+    <meta-data
+      android:name="com.reteno.Receiver.PushReceived"
+      android:value="com.retenosdk.RetenoPushReceiver" />
+  </application>
+</manifest>
+

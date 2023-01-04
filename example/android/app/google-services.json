@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "987851207632",
+    "project_id": "reteno-76f34",
+    "storage_bucket": "reteno-76f34.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:987851207632:android:862ec0f79ede137abc7fd5",
+        "android_client_info": {
+          "package_name": "com.reteno.sample"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "987851207632-djc17m1i6tfhaqu54uvd6hsmarvif54t.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCal1hJWpLP8aMgIghttDNWHE5W93uJZwg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "987851207632-djc17m1i6tfhaqu54uvd6hsmarvif54t.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "987851207632-omjfmtk9ot112ii9gbs73irpeqqtahlr.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.reteno.example-app"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
