@@ -16,7 +16,7 @@ import {
   UserAttributes,
   setOnRetenoPushReceivedListener,
   getInitialNotification,
-} from 'react-native-reteno-sdk';
+} from 'reteno-react-native-sdk';
 
 export default function App() {
   const [externalUserId, setExternalUserId] = useState('');

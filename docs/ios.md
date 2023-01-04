@@ -23,7 +23,7 @@ end
 3. Run next command from root of your project:
 
 ```sh
-yarn add react-native-reteno-sdk
+yarn add reteno-react-native-sdk
 ```
 4. Next step for iOS is to call `Reteno.start` inside of your `AppDelegate` file. If you have migrated to `AppDelegate.swift`, follow `Step 3` in iOS SDK setup guide: [link](https://docs.reteno.com/reference/ios#step-3-import-reteno-into-your-app-delegate)
 

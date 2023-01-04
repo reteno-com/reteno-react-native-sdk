@@ -4,7 +4,7 @@
 1. Run next command from root of your project:
 
 ```sh
-yarn add react-native-reteno-sdk
+yarn add reteno-react-native-sdk
 ```
 2. Add mavenCentral repository in your project level `build.gradle`:
 ```groovy

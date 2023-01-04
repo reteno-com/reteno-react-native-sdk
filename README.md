@@ -1,4 +1,4 @@
-# react-native-reteno-sdk
+# reteno-react-native-sdk
 
 Reteno SDK
 
