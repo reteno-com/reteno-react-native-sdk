@@ -41,11 +41,18 @@
     "ios",
     "android"
   ],
-  "repository": "https://github.com/reteno-com/reteno-react-native-sdk",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/reteno-com/reteno-react-native-sdk.git"
+  },
   "author": "mobile-sdk@reteno.com",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/reteno-com/reteno-react-native-sdk/issues"
+  },
+  "directories": {
+    "doc": "docs",
+    "example": "example"
   },
   "homepage": "https://github.com/reteno-com/reteno-react-native-sdk#readme",
   "publishConfig": {
