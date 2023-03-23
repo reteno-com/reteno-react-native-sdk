@@ -37,7 +37,6 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void setDeviceToken(String deviceToken, Promise promise) {
-//    ((RetenoApplication) this.context.getCurrentActivity().getApplication()).getRetenoInstance();
   }
 
   @ReactMethod
@@ -125,5 +124,21 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
       return;
     }
     promise.resolve(parseIntent(activity.getIntent()));
+  }
+
+  @ReactMethod
+  public void logEvent(ReadableMap payload, Promise promise) {
+    try {
+      ((RetenoApplication) this.context.getCurrentActivity().getApplication())
+        .getRetenoInstance()
+        .logEvent(RetenoEvent.buildEventFromPayload(payload));
+    } catch (Exception e) {
+      promise.reject("Reteno Android SDK Error", e);
+      return;
+    }
+
+    WritableMap res = new WritableNativeMap();
+    res.putBoolean("success", true);
+    promise.resolve(res);
   }
 }
