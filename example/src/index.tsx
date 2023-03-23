@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { KeyboardAvoidingView, StyleSheet } from 'react-native';
+import { KeyboardAvoidingView, StyleSheet, Platform } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AttributesScreen from './screens/attributes';
@@ -11,7 +11,11 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function Navigation() {
   return (
-    <KeyboardAvoidingView behavior="padding" style={styles.container}>
+    <KeyboardAvoidingView
+      enabled={Platform.OS === 'ios'}
+      behavior="padding"
+      style={styles.container}
+    >
       <NavigationContainer>
         <Stack.Navigator initialRouteName={ScreenNames.home}>
           <Stack.Screen name={ScreenNames.home} component={HomeScreen} />

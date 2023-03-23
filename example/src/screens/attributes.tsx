@@ -20,7 +20,7 @@ import {
 export default function Attributes() {
   const [externalUserId, setExternalUserId] = useState('');
   const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
+  const [phone, setPhone] = useState('+380');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [languageCode, setLanguageCode] = useState('');
