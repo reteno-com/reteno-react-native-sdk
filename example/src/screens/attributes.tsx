@@ -134,7 +134,14 @@ export default function Attributes() {
           postcode,
         };
       }
-      setUserAttributes(payload);
+
+      setUserAttributes(payload)
+        .then(() => {
+          Alert.alert('Success', 'Attributes sent');
+        })
+        .catch((error) => {
+          Alert.alert('Error', error);
+        });
     }
   }, [
     externalUserId,

@@ -13,7 +13,7 @@ import {
 import { logEvent } from 'reteno-react-native-sdk';
 
 export default function Events() {
-  const [eventName, setEventName] = useState('');
+  const [eventName, setEventName] = useState('test_event_type');
   const [parameterName, setParameterName] = useState('');
   const [parameterValue, setParameterValue] = useState('');
   const [parameters, setParameters] = useState<
@@ -47,7 +47,13 @@ export default function Events() {
 
   const submit = useCallback(() => {
     if (eventName) {
-      logEvent(eventName, new Date().toISOString(), parameters, false);
+      logEvent(eventName, new Date().toISOString(), parameters, false)
+        .then(() => {
+          Alert.alert('Success', 'Event sent');
+        })
+        .catch((error: any) => {
+          Alert.alert('Error', error);
+        });
     } else {
       Alert.alert('Error', 'eventName is required for logEvent method');
     }
