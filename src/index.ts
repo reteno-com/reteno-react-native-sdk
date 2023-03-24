@@ -99,6 +99,7 @@ export function setOnRetenoPushReceivedListener(
 export function logEvent(
   eventName: string,
   date: string,
+  // date parameter should be in ISO8601 format
   parameters: CustomEventParameter[],
   forcePush?: boolean
 ) {

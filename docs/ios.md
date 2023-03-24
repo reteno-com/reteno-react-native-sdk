@@ -7,15 +7,15 @@
 ```
 
 target 'NotificationServiceExtension' do
-  pod 'Reteno', '1.3.0'
-  pod 'Sentry', '7.28.0', :modular_headers => true
+  pod 'Reteno', '1.5.4'
+  pod 'Sentry', '8.2.0', :modular_headers => true
 
 end
 
 target 'RetenoSdkExample' do
   ...
-  pod 'Reteno', '1.3.0'
-  pod 'Sentry', '7.28.0', :modular_headers => true
+  pod 'Reteno', '1.5.4'
+  pod 'Sentry', '8.2.0', :modular_headers => true
 end
 
 ```
