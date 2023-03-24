@@ -28,7 +28,6 @@ open class RetenoSdk: RCTEventEmitter {
     
     @objc(setUserAttributes:withResolver:withRejecter:)
     func setUserAttributes(payload: NSDictionary, resolve:RCTPromiseResolveBlock,reject:RCTPromiseRejectBlock) -> Void {
-        print("setUserAttributes was called")
         let externalUserId = payload["externalUserId"] as? String;
         
         do {
@@ -59,6 +58,25 @@ open class RetenoSdk: RCTEventEmitter {
             resolve(initialNotif);
         } else {
             resolve(nil);
+        }
+    }
+    
+    @objc(logEvent:withResolver:withRejecter:)
+    func logEvent(payload: NSDictionary, resolve:RCTPromiseResolveBlock,reject:RCTPromiseRejectBlock) -> Void {
+        do {
+            let requestPayload = try RetenoEvent.buildEventPayload(payload: payload);
+            Reteno.logEvent(
+                eventTypeKey: requestPayload.eventName,
+                date: requestPayload.date,
+                parameters: requestPayload.parameters,
+                forcePush: requestPayload.forcePush
+            );
+            
+            let res:[String:Bool] = ["success":true];
+            
+            resolve(res);
+        } catch {
+            reject("100", "Reteno iOS SDK Error", error);
         }
     }
 }

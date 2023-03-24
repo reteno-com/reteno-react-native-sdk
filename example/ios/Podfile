@@ -6,18 +6,18 @@ install! 'cocoapods', :deterministic_uuids => false
 
 
 target 'NotificationServiceExtension' do
-  pod 'Reteno', '1.3.0'
-  pod 'Sentry', '7.28.0', :modular_headers => true
+  pod 'Reteno', '1.5.4'
+  pod 'Sentry', '8.2.0', :modular_headers => true
 
 end
 
 target 'RetenoSdkExample' do
   config = use_native_modules!
-  pod 'Reteno', '1.3.0'
+  pod 'Reteno', '1.5.4'
   pod 'FirebaseCore', :modular_headers => true
   pod 'FirebaseMessaging'
   pod 'GoogleUtilities', :modular_headers => true
-  pod 'Sentry', '7.28.0', :modular_headers => true
+  pod 'Sentry', '8.2.0', :modular_headers => true
 
   # Flags change depending on the env values.
   flags = get_default_flags()

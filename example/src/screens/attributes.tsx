@@ -7,7 +7,6 @@ import {
   Text,
   TouchableOpacity,
   ScrollView,
-  KeyboardAvoidingView,
   SafeAreaView,
   Alert,
 } from 'react-native';
@@ -18,10 +17,10 @@ import {
   getInitialNotification,
 } from 'reteno-react-native-sdk';
 
-export default function App() {
+export default function Attributes() {
   const [externalUserId, setExternalUserId] = useState('');
   const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
+  const [phone, setPhone] = useState('+380');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [languageCode, setLanguageCode] = useState('');
@@ -135,7 +134,14 @@ export default function App() {
           postcode,
         };
       }
-      setUserAttributes(payload);
+
+      setUserAttributes(payload)
+        .then(() => {
+          Alert.alert('Success', 'Attributes sent');
+        })
+        .catch((error) => {
+          Alert.alert('Error', error);
+        });
     }
   }, [
     externalUserId,
@@ -152,33 +158,26 @@ export default function App() {
   ]);
   return (
     <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView
-        style={styles.keyboardAvoidingView}
-        behavior="padding"
-      >
-        <ScrollView>
-          {form.map((item) => (
-            <View style={styles.row} key={item.label}>
-              <View style={styles.rowText}>
-                <Text style={styles.text}>
-                  <Text style={styles.text}>{item.label}</Text>
-                  {item.required && (
-                    <Text style={styles.rowTextRequired}>*</Text>
-                  )}
-                </Text>
-              </View>
-              <TextInput
-                style={[styles.textInput, styles.text]}
-                value={item.value}
-                onChangeText={item.onChange}
-              />
+      <ScrollView>
+        {form.map((item) => (
+          <View style={styles.row} key={item.label}>
+            <View style={styles.rowText}>
+              <Text style={styles.text}>
+                <Text style={styles.text}>{item.label}</Text>
+                {item.required && <Text style={styles.rowTextRequired}>*</Text>}
+              </Text>
             </View>
-          ))}
-          <TouchableOpacity style={styles.submitBtn} onPress={submit}>
-            <Text style={styles.submitBtnText}>Set User Attributes</Text>
-          </TouchableOpacity>
-        </ScrollView>
-      </KeyboardAvoidingView>
+            <TextInput
+              style={[styles.textInput, styles.text]}
+              value={item.value}
+              onChangeText={item.onChange}
+            />
+          </View>
+        ))}
+      </ScrollView>
+      <TouchableOpacity style={styles.submitBtn} onPress={submit}>
+        <Text style={styles.submitBtnText}>Set User Attributes</Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
@@ -196,7 +195,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingLeft: 20,
     borderBottomWidth: 1,
-    borderBottomColor: 'lightgrey',
+    borderBottomColor: '#EBEBEB',
   },
   rowText: {
     flex: 0.45,
@@ -210,12 +209,14 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   submitBtn: {
-    backgroundColor: 'blue',
+    borderColor: '#EBEBEB',
+    borderWidth: 1,
+    borderRadius: 5,
     alignItems: 'center',
     paddingVertical: 20,
   },
   submitBtnText: {
-    color: '#FFF',
+    color: '#000',
   },
   text: {
     color: '#000',

@@ -48,6 +48,11 @@ export type SetUserAttributesPayload = {
   user: User;
 };
 
+export type CustomEventParameter = {
+  name: string;
+  value?: string;
+};
+
 const RetenoSdk = NativeModules.RetenoSdk
   ? NativeModules.RetenoSdk
   : new Proxy(
@@ -89,4 +94,19 @@ export function setOnRetenoPushReceivedListener(
   listener: (event: any) => void
 ) {
   return eventEmitter.addListener('reteno-push-received', listener);
+}
+
+export function logEvent(
+  eventName: string,
+  date: string,
+  // date parameter should be in ISO8601 format
+  parameters: CustomEventParameter[],
+  forcePush?: boolean
+) {
+  return RetenoSdk.logEvent({
+    eventName,
+    date,
+    parameters,
+    forcePush,
+  });
 }

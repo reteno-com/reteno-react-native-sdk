@@ -11,11 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RetenoUserAttributes {
-  private static String getStringOrNull(String input) {
-    if (input == null) return null;
-    if (input.isEmpty()) return null;
-    return input;
-  }
   private static List<UserCustomField> buildUserCustomData(ReadableArray fields) {
     int countView = fields.size();
     if (countView == 0) return null;
@@ -96,10 +91,10 @@ public class RetenoUserAttributes {
 
     if (payloadAddress != null) {
       address = new Address(
-        getStringOrNull(payloadAddress.getString("region")),
-        getStringOrNull(payloadAddress.getString("town")),
-        getStringOrNull(payloadAddress.getString("address")),
-        getStringOrNull(payloadAddress.getString("postcode"))
+        RetenoUtil.getStringOrNull(payloadAddress.getString("region")),
+        RetenoUtil.getStringOrNull(payloadAddress.getString("town")),
+        RetenoUtil.getStringOrNull(payloadAddress.getString("address")),
+        RetenoUtil.getStringOrNull(payloadAddress.getString("postcode"))
       );
     }
 
@@ -108,12 +103,12 @@ public class RetenoUserAttributes {
     }
 
     UserAttributes userAttributes = new UserAttributes(
-      getStringOrNull(payloadPhone),
-      getStringOrNull(payloadEmail),
-      getStringOrNull(payloadFirstName),
-      getStringOrNull(payloadLastName),
-      getStringOrNull(payloadLanguageCode),
-      getStringOrNull(payloadTimeZone),
+      RetenoUtil.getStringOrNull(payloadPhone),
+      RetenoUtil.getStringOrNull(payloadEmail),
+      RetenoUtil.getStringOrNull(payloadFirstName),
+      RetenoUtil.getStringOrNull(payloadLastName),
+      RetenoUtil.getStringOrNull(payloadLanguageCode),
+      RetenoUtil.getStringOrNull(payloadTimeZone),
       address,
       fields
     );

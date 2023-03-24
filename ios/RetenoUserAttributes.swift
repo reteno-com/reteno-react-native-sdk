@@ -9,6 +9,8 @@
 import Foundation
 import Reteno
 
+
+
 struct RetenoUserAttributesFieldStruct: Codable {
     let key: String
     let value: String
