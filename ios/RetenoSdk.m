@@ -18,11 +18,18 @@ RCT_EXTERN_METHOD(logEvent:(NSDictionary*)payload
 RCT_EXTERN_METHOD(getInitialNotification:(RCTPromiseResolveBlock)resolve
                  withRejecter:(RCTPromiseRejectBlock)reject)
 
+RCT_EXTERN_METHOD(registerForRemoteNotifications)
+
 RCT_EXTERN_METHOD(supportedEvents)
 
 + (BOOL)requiresMainQueueSetup
 {
-  return NO;
+  return YES;
+}
+
+- (dispatch_queue_t)methodQueue
+{
+  return dispatch_get_main_queue();
 }
 
 @end
