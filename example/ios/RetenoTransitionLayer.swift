@@ -7,7 +7,7 @@ import Reteno
     // Register for receiving push notifications
     // registerForRemoteNotifications will show the native iOS notification permission prompt
     // Provide UNAuthorizationOptions or use default
-    Reteno.userNotificationService.registerForRemoteNotifications(with: [.sound, .alert, .badge], application: application);
+//    Reteno.userNotificationService.registerForRemoteNotifications(with: [.sound, .alert, .badge], application: application);
     
 //    Reteno.userNotificationService.didReceiveNotificationUserInfo = {userInfo in
 //      print("Received user info from push: \n--------\n\(userInfo)");

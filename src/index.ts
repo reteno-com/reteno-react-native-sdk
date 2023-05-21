@@ -110,3 +110,9 @@ export function logEvent(
     forcePush,
   });
 }
+
+export function registerForRemoteNotifications() {
+  if (Platform.OS === 'ios') {
+    RetenoSdk.registerForRemoteNotifications();
+  }
+}

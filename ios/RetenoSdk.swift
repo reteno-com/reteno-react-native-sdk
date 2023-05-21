@@ -79,4 +79,11 @@ open class RetenoSdk: RCTEventEmitter {
             reject("100", "Reteno iOS SDK Error", error);
         }
     }
+    
+    @objc(registerForRemoteNotifications)
+    func registerForRemoteNotifications() -> Void {
+        // Register for receiving push notifications
+        // registerForRemoteNotifications will show the native iOS notification permission prompt
+        Reteno.userNotificationService.registerForRemoteNotifications(with: [.sound, .alert, .badge], application: UIApplication.shared);
+    }
 }
