@@ -375,21 +375,21 @@ PODS:
     - React-jsi (= 0.70.6)
     - React-logger (= 0.70.6)
     - React-perflogger (= 0.70.6)
-  - Reteno (1.6.4):
+  - Reteno (1.6.6):
     - Alamofire (= 5.6.2)
-    - Sentry (= 8.7.0)
-  - reteno-react-native-sdk (1.1.0):
+    - Sentry (>= 8.7.3)
+  - reteno-react-native-sdk (1.2.1):
     - React-Core
-    - Reteno (= 1.6.4)
+    - Reteno (= 1.6.6)
   - RNScreens (3.20.0):
     - React-Core
     - React-RCTImage
-  - Sentry (8.7.0):
-    - Sentry/Core (= 8.7.0)
-    - SentryPrivate (= 8.7.0)
-  - Sentry/Core (8.7.0):
-    - SentryPrivate (= 8.7.0)
-  - SentryPrivate (8.7.0)
+  - Sentry (8.8.0):
+    - Sentry/Core (= 8.8.0)
+    - SentryPrivate (= 8.8.0)
+  - Sentry/Core (8.8.0):
+    - SentryPrivate (= 8.8.0)
+  - SentryPrivate (8.8.0)
   - Yoga (1.14.0)
 
 DEPENDENCIES:
@@ -432,10 +432,10 @@ DEPENDENCIES:
   - React-RCTVibration (from `../node_modules/react-native/Libraries/Vibration`)
   - React-runtimeexecutor (from `../node_modules/react-native/ReactCommon/runtimeexecutor`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
-  - Reteno (= 1.6.4)
+  - Reteno (= 1.6.6)
   - reteno-react-native-sdk (from `../..`)
   - RNScreens (from `../node_modules/react-native-screens`)
-  - Sentry (= 8.7.0)
+  - Sentry (= 8.8.0)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -577,13 +577,13 @@ SPEC CHECKSUMS:
   React-RCTVibration: c75ceef7aa60a33b2d5731ebe5800ddde40cefc4
   React-runtimeexecutor: 15437b576139df27635400de0599d9844f1ab817
   ReactCommon: 349be31adeecffc7986a0de875d7fb0dcf4e251c
-  Reteno: 7f5fa3a4fe7930c1d0eebf2fa4fd46d6320a1b7c
-  reteno-react-native-sdk: b7ff06b60cfef5b758f449e50bd6e898eaf4499f
+  Reteno: 4a17eca0249ad9fdb0f107cc85e41137d535225c
+  reteno-react-native-sdk: e192dcb7f571c74f7a777835a17f97f99cc736bf
   RNScreens: 218801c16a2782546d30bd2026bb625c0302d70f
-  Sentry: 72793f12750254183eaac6c62cedc4e6ee294e04
-  SentryPrivate: b1fc5cb0de8a8d80fa6a7958146d342c20f65b88
+  Sentry: 927dfb29d18a14d924229a59cc2ad149f43349f2
+  SentryPrivate: 4350d865f898224ab9fa02b37d6ee7fbb623f47e
   Yoga: 99caf8d5ab45e9d637ee6e0174ec16fbbb01bcfc
 
-PODFILE CHECKSUM: 12a2ac1e70df3d29386a0014bedd5047713b7e69
+PODFILE CHECKSUM: 93a4043c6e92c865a34439e8ffb756ab0f4da21d
 
 COCOAPODS: 1.12.1
