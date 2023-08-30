@@ -11,6 +11,10 @@ const LINKING_ERROR =
   '- You rebuilt the app after installing the package\n' +
   '- You are not using Expo Go\n';
 
+export enum CustomEventTypes {
+  screenView = 'screenView',
+}
+
 export type Address = {
   region?: string | null;
   town?: string | null;
@@ -96,13 +100,20 @@ export function setOnRetenoPushReceivedListener(
   return eventEmitter.addListener('reteno-push-received', listener);
 }
 
+/**
+ * Log event
+ * @param eventName name of the event
+ * @param date date parameter should be in ISO8601 format, e.g new Date().toISOString()
+ * @param parameters custom parameters
+ * @param forcePush IOS force push
+ */
 export function logEvent(
   eventName: string,
-  date: string,
   // date parameter should be in ISO8601 format
+  date: string,
   parameters: CustomEventParameter[],
   forcePush?: boolean
-) {
+): Promise<void> {
   return RetenoSdk.logEvent({
     eventName,
     date,
@@ -111,8 +122,21 @@ export function logEvent(
   });
 }
 
+/**
+ * IOS Only
+ */
 export function registerForRemoteNotifications() {
   if (Platform.OS === 'ios') {
     RetenoSdk.registerForRemoteNotifications();
   }
+}
+
+/**
+ * Send log screen view event
+ * @param screenName name of the screen
+ */
+export function logScreenView(screenName: string) {
+  return logEvent(CustomEventTypes.screenView, new Date().toISOString(), [
+    { name: CustomEventTypes.screenView, value: screenName },
+  ]);
 }
