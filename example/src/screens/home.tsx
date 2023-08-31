@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ScreenNames, RootStackParamList } from '../config';
+import { forcePushData } from '../../../src';
 
 type Props = NativeStackScreenProps<RootStackParamList, ScreenNames.home>;
 
@@ -46,6 +47,9 @@ export default function Main({ navigation }: Props) {
             <Text style={styles.submitBtnText}>{item.label}</Text>
           </TouchableOpacity>
         ))}
+        <TouchableOpacity style={styles.submitBtn} onPress={forcePushData}>
+          <Text style={styles.submitBtnText}>Force push data</Text>
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
