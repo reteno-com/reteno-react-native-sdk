@@ -19,6 +19,7 @@ import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.reteno.core.RetenoApplication;
 import com.reteno.core.domain.model.user.User;
+import com.reteno.core.domain.model.user.UserAttributesAnonymous;
 
 public class RetenoSdkModule extends ReactContextBaseJavaModule {
   public static final String NAME = "RetenoSdk";
@@ -143,6 +144,26 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
+  public void setAnonymousUserAttributes(ReadableMap payload, Promise promise) {
+
+    UserAttributesAnonymous anonymousUser = RetenoUserAttributes.buildAnonymousUserFromPayload(payload);
+
+    try {
+      ((RetenoApplication) this.context.getCurrentActivity().getApplication())
+        .getRetenoInstance()
+        .setAnonymousUserAttributes(anonymousUser);
+    } catch (Exception e) {
+      promise.reject("Reteno Android SDK Error", e);
+      return;
+    }
+
+
+    WritableMap res = new WritableNativeMap();
+    res.putBoolean("success", true);
+
+    promise.resolve(res);
+  }
+
   public void forcePushData(Promise promise) {
     try {
       ((RetenoApplication) this.context.getCurrentActivity().getApplication())

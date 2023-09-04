@@ -12,6 +12,7 @@ import {
 import AttributesScreen from './screens/attributes';
 import EventsScreen from './screens/events';
 import HomeScreen from './screens/home';
+import AnonymousUserAttributes from './screens/anonymousUserAttributes';
 import { ScreenNames, RootStackParamList } from './config';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -55,6 +56,10 @@ function Navigation() {
             component={AttributesScreen}
           />
           <Stack.Screen name={ScreenNames.events} component={EventsScreen} />
+          <Stack.Screen
+            name={ScreenNames.anonymousUserAttributes}
+            component={AnonymousUserAttributes}
+          />
         </Stack.Navigator>
       </NavigationContainer>
     </KeyboardAvoidingView>

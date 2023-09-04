@@ -21,6 +21,10 @@ export default function Main({ navigation }: Props) {
         route: ScreenNames.attributes,
       },
       {
+        label: 'Anonymous Attributes',
+        route: ScreenNames.anonymousUserAttributes,
+      },
+      {
         label: 'Events',
         route: ScreenNames.events,
       },

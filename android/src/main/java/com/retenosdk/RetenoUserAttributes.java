@@ -5,6 +5,7 @@ import com.facebook.react.bridge.ReadableArray;
 import com.reteno.core.domain.model.user.Address;
 import com.reteno.core.domain.model.user.User;
 import com.reteno.core.domain.model.user.UserAttributes;
+import com.reteno.core.domain.model.user.UserAttributesAnonymous;
 import com.reteno.core.domain.model.user.UserCustomField;
 
 import java.util.ArrayList;
@@ -119,4 +120,34 @@ public class RetenoUserAttributes {
 
     return new User(userAttributes, subscriptionKeys, groupNamesInclude, groupNamesExclude);
   }
+
+  public static UserAttributesAnonymous buildAnonymousUserFromPayload(ReadableMap payload) {
+
+    String payloadFirstName = payload.getString("firstName");
+    String payloadLastName = payload.getString("lastName");
+    String payloadLanguageCode = payload.getString("languageCode");
+    String payloadTimeZone = payload.getString("timeZone");
+    ReadableMap payloadAddress = payload.getMap("address");
+    ReadableArray payloadFields = payload.getArray("fields");
+
+    Address address = null;
+
+    List<UserCustomField> fields = null;
+
+
+    if (payloadAddress != null) {
+      address = new Address(
+        RetenoUtil.getStringOrNull(payloadAddress.getString("region")),
+        RetenoUtil.getStringOrNull(payloadAddress.getString("town")),
+        RetenoUtil.getStringOrNull(payloadAddress.getString("address")),
+        RetenoUtil.getStringOrNull(payloadAddress.getString("postcode"))
+      );
+    }
+
+    if (payloadFields != null) {
+      fields = buildUserCustomData(payloadFields);
+    }
+
+    return new UserAttributesAnonymous(payloadFirstName, payloadLastName, payloadLanguageCode, payloadTimeZone, address, fields);
+  };
 }

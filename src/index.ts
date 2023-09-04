@@ -40,6 +40,11 @@ export type UserAttributes = {
   fields?: Fields | null;
 };
 
+export type AnonymousUserAttributes = Pick<
+  UserAttributes,
+  'firstName' | 'lastName' | 'languageCode' | 'timeZone' | 'address' | 'fields'
+>;
+
 export type User = {
   userAttributes?: UserAttributes | null;
   subscriptionKeys?: String[] | null;
@@ -129,6 +134,12 @@ export function registerForRemoteNotifications() {
   if (Platform.OS === 'ios') {
     RetenoSdk.registerForRemoteNotifications();
   }
+}
+
+export function setAnonymousUserAttributes(
+  payload: AnonymousUserAttributes
+): Promise<void> {
+  return RetenoSdk.setAnonymousUserAttributes(payload);
 }
 /**
  *

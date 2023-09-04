@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState, useMemo } from 'react';
+import React, { useCallback, useState, useMemo } from 'react';
 
 import {
   View,
@@ -10,17 +10,12 @@ import {
   Alert,
 } from 'react-native';
 import {
-  setUserAttributes,
-  UserAttributes,
-  setOnRetenoPushReceivedListener,
-  getInitialNotification,
+  setAnonymousUserAttributes,
+  AnonymousUserAttributes,
 } from 'reteno-react-native-sdk';
 import styles from './styles';
 
-export default function Attributes() {
-  const [externalUserId, setExternalUserId] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('+380');
+export default function AnonymousUserAttributesScreen() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [languageCode, setLanguageCode] = useState('');
@@ -29,28 +24,9 @@ export default function Attributes() {
   const [town, setTown] = useState('');
   const [address, setAddress] = useState('');
   const [postcode, setPostcode] = useState('');
-  const onRetenoPushReceived = useCallback((event) => {
-    Alert.alert('onRetenoPushReceived', event ? JSON.stringify(event) : event);
-  }, []);
-
-  useEffect(() => {
-    getInitialNotification().then((data) => {
-      Alert.alert('getInitialNotification', data ? JSON.stringify(data) : data);
-    });
-    const pushListener = setOnRetenoPushReceivedListener(onRetenoPushReceived);
-    return () => pushListener.remove();
-  }, [onRetenoPushReceived]);
 
   const form = useMemo(
     () => [
-      {
-        required: true,
-        label: 'External User Id',
-        value: externalUserId,
-        onChange: setExternalUserId,
-      },
-      { label: 'Email', value: email, onChange: setEmail },
-      { label: 'Phone', value: phone, onChange: setPhone },
       { label: 'Firstname', value: firstName, onChange: setFirstName },
       { label: 'Lastname', value: lastName, onChange: setLastName },
       {
@@ -85,9 +61,6 @@ export default function Attributes() {
       },
     ],
     [
-      externalUserId,
-      email,
-      phone,
       firstName,
       lastName,
       languageCode,
@@ -100,53 +73,33 @@ export default function Attributes() {
   );
 
   const submit = useCallback(() => {
-    if (externalUserId) {
-      const payload: {
-        externalUserId: string;
-        user: {
-          userAttributes?: UserAttributes;
-        };
-      } = {
-        externalUserId,
-        user: {},
+    let payload: AnonymousUserAttributes = {};
+    if (firstName || lastName || languageCode || timeZone) {
+      payload = {
+        ...payload,
+        firstName,
+        lastName,
+        languageCode,
+        timeZone,
       };
-      if (email || phone || firstName || lastName || languageCode || timeZone) {
-        payload.user = {
-          ...payload.user,
-          userAttributes: {
-            email,
-            phone,
-            firstName,
-            lastName,
-            languageCode,
-            timeZone,
-          },
-        };
-      }
-      if (region || town || address || postcode) {
-        if (!payload.user.userAttributes) {
-          payload.user.userAttributes = {};
-        }
-        payload.user.userAttributes.address = {
-          region,
-          town,
-          address,
-          postcode,
-        };
-      }
-
-      setUserAttributes(payload)
-        .then(() => {
-          Alert.alert('Success', 'Attributes sent');
-        })
-        .catch((error) => {
-          Alert.alert('Error', error);
-        });
     }
+    if (region || town || address || postcode) {
+      payload.address = {
+        region,
+        town,
+        address,
+        postcode,
+      };
+    }
+
+    setAnonymousUserAttributes(payload)
+      .then(() => {
+        Alert.alert('Success', 'Anonymous attributes sent');
+      })
+      .catch((error) => {
+        Alert.alert('Error', error);
+      });
   }, [
-    externalUserId,
-    email,
-    phone,
     firstName,
     lastName,
     languageCode,
@@ -164,7 +117,6 @@ export default function Attributes() {
             <View style={styles.rowText}>
               <Text style={styles.text}>
                 <Text style={styles.text}>{item.label}</Text>
-                {item.required && <Text style={styles.rowTextRequired}>*</Text>}
               </Text>
             </View>
             <TextInput
@@ -176,7 +128,7 @@ export default function Attributes() {
         ))}
       </ScrollView>
       <TouchableOpacity style={styles.submitBtn} onPress={submit}>
-        <Text style={styles.submitBtnText}>Set User Attributes</Text>
+        <Text style={styles.submitBtnText}>Set Anonymous User Attributes</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
