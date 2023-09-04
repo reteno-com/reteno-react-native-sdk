@@ -164,6 +164,7 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
     promise.resolve(res);
   }
 
+  @ReactMethod
   public void forcePushData(Promise promise) {
     try {
       ((RetenoApplication) this.context.getCurrentActivity().getApplication())
