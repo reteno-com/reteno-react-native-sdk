@@ -16,14 +16,14 @@ import {
 import styles from './styles';
 
 export default function AnonymousUserAttributesScreen() {
-  const [firstName, setFirstName] = useState('AnonFirstNameAndroid');
-  const [lastName, setLastName] = useState('AnonLastNameAndroid');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [languageCode, setLanguageCode] = useState('');
   const [timeZone, setTimeZone] = useState('');
-  const [region, setRegion] = useState('AnonRegion');
-  const [town, setTown] = useState('AnonTown');
-  const [address, setAddress] = useState('AnonAddress');
-  const [postcode, setPostcode] = useState('12345');
+  const [region, setRegion] = useState('');
+  const [town, setTown] = useState('');
+  const [address, setAddress] = useState('');
+  const [postcode, setPostcode] = useState('');
 
   const form = useMemo(
     () => [
