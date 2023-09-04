@@ -378,7 +378,7 @@ PODS:
   - Reteno (1.6.6):
     - Alamofire (= 5.6.2)
     - Sentry (>= 8.7.3)
-  - reteno-react-native-sdk (1.2.1):
+  - reteno-react-native-sdk (1.3.0):
     - React-Core
     - Reteno (= 1.6.6)
   - RNScreens (3.20.0):
@@ -578,7 +578,7 @@ SPEC CHECKSUMS:
   React-runtimeexecutor: 15437b576139df27635400de0599d9844f1ab817
   ReactCommon: 349be31adeecffc7986a0de875d7fb0dcf4e251c
   Reteno: 4a17eca0249ad9fdb0f107cc85e41137d535225c
-  reteno-react-native-sdk: e192dcb7f571c74f7a777835a17f97f99cc736bf
+  reteno-react-native-sdk: 8ddfb6b7ddce0df7a18a041520db29db66af387f
   RNScreens: 218801c16a2782546d30bd2026bb625c0302d70f
   Sentry: 927dfb29d18a14d924229a59cc2ad149f43349f2
   SentryPrivate: 4350d865f898224ab9fa02b37d6ee7fbb623f47e
