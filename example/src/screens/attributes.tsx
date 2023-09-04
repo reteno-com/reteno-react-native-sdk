@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useState, useMemo } from 'react';
 
 import {
-  StyleSheet,
   View,
   TextInput,
   Text,
@@ -16,6 +15,7 @@ import {
   setOnRetenoPushReceivedListener,
   getInitialNotification,
 } from 'reteno-react-native-sdk';
+import styles from './styles';
 
 export default function Attributes() {
   const [externalUserId, setExternalUserId] = useState('');
@@ -181,44 +181,3 @@ export default function Attributes() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: 'white',
-    flex: 1,
-    justifyContent: 'center',
-  },
-  keyboardAvoidingView: {
-    flex: 1,
-  },
-  row: {
-    flexDirection: 'row',
-    paddingLeft: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#EBEBEB',
-  },
-  rowText: {
-    flex: 0.45,
-    paddingVertical: 20,
-  },
-  rowTextRequired: {
-    color: 'red',
-  },
-  textInput: {
-    flex: 1,
-    height: '100%',
-  },
-  submitBtn: {
-    borderColor: '#EBEBEB',
-    borderWidth: 1,
-    borderRadius: 5,
-    alignItems: 'center',
-    paddingVertical: 20,
-  },
-  submitBtnText: {
-    color: '#000',
-  },
-  text: {
-    color: '#000',
-  },
-});

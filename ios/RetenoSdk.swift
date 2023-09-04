@@ -86,4 +86,16 @@ open class RetenoSdk: RCTEventEmitter {
         // registerForRemoteNotifications will show the native iOS notification permission prompt
         Reteno.userNotificationService.registerForRemoteNotifications(with: [.sound, .alert, .badge], application: UIApplication.shared);
     }
+    
+    @objc(setAnonymousUserAttributes:withResolver:withRejecter:)
+    func setAnonymousUserAttributes(payload: NSDictionary, resolve:RCTPromiseResolveBlock,reject:RCTPromiseRejectBlock) -> Void {
+        do {
+            let anonymousUser = try RetenoUserAttributes.buildSetAnonymousUserAttributesPayload(payload: payload)
+
+            Reteno.updateAnonymousUserAttributes(userAttributes: anonymousUser)
+            resolve(true)
+        } catch {
+            reject("100", "Reteno iOS SDK setAnonymousUserAttributes Error", error);
+        }
+    }
 }

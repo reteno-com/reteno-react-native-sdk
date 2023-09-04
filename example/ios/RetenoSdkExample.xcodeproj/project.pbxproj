@@ -12,10 +12,10 @@
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		177CBBFC294C8F200067C26F /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 177CBBFB294C8F200067C26F /* GoogleService-Info.plist */; };
-		179ECB192947677C004D3585 /* RetenoTransitionLayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 179ECB182947677C004D3585 /* RetenoTransitionLayer.swift */; };
 		17D931B6294747A8008726F3 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17D931B5294747A8008726F3 /* NotificationService.swift */; };
 		17D931BA294747A8008726F3 /* NotificationServiceExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 17D931B3294747A7008726F3 /* NotificationServiceExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		6CB084BED97130BC8B059904 /* libPods-NotificationServiceExtension.a in Frameworks */ = {isa = PBXBuildFile; fileRef = ED4A6CF1156EB1AC6FDA5BA0 /* libPods-NotificationServiceExtension.a */; };
+		6E5492812A8FB37400690585 /* RetenoTransitionLayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 179ECB182947677C004D3585 /* RetenoTransitionLayer.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		9AC1F8E94B19A34B28D3B3B0 /* libPods-RetenoSdkExample-RetenoSdkExampleTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 88A8341F0A85BBDC745ACEF6 /* libPods-RetenoSdkExample-RetenoSdkExampleTests.a */; };
 		AE249141A6C8258FD5AA4111 /* libPods-RetenoSdkExample.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5EEA03736FD755391F60995B /* libPods-RetenoSdkExample.a */; };
@@ -531,7 +531,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				179ECB192947677C004D3585 /* RetenoTransitionLayer.swift in Sources */,
+				6E5492812A8FB37400690585 /* RetenoTransitionLayer.swift in Sources */,
 				13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
 			);
@@ -775,7 +775,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
@@ -848,7 +848,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;

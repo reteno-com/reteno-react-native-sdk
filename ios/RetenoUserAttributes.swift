@@ -76,6 +76,8 @@ public struct RetenoSetUserAttributesPayload: Codable {
     let groupNamesExclude: [String]
 }
 
+
+
 public struct RetenoUserAttributes {
     
     
@@ -125,5 +127,24 @@ public struct RetenoUserAttributes {
         }
     }
     
+    public static func buildSetAnonymousUserAttributesPayload(payload: NSDictionary) throws -> AnonymousUserAttributes {
+        print(payload)
+        let fields = payload["fields"] as? [RetenoUserAttributesFieldStruct]
+        let mappedFields = fields?.map { field in
+            UserCustomField(key: field.key, value: field.value)
+        }
+        let addressField = payload["address"] as? [String: String]
+        
+        let address = addressField != nil ? Address(
+            region: getStringOrNil(input: addressField!["region"]),
+            town: getStringOrNil(input: addressField!["town"]),
+            address: getStringOrNil(input: addressField!["address"]),
+            postcode: getStringOrNil(input: addressField!["postcode"])
+        ) : nil
+        
+
+        return AnonymousUserAttributes(firstName: getStringOrNil(input: payload["firstName"] as? String), lastName: getStringOrNil(input: payload["lastName"] as? String), languageCode: getStringOrNil(input: payload["languageCode"] as? String), timeZone: getStringOrNil(input: payload["timeZone"] as? String), address: address, fields: mappedFields ?? [])
+        
+    }
     
 }
