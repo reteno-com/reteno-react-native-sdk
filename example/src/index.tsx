@@ -1,8 +1,14 @@
 import * as React from 'react';
 import { KeyboardAvoidingView, StyleSheet, Platform } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
+import {
+  NavigationContainer,
+  useNavigationContainerRef,
+} from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { registerForRemoteNotifications } from 'reteno-react-native-sdk';
+import {
+  logScreenView,
+  registerForRemoteNotifications,
+} from 'reteno-react-native-sdk';
 import AttributesScreen from './screens/attributes';
 import EventsScreen from './screens/events';
 import HomeScreen from './screens/home';
@@ -12,6 +18,9 @@ import { ScreenNames, RootStackParamList } from './config';
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function Navigation() {
+  const navigationRef = useNavigationContainerRef();
+  const routeNameRef = React.useRef<string | undefined>();
+
   React.useEffect(() => {
     registerForRemoteNotifications();
   }, []);
@@ -22,7 +31,24 @@ function Navigation() {
       behavior="padding"
       style={styles.container}
     >
-      <NavigationContainer>
+      <NavigationContainer
+        ref={navigationRef}
+        onReady={async () => {
+          routeNameRef.current = navigationRef.current?.getCurrentRoute()?.name;
+          const currentRouteName =
+            navigationRef.current?.getCurrentRoute()?.name;
+          await logScreenView(currentRouteName ?? '');
+        }}
+        onStateChange={async () => {
+          const previousRouteName = routeNameRef.current;
+          const currentRouteName =
+            navigationRef.current?.getCurrentRoute()?.name;
+          if (previousRouteName !== currentRouteName) {
+            await logScreenView(currentRouteName ?? '');
+          }
+          routeNameRef.current = currentRouteName;
+        }}
+      >
         <Stack.Navigator initialRouteName={ScreenNames.home}>
           <Stack.Screen name={ScreenNames.home} component={HomeScreen} />
           <Stack.Screen

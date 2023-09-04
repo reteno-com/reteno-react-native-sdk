@@ -164,4 +164,14 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
 
     promise.resolve(res);
   }
+  
+  public void forcePushData(Promise promise) {
+    try {
+      ((RetenoApplication) this.context.getCurrentActivity().getApplication())
+        .getRetenoInstance().forcePushData();
+        promise.resolve(true);
+    } catch (Exception e) {
+      promise.reject("Reteno Android SDK forcePushData Error", e);
+    }
+  }
 }
