@@ -37,16 +37,13 @@ function Navigation() {
           const currentRouteName =
             navigationRef.current?.getCurrentRoute()?.name;
           await logScreenView(currentRouteName ?? '');
-          console.log('initial route', currentRouteName);
         }}
         onStateChange={async () => {
           const previousRouteName = routeNameRef.current;
           const currentRouteName =
             navigationRef.current?.getCurrentRoute()?.name;
-          console.log({ previousRouteName, currentRouteName });
           if (previousRouteName !== currentRouteName) {
             await logScreenView(currentRouteName ?? '');
-            console.log('screen view sent', currentRouteName);
           }
           routeNameRef.current = currentRouteName;
         }}
