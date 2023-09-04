@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -146,9 +145,9 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void setAnonymousUserAttributes(ReadableMap payload, Promise promise) {
-    Log.d("anon", String.valueOf(payload));
+
     UserAttributesAnonymous anonymousUser = RetenoUserAttributes.buildAnonymousUserFromPayload(payload);
-    Log.d("anon", String.valueOf(anonymousUser));
+
     try {
       ((RetenoApplication) this.context.getCurrentActivity().getApplication())
         .getRetenoInstance()
@@ -164,7 +163,7 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
 
     promise.resolve(res);
   }
-  
+
   public void forcePushData(Promise promise) {
     try {
       ((RetenoApplication) this.context.getCurrentActivity().getApplication())
