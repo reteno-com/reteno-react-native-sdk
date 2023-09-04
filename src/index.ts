@@ -130,7 +130,17 @@ export function registerForRemoteNotifications() {
     RetenoSdk.registerForRemoteNotifications();
   }
 }
-
+/**
+ *
+ * Reteno caches all events (events, device data, user information, user behavior, screen tracking, push statuses, etc) locally into database
+ * Call this function to send all accumulated events
+ */
+export function forcePushData(): Promise<void> {
+  if (Platform.OS === 'ios') {
+    // for ios we have to use this hack, because there isn't separate forcePush function as on android, sending an event with forcePush flag does the same thing
+    return logEvent('', new Date().toISOString(), [], true);
+  } else return RetenoSdk.forcePushData();
+}
 /**
  * Send log screen view event
  * @param screenName name of the screen
