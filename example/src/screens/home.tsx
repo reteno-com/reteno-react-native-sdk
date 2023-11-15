@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useEffect } from 'react';
 
 import {
   StyleSheet,
@@ -6,10 +6,15 @@ import {
   TouchableOpacity,
   ScrollView,
   SafeAreaView,
+  Alert,
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ScreenNames, RootStackParamList } from '../config';
-import { forcePushData } from 'reteno-react-native-sdk';
+import {
+  forcePushData,
+  setOnRetenoPushReceivedListener,
+  getInitialNotification,
+} from 'reteno-react-native-sdk';
 
 type Props = NativeStackScreenProps<RootStackParamList, ScreenNames.home>;
 
@@ -38,6 +43,18 @@ export default function Main({ navigation }: Props) {
     },
     [navigation]
   );
+
+  const onRetenoPushReceived = useCallback((event) => {
+    Alert.alert('onRetenoPushReceived', event ? JSON.stringify(event) : event);
+  }, []);
+
+  useEffect(() => {
+    getInitialNotification().then((data) => {
+      Alert.alert('getInitialNotification', data ? JSON.stringify(data) : data);
+    });
+    const pushListener = setOnRetenoPushReceivedListener(onRetenoPushReceived);
+    return () => pushListener.remove();
+  }, [onRetenoPushReceived]);
 
   return (
     <SafeAreaView style={styles.container}>
