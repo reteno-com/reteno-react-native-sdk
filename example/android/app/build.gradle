@@ -272,7 +272,7 @@ dependencies {
 
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.0.0"
 
-    implementation 'com.reteno:fcm:1.6.4'
+    implementation 'com.reteno:fcm:1.6.9'
     implementation platform("com.google.firebase:firebase-bom:31.1.0")
     implementation "com.google.firebase:firebase-messaging:23.1.0"
     implementation "com.google.firebase:firebase-messaging-ktx:23.1.0"
