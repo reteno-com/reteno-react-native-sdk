@@ -31,7 +31,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "prepack": "bob build",
-    "release:major": "release-it",
+    "release:patch": "release-it patch",
     "release:minor": "release-it minor",
     "example": "yarn --cwd example",
     "bootstrap": "yarn example && yarn install && yarn example pods",
