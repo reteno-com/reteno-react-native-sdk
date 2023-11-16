@@ -107,7 +107,7 @@
     "git": {
       "commitMessage": "chore: release ${version}",
       "tagName": "v${version}",
-      "pushRepo": "git+https://github.com/reteno-com/reteno-react-native-sdk.git"
+      "pushRepo": "https://github.com/reteno-com/reteno-react-native-sdk.git"
     },
     "npm": {
       "publish": true
