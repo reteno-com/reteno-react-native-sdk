@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState, useMemo } from 'react';
+import React, { useCallback, useState, useMemo } from 'react';
 
 import {
   View,
@@ -9,12 +9,7 @@ import {
   SafeAreaView,
   Alert,
 } from 'react-native';
-import {
-  setUserAttributes,
-  UserAttributes,
-  setOnRetenoPushReceivedListener,
-  getInitialNotification,
-} from 'reteno-react-native-sdk';
+import { setUserAttributes, UserAttributes } from 'reteno-react-native-sdk';
 import styles from './styles';
 
 export default function Attributes() {
@@ -29,17 +24,6 @@ export default function Attributes() {
   const [town, setTown] = useState('');
   const [address, setAddress] = useState('');
   const [postcode, setPostcode] = useState('');
-  const onRetenoPushReceived = useCallback((event) => {
-    Alert.alert('onRetenoPushReceived', event ? JSON.stringify(event) : event);
-  }, []);
-
-  useEffect(() => {
-    getInitialNotification().then((data) => {
-      Alert.alert('getInitialNotification', data ? JSON.stringify(data) : data);
-    });
-    const pushListener = setOnRetenoPushReceivedListener(onRetenoPushReceived);
-    return () => pushListener.remove();
-  }, [onRetenoPushReceived]);
 
   const form = useMemo(
     () => [
