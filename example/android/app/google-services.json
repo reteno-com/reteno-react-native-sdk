@@ -7,6 +7,78 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:987851207632:android:6c3d34b4653332d4bc7fd5",
+        "android_client_info": {
+          "package_name": "com.example.retenotestappxml"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "987851207632-djc17m1i6tfhaqu54uvd6hsmarvif54t.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCal1hJWpLP8aMgIghttDNWHE5W93uJZwg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "987851207632-djc17m1i6tfhaqu54uvd6hsmarvif54t.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "987851207632-nspkph27eke8bhb1facj5so8eel3s0fk.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.reteno.unity"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:987851207632:android:caf4280be4bbc23cbc7fd5",
+        "android_client_info": {
+          "package_name": "com.reteno.example.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "987851207632-djc17m1i6tfhaqu54uvd6hsmarvif54t.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCal1hJWpLP8aMgIghttDNWHE5W93uJZwg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "987851207632-djc17m1i6tfhaqu54uvd6hsmarvif54t.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "987851207632-nspkph27eke8bhb1facj5so8eel3s0fk.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.reteno.unity"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:987851207632:android:862ec0f79ede137abc7fd5",
         "android_client_info": {
           "package_name": "com.reteno.sample"
@@ -31,10 +103,46 @@
               "client_type": 3
             },
             {
-              "client_id": "987851207632-omjfmtk9ot112ii9gbs73irpeqqtahlr.apps.googleusercontent.com",
+              "client_id": "987851207632-nspkph27eke8bhb1facj5so8eel3s0fk.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.reteno.example-app"
+                "bundle_id": "com.reteno.unity"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:987851207632:android:9e7876fb815cc33fbc7fd5",
+        "android_client_info": {
+          "package_name": "com.reteno.testunity"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "987851207632-djc17m1i6tfhaqu54uvd6hsmarvif54t.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCal1hJWpLP8aMgIghttDNWHE5W93uJZwg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "987851207632-djc17m1i6tfhaqu54uvd6hsmarvif54t.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "987851207632-nspkph27eke8bhb1facj5so8eel3s0fk.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.reteno.unity"
               }
             }
           ]

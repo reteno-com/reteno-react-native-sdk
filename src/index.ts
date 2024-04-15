@@ -161,3 +161,18 @@ export function logScreenView(screenName: string) {
     { name: CustomEventTypes.screenView, value: screenName },
   ]);
 }
+
+/**
+ *
+ * Android only
+ *
+ * Since Android 13 was released you have to make sure you are handling Notification runtime permissions
+ *
+ * When user accepts permission, you have to call updatePushPermissionStatus() function from Reteno interface to notify the Reteno SDK that user has granted the permission.
+ */
+export function updatePushPermissionStatusAndroid(): Promise<void> {
+  if (Platform.OS === 'android') {
+    return RetenoSdk.updatePushPermissionStatusAndroid();
+  }
+  return Promise.resolve(undefined);
+}

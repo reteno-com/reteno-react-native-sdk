@@ -175,3 +175,14 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
     }
   }
 }
+
+  @ReactMethod
+  public void updatePushPermissionStatusAndroid(Promise promise) {
+    try {
+      ((RetenoApplication) this.context.getCurrentActivity().getApplication())
+        .getRetenoInstance().updatePushPermissionStatus();
+      promise.resolve(true);
+    } catch (Exception e) {
+      promise.reject("Reteno Android SDK forcePushData Error", e);
+    }
+  }

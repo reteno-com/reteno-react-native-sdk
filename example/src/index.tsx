@@ -8,12 +8,14 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import {
   logScreenView,
   registerForRemoteNotifications,
+  updatePushPermissionStatusAndroid,
 } from 'reteno-react-native-sdk';
 import AttributesScreen from './screens/attributes';
 import EventsScreen from './screens/events';
 import HomeScreen from './screens/home';
 import AnonymousUserAttributes from './screens/anonymousUserAttributes';
 import { ScreenNames, RootStackParamList } from './config';
+import { PermissionsAndroid } from 'react-native';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -23,6 +25,17 @@ function Navigation() {
 
   React.useEffect(() => {
     registerForRemoteNotifications();
+    if (Platform.OS === 'android') {
+      PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS!
+      ).then((result) => {
+        if (result === 'granted') {
+          updatePushPermissionStatusAndroid().then((status) => {
+            console.log('update status', status);
+          });
+        }
+      });
+    }
   }, []);
 
   return (

@@ -1,12 +1,8 @@
-#import <React/RCTBridgeDelegate.h>
+#import <RCTAppDelegate.h>
 #import <UIKit/UIKit.h>
 #import "RetenoSdkExample-Swift.h"
 #import <FirebaseMessaging/FirebaseMessaging.h>
 
-@interface AppDelegate : UIResponder <UIApplicationDelegate, RCTBridgeDelegate, FIRMessagingDelegate>
 
-@property (nonatomic, strong) UIWindow *window;
-
-
-
+@interface AppDelegate : RCTAppDelegate<FIRMessagingDelegate>
 @end
