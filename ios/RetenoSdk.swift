@@ -98,4 +98,9 @@ open class RetenoSdk: RCTEventEmitter {
             reject("100", "Reteno iOS SDK setAnonymousUserAttributes Error", error);
         }
     }
+    
+    @objc(pauseInAppMessages:withResolver:withRejecter:)
+    func pauseInAppMessages(isPaused: Bool, resolve:RCTPromiseResolveBlock,reject:RCTPromiseRejectBlock) -> Void {
+        Reteno.pauseInAppMessages(isPaused: isPaused);
+    }
 }

@@ -24,6 +24,10 @@ RCT_EXTERN_METHOD(setAnonymousUserAttributes:(NSDictionary*)payload
                   withResolver:(RCTPromiseResolveBlock)resolve
                   withRejecter:(RCTPromiseRejectBlock)reject)
 
+RCT_EXTERN_METHOD(pauseInAppMessages:(BOOL)isPaused
+                  withResolver:(RCTPromiseResolveBlock)resolve
+                  withRejecter:(RCTPromiseRejectBlock)reject)
+
 RCT_EXTERN_METHOD(supportedEvents)
 
 + (BOOL)requiresMainQueueSetup

@@ -141,6 +141,11 @@ export function setAnonymousUserAttributes(
 ): Promise<void> {
   return RetenoSdk.setAnonymousUserAttributes(payload);
 }
+
+export function pauseInAppMessages(isPaused: boolean): Promise<void> {
+  return RetenoSdk.pauseInAppMessages(isPaused);
+}
+
 /**
  *
  * Reteno caches all events (events, device data, user information, user behavior, screen tracking, push statuses, etc) locally into database

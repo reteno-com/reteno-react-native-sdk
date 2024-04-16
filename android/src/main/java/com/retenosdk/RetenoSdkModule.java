@@ -174,7 +174,18 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
       promise.reject("Reteno Android SDK forcePushData Error", e);
     }
   }
-}
+
+  @ReactMethod
+  public void pauseInAppMessages(Boolean isPaused, Promise promise) {
+    try {
+      ((RetenoApplication) this.context.getCurrentActivity().getApplication())
+        .getRetenoInstance()
+        .pauseInAppMessages(isPaused);
+      promise.resolve(true);
+    } catch (Exception e) {
+      promise.reject("Reteno Android SDK pauseInAppMessages Error", e);
+    }
+  }
 
   @ReactMethod
   public void updatePushPermissionStatusAndroid(Promise promise) {
@@ -186,3 +197,4 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
       promise.reject("Reteno Android SDK forcePushData Error", e);
     }
   }
+}

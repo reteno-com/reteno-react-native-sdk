@@ -14,6 +14,7 @@ import {
   forcePushData,
   setOnRetenoPushReceivedListener,
   getInitialNotification,
+  pauseInAppMessages,
 } from 'reteno-react-native-sdk';
 
 type Props = NativeStackScreenProps<RootStackParamList, ScreenNames.home>;
@@ -36,6 +37,16 @@ export default function Main({ navigation }: Props) {
     ],
     []
   );
+
+  const handleInAppMessagesStatus = (isPaused: boolean) => {
+    pauseInAppMessages(isPaused)
+      .then(() => {
+        Alert.alert('Success', 'Pause state changed');
+      })
+      .catch((error) => {
+        Alert.alert('Error', error);
+      });
+  };
 
   const goTo = useCallback(
     (routeName: ScreenNames) => {
@@ -70,6 +81,18 @@ export default function Main({ navigation }: Props) {
         ))}
         <TouchableOpacity style={styles.submitBtn} onPress={forcePushData}>
           <Text style={styles.submitBtnText}>Force push data</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.submitBtn}
+          onPress={() => handleInAppMessagesStatus(true)}
+        >
+          <Text style={styles.submitBtnText}>Pause in app messages</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.submitBtn}
+          onPress={() => handleInAppMessagesStatus(false)}
+        >
+          <Text style={styles.submitBtnText}>Unpause in app messages</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
