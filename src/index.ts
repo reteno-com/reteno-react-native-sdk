@@ -62,6 +62,30 @@ export type CustomEventParameter = {
   value?: string;
 };
 
+export type InAppDisplayData = {
+  id?: string;
+  source?: 'DISPLAY_RULES' | 'PUSH_NOTIFICATION';
+};
+
+export type InAppCloseData = {
+  id?: string;
+  source?: 'DISPLAY_RULES' | 'PUSH_NOTIFICATION';
+  closeAction?: 'OPEN_URL' | 'BUTTON' | 'CLOSE_BUTTON';
+};
+
+export type InAppErrorData = {
+  id?: string;
+  source?: 'DISPLAY_RULES' | 'PUSH_NOTIFICATION';
+  errorMessage?: string;
+};
+
+export type InAppCustomData = {
+  customData?: Record<string, any>;
+  inapp_id?: string;
+  inapp_source?: 'DISPLAY_RULES' | 'PUSH_NOTIFICATION';
+  url?: string;
+};
+
 const RetenoSdk = NativeModules.RetenoSdk
   ? NativeModules.RetenoSdk
   : new Proxy(
@@ -103,6 +127,80 @@ export function setOnRetenoPushReceivedListener(
   listener: (event: any) => void
 ) {
   return eventEmitter.addListener('reteno-push-received', listener);
+}
+
+export function setInAppLifecycleCallback() {
+  RetenoSdk.setInAppLifecycleCallback();
+}
+
+/**
+ * Android Only
+ */
+export function removeInAppLifecycleCallback() {
+  if (Platform.OS === 'android') {
+    RetenoSdk.removeInAppLifecycleCallback();
+  }
+}
+
+export function beforeInAppDisplayHandler(
+  callback: (data: InAppDisplayData) => void
+) {
+  return eventEmitter.addListener('reteno-before-in-app-display', (data) => {
+    if (callback && typeof callback === 'function') {
+      callback(data);
+    }
+  });
+}
+
+export function onInAppDisplayHandler(
+  callback: (data: InAppDisplayData) => void
+) {
+  return eventEmitter.addListener('reteno-on-in-app-display', (data) => {
+    if (callback && typeof callback === 'function') {
+      callback(data);
+    }
+  });
+}
+
+export function beforeInAppCloseHandler(
+  callback: (data: InAppCloseData) => void
+) {
+  return eventEmitter.addListener('reteno-before-in-app-close', (data) => {
+    if (callback && typeof callback === 'function') {
+      callback(data);
+    }
+  });
+}
+
+export function afterInAppCloseHandler(
+  callback: (data: InAppCloseData) => void
+) {
+  return eventEmitter.addListener('reteno-after-in-app-close', (data) => {
+    if (callback && typeof callback === 'function') {
+      callback(data);
+    }
+  });
+}
+
+export function onInAppErrorHandler(callback: (data: InAppErrorData) => void) {
+  return eventEmitter.addListener('reteno-on-in-app-error', (data) => {
+    if (callback && typeof callback === 'function') {
+      callback(data);
+    }
+  });
+}
+
+export function addInAppMessageCustomDataHandler(
+  callback: (data: InAppCustomData) => void
+) {
+  return eventEmitter.addListener(
+    'reteno-in-app-custom-data-received',
+    (data) => {
+      if (callback && typeof callback === 'function') {
+        callback(data);
+      }
+    }
+  );
 }
 
 /**

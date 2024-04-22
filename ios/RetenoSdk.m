@@ -28,6 +28,8 @@ RCT_EXTERN_METHOD(pauseInAppMessages:(BOOL)isPaused
                   withResolver:(RCTPromiseResolveBlock)resolve
                   withRejecter:(RCTPromiseRejectBlock)reject)
 
+RCT_EXTERN_METHOD(setInAppLifecycleCallback)
+
 RCT_EXTERN_METHOD(supportedEvents)
 
 + (BOOL)requiresMainQueueSetup

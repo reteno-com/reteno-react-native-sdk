@@ -15,6 +15,14 @@ import {
   setOnRetenoPushReceivedListener,
   getInitialNotification,
   pauseInAppMessages,
+  setInAppLifecycleCallback,
+  beforeInAppDisplayHandler,
+  onInAppDisplayHandler,
+  beforeInAppCloseHandler,
+  afterInAppCloseHandler,
+  onInAppErrorHandler,
+  removeInAppLifecycleCallback,
+  addInAppMessageCustomDataHandler,
 } from 'reteno-react-native-sdk';
 
 type Props = NativeStackScreenProps<RootStackParamList, ScreenNames.home>;
@@ -67,6 +75,52 @@ export default function Main({ navigation }: Props) {
     return () => pushListener.remove();
   }, [onRetenoPushReceived]);
 
+  useEffect(() => {
+    setInAppLifecycleCallback();
+
+    const beforeInAppDisplayListener = beforeInAppDisplayHandler((data) =>
+      Alert.alert(
+        'beforeInAppDisplayHandler',
+        data ? JSON.stringify(data) : data
+      )
+    );
+    const onInAppDisplayListener = onInAppDisplayHandler((data) =>
+      Alert.alert('onInAppDisplayHandler', data ? JSON.stringify(data) : data)
+    );
+    const beforeInAppCloseListener = beforeInAppCloseHandler((data) =>
+      Alert.alert('beforeInAppCloseHandler', data ? JSON.stringify(data) : data)
+    );
+    const afterInAppCloseListener = afterInAppCloseHandler((data) =>
+      Alert.alert('afterInAppCloseHandler', data ? JSON.stringify(data) : data)
+    );
+    const onInAppErrorListener = onInAppErrorHandler((data) =>
+      Alert.alert(
+        'beforeInAppDisplayHandler',
+        data ? JSON.stringify(data) : data
+      )
+    );
+
+    const addInAppMessageCustomDataListener = addInAppMessageCustomDataHandler(
+      (data) =>
+        Alert.alert(
+          'addInAppMessageCustomDataHandler',
+          data ? JSON.stringify(data) : data
+        )
+    );
+
+    return () => {
+      beforeInAppDisplayListener.remove();
+      onInAppDisplayListener.remove();
+      beforeInAppCloseListener.remove();
+      afterInAppCloseListener.remove();
+      onInAppErrorListener.remove();
+
+      removeInAppLifecycleCallback();
+
+      addInAppMessageCustomDataListener.remove();
+    };
+  }, []);
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
@@ -93,6 +147,22 @@ export default function Main({ navigation }: Props) {
           onPress={() => handleInAppMessagesStatus(false)}
         >
           <Text style={styles.submitBtnText}>Unpause in app messages</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.submitBtn}
+          onPress={setInAppLifecycleCallback}
+        >
+          <Text style={styles.submitBtnText}>
+            Subscribe to in app messages events
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.submitBtn}
+          onPress={removeInAppLifecycleCallback}
+        >
+          <Text style={styles.submitBtnText}>
+            Unsubscribe from in app messages events (Android)
+          </Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>

@@ -20,6 +20,10 @@ import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.reteno.core.RetenoApplication;
 import com.reteno.core.domain.model.user.User;
 import com.reteno.core.domain.model.user.UserAttributesAnonymous;
+import com.reteno.core.view.iam.callback.InAppData;
+import com.reteno.core.view.iam.callback.InAppCloseData;
+import com.reteno.core.view.iam.callback.InAppErrorData;
+import com.reteno.core.view.iam.callback.InAppLifecycleCallback;
 
 public class RetenoSdkModule extends ReactContextBaseJavaModule {
   public static final String NAME = "RetenoSdk";
@@ -195,6 +199,83 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
       promise.resolve(true);
     } catch (Exception e) {
       promise.reject("Reteno Android SDK forcePushData Error", e);
+    }
+  }
+
+  private void sendEventToJS(String eventName, WritableMap eventData) {
+    ReactContext reactContext = ((RetenoReactNativeApplication) this.context.getApplicationContext())
+      .getReactContext();
+    reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+      .emit(eventName, eventData);
+  }
+
+  private InAppLifecycleCallback inAppLifecycleCallback;
+
+  @ReactMethod
+  public void setInAppLifecycleCallback(Promise promise) {
+    try {
+      inAppLifecycleCallback = new InAppLifecycleCallback() {
+        @Override
+        public void beforeDisplay(@NonNull InAppData inAppData) {
+          WritableMap eventData = Arguments.createMap();
+          eventData.putString("source", inAppData.getSource().toString());
+          eventData.putString("id", inAppData.getId());
+          sendEventToJS("reteno-before-in-app-display", eventData);
+        }
+
+        @Override
+        public void onDisplay(@NonNull InAppData inAppData) {
+          WritableMap eventData = Arguments.createMap();
+          eventData.putString("source", inAppData.getSource().toString());
+          eventData.putString("id", inAppData.getId());
+          sendEventToJS("reteno-on-in-app-display", eventData);
+        }
+
+        @Override
+        public void beforeClose(@NonNull InAppCloseData closeData) {
+          WritableMap eventData = Arguments.createMap();
+          eventData.putString("source", closeData.getSource().toString());
+          eventData.putString("id", closeData.getId());
+          eventData.putString("closeAction", closeData.getCloseAction().toString());
+          sendEventToJS("reteno-before-in-app-close", eventData);
+        }
+
+        @Override
+        public void afterClose(@NonNull InAppCloseData closeData) {
+          WritableMap eventData = Arguments.createMap();
+          eventData.putString("source", closeData.getSource().toString());
+          eventData.putString("id", closeData.getId());
+          eventData.putString("closeAction", closeData.getCloseAction().toString());
+          sendEventToJS("reteno-after-in-app-close", eventData);
+        }
+
+        @Override
+        public void onError(@NonNull InAppErrorData errorData) {
+          WritableMap eventData = Arguments.createMap();
+          eventData.putString("source", errorData.getSource().toString());
+          eventData.putString("id", errorData.getId());
+          eventData.putString("errorMessage", errorData.getErrorMessage());
+          sendEventToJS("reteno-on-in-app-error", eventData);
+        }
+      };
+      ((RetenoApplication) this.context.getCurrentActivity().getApplication())
+        .getRetenoInstance().setInAppLifecycleCallback(inAppLifecycleCallback);
+      promise.resolve(true);
+    } catch (Exception e) {
+      promise.reject("Reteno Android SDK setInAppLifecycleCallback Error", e);
+    }
+  }
+
+  @ReactMethod
+  public void removeInAppLifecycleCallback(Promise promise) {
+    try {
+      if (inAppLifecycleCallback != null) {
+        ((RetenoApplication) this.context.getCurrentActivity().getApplication()).getRetenoInstance().setInAppLifecycleCallback(null);
+        inAppLifecycleCallback = null;
+      }
+      promise.resolve(true);
+    } catch (Exception e) {
+      promise.reject("Reteno Android SDK removeInAppLifecycleCallback Error", e);
     }
   }
 }

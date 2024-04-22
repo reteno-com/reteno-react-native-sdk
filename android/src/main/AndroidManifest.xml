@@ -9,6 +9,15 @@
         <action android:name="com.reteno.custom-push" />
       </intent-filter>
     </receiver>
+    <receiver
+        android:name="com.retenosdk.RetenoCustomReceiverInAppData"
+        android:enabled="true"
+        android:exported="false">
+
+        <intent-filter>
+            <action android:name="com.reteno.custom-inapp-data" />
+        </intent-filter>
+    </receiver>
     <meta-data
       android:name="com.reteno.Receiver.PushReceived"
       android:value="com.retenosdk.RetenoPushReceiver" />

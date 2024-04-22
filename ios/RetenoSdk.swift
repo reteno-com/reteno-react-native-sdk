@@ -102,5 +102,28 @@ open class RetenoSdk: RCTEventEmitter {
     @objc(pauseInAppMessages:withResolver:withRejecter:)
     func pauseInAppMessages(isPaused: Bool, resolve:RCTPromiseResolveBlock,reject:RCTPromiseRejectBlock) -> Void {
         Reteno.pauseInAppMessages(isPaused: isPaused);
+        resolve(true);
     }
+    
+    @objc(setInAppLifecycleCallback)
+        func setInAppLifecycleCallback() {
+            Reteno.addInAppStatusHandler { inAppMessageStatus in
+                switch inAppMessageStatus {
+                case .inAppShouldBeDisplayed:
+                    self.sendEvent(withName: "reteno-before-in-app-display", body: nil)
+                case .inAppIsDisplayed:
+                    self.sendEvent(withName: "reteno-on-in-app-display", body: nil)
+                case .inAppShouldBeClosed(let action):
+                    self.sendEvent(withName: "reteno-before-in-app-close", body: ["action": action])
+                    Reteno.addLinkHandler { linkInfo in
+                        self.sendEvent(withName: "reteno-in-app-custom-data-received", body: ["customData": linkInfo.customData])
+                        UIApplication.shared.open(linkInfo.url)
+                    }
+                case .inAppIsClosed(let action):
+                    self.sendEvent(withName: "reteno-after-in-app-close", body: ["action": action])
+                case .inAppReceivedError(let error):
+                    self.sendEvent(withName: "reteno-on-in-app-error", body: ["error": error])
+                }
+            }
+        }
 }
