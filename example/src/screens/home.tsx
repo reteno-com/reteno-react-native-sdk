@@ -14,6 +14,8 @@ import {
   forcePushData,
   setOnRetenoPushReceivedListener,
   getInitialNotification,
+  getRecommendations,
+  logRecommendationEvent,
 } from 'reteno-react-native-sdk';
 
 type Props = NativeStackScreenProps<RootStackParamList, ScreenNames.home>;
@@ -55,6 +57,39 @@ export default function Main({ navigation }: Props) {
     const pushListener = setOnRetenoPushReceivedListener(onRetenoPushReceived);
     return () => pushListener.remove();
   }, [onRetenoPushReceived]);
+
+  useEffect(() => {
+    const recommendationsPayload = {
+      recomVariantId: 'r1105v1480',
+      productIds: ['240-LV09', '24-WG080'],
+      categoryId: 'Default Category/Training/Video Download',
+      filters: [],
+      fields: ['productId', 'name', 'descr', 'imageUrl', 'price'],
+    };
+
+    getRecommendations(recommendationsPayload)
+      .then((response) => {
+        console.log('Recommendations received:', response);
+      })
+      .catch((error) => {
+        console.error('Error fetching recommendations:', error);
+      });
+
+    const recommendationEventPayload = {
+      recomVariantId: 'r1105v1480',
+      impressions: [{ date: new Date(), productId: '240-LV09' }],
+      clicks: [{ date: new Date(), productId: '24-WG080' }],
+      forcePush: true,
+    };
+
+    logRecommendationEvent(recommendationEventPayload)
+      .then(() => {
+        console.log('Recommendation event logged successfully');
+      })
+      .catch((error) => {
+        console.error('Error logging recommendation event:', error);
+      });
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
