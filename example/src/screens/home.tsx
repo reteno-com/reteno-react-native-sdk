@@ -58,25 +58,33 @@ export default function Main({ navigation }: Props) {
     return () => pushListener.remove();
   }, [onRetenoPushReceived]);
 
-  useEffect(() => {
+  const handleGetRecommendations = () => {
     const recommendationsPayload = {
-      recomVariantId: 'r1105v1480',
+      recomVariantId: 'r1107v1482',
       productIds: ['240-LV09', '24-WG080'],
-      categoryId: 'Default Category/Training/Video Download',
+      categoryId: '',
       filters: [],
       fields: ['productId', 'name', 'descr', 'imageUrl', 'price'],
     };
 
     getRecommendations(recommendationsPayload)
       .then((response) => {
-        console.log('Recommendations received:', response);
+        Alert.alert(
+          'Recommendations received:',
+          response ? JSON.stringify(response) : response
+        );
       })
       .catch((error) => {
-        console.error('Error fetching recommendations:', error);
+        Alert.alert(
+          'Error fetching recommendations:',
+          error ? JSON.stringify(error) : error
+        );
       });
+  };
 
+  const handleLogRecommendationEvent = () => {
     const recommendationEventPayload = {
-      recomVariantId: 'r1105v1480',
+      recomVariantId: 'r1107v1482',
       impressions: [{ date: new Date(), productId: '240-LV09' }],
       clicks: [{ date: new Date(), productId: '24-WG080' }],
       forcePush: true,
@@ -84,12 +92,15 @@ export default function Main({ navigation }: Props) {
 
     logRecommendationEvent(recommendationEventPayload)
       .then(() => {
-        console.log('Recommendation event logged successfully');
+        Alert.alert('Recommendation event logged successfully');
       })
       .catch((error) => {
-        console.error('Error logging recommendation event:', error);
+        Alert.alert(
+          'Error logging recommendation event:',
+          error ? JSON.stringify(error) : error
+        );
       });
-  }, []);
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -105,6 +116,18 @@ export default function Main({ navigation }: Props) {
         ))}
         <TouchableOpacity style={styles.submitBtn} onPress={forcePushData}>
           <Text style={styles.submitBtnText}>Force push data</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.submitBtn}
+          onPress={handleGetRecommendations}
+        >
+          <Text style={styles.submitBtnText}>Get Recommendations</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.submitBtn}
+          onPress={handleLogRecommendationEvent}
+        >
+          <Text style={styles.submitBtnText}>Log Recommendations</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>

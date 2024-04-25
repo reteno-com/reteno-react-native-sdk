@@ -137,7 +137,7 @@ open class RetenoSdk: RCTEventEmitter {
                 resolve(serializedRecommendations)
                 
             case .failure(let error):
-                reject("100", "Reteno iOS SDK Error", error)
+                reject("100", "Reteno iOS SDK getRecommendations Error", error)
             }
         }
     }
@@ -150,7 +150,7 @@ open class RetenoSdk: RCTEventEmitter {
               let clicks = payload["clicks"] as? [[String: Any]],
               let forcePush = payload["forcePush"] as? Bool else {
             let error = NSError(domain: "InvalidPayload", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid payload"])
-            reject("100", "Reteno iOS SDK Error", error)
+            reject("100", "Reteno iOS SDK logRecommendationEvent Error", error)
             return
         }
         

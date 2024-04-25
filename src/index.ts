@@ -79,7 +79,8 @@ export type RecommendationEventPayload = {
   recomVariantId: string;
   impressions: RecommendationEvent[];
   clicks: RecommendationEvent[];
-  forcePush: boolean;
+  // forcePush is only for IOS
+  forcePush?: boolean;
 };
 
 const RetenoSdk = NativeModules.RetenoSdk

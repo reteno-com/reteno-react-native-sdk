@@ -17,6 +17,7 @@ import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeMap;
+import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.reteno.core.RetenoApplication;
 import com.reteno.core.domain.model.user.User;
@@ -232,20 +233,24 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
         @Override
         public void onSuccess(@NonNull Recoms<RetenoRecommendationsResponse> response) {
           List<WritableMap> recoms = new ArrayList<>();
+
           for (RetenoRecommendationsResponse recom : response.getRecoms()) {
             WritableMap recomMap = Arguments.createMap();
             recomMap.putString("productId", recom.getProductId());
-            recomMap.putString("descr", recom.getDescr());
+            recomMap.putString("description", recom.getDescr());
             recoms.add(recomMap);
           }
-          WritableMap result = Arguments.createMap();
-          result.putArray("recoms", Arguments.fromList(recoms));
-          promise.resolve(result);
+
+          WritableArray recomsArray = Arguments.createArray();
+          for (WritableMap map : recoms) {
+            recomsArray.pushMap(map);
+          }
+          promise.resolve(recomsArray);
         }
 
         @Override
         public void onSuccessFallbackToJson(@NonNull String response) {
-          promise.reject("CastingError", "Failed to cast response to expected type");
+          promise.resolve(response);
         }
 
         @Override
@@ -255,15 +260,54 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
       });
   }
 
-  @ReactMethod
-  public void logRecommendationEvent(String recomVariantId, String eventType, String productId, Promise promise) {
-    try {
-      RecomEventType recomEventType = RecomEventType.valueOf(eventType.toUpperCase());
-      RecomEvent recomEvent = new RecomEvent(recomEventType, ZonedDateTime.now(), productId);
-      List<RecomEvent> eventList = new ArrayList<>();
-      eventList.add(recomEvent);
+  private List<RecomEvent> parseRecomEvents(ReadableArray eventsArray, RecomEventType eventType) {
+    List<RecomEvent> events = new ArrayList<>();
+    for (int i = 0; i < eventsArray.size(); i++) {
+      ReadableMap eventMap = eventsArray.getMap(i);
+        String productId = eventMap.hasKey("productId") ? eventMap.getString("productId") : null;
+        if (productId != null) {
+          events.add(new RecomEvent(eventType, ZonedDateTime.now(), productId));
+        }
+    }
+    return events;
+  }
 
-      RecomEvents recomEvents = new RecomEvents(recomVariantId, eventList);
+  @ReactMethod
+  public void logRecommendationEvent(ReadableMap payload, Promise promise) {
+    if (payload == null) {
+      promise.reject("PayloadError", "Payload cannot be null");
+      return;
+    }
+
+    String recomVariantId = payload.hasKey("recomVariantId") ? payload.getString("recomVariantId") : null;
+    ReadableArray impressionsArray = payload.hasKey("impressions") ? payload.getArray("impressions") : null;
+    ReadableArray clicksArray = payload.hasKey("clicks") ? payload.getArray("clicks") : null;
+
+    if (recomVariantId == null || impressionsArray == null || clicksArray == null) {
+      promise.reject("PayloadError", "Required fields are missing in the payload");
+      return;
+    }
+
+    try {
+      List<RecomEvent> events = new ArrayList<>();
+
+      for (int i = 0; i < impressionsArray.size(); i++) {
+        ReadableMap eventMap = impressionsArray.getMap(i);
+          String productId = eventMap.hasKey("productId") ? eventMap.getString("productId") : null;
+          if (productId != null) {
+            events.add(new RecomEvent(RecomEventType.IMPRESSIONS, ZonedDateTime.now(), productId));
+          }
+      }
+
+      for (int i = 0; i < clicksArray.size(); i++) {
+        ReadableMap eventMap = clicksArray.getMap(i);
+          String productId = eventMap.hasKey("productId") ? eventMap.getString("productId") : null;
+          if (productId != null) {
+            events.add(new RecomEvent(RecomEventType.CLICKS, ZonedDateTime.now(), productId));
+          }
+      }
+
+      RecomEvents recomEvents = new RecomEvents(recomVariantId, events);
 
       ((RetenoApplication) this.context.getCurrentActivity().getApplication())
         .getRetenoInstance().getRecommendation().logRecommendations(recomEvents);
@@ -272,7 +316,7 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
     } catch (IllegalArgumentException e) {
       promise.reject("InvalidEventType", "Invalid recommendation event type");
     } catch (Exception e) {
-      promise.reject("Reteno Android SDK Error", e);
+      promise.reject("Reteno Android SDK logRecommendationEvent Error", e);
     }
   }
 }
