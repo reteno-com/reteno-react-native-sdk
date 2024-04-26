@@ -71,7 +71,6 @@ export type RecommendationsPayload = {
 };
 
 export type RecommendationEvent = {
-  date: Date;
   productId: string;
 };
 

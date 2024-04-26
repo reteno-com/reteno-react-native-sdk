@@ -260,18 +260,6 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
       });
   }
 
-  private List<RecomEvent> parseRecomEvents(ReadableArray eventsArray, RecomEventType eventType) {
-    List<RecomEvent> events = new ArrayList<>();
-    for (int i = 0; i < eventsArray.size(); i++) {
-      ReadableMap eventMap = eventsArray.getMap(i);
-        String productId = eventMap.hasKey("productId") ? eventMap.getString("productId") : null;
-        if (productId != null) {
-          events.add(new RecomEvent(eventType, ZonedDateTime.now(), productId));
-        }
-    }
-    return events;
-  }
-
   @ReactMethod
   public void logRecommendationEvent(ReadableMap payload, Promise promise) {
     if (payload == null) {

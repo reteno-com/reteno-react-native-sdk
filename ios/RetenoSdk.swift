@@ -158,15 +158,15 @@ open class RetenoSdk: RCTEventEmitter {
         var clickEvents: [RecomEvent] = []
         
         for impression in impressions {
-            if let date = impression["date"] as? Date, let productId = impression["productId"] as? String {
-                impressionEvents.append(RecomEvent(date: date, productId: productId))
-            }
+            let productId = impression["productId"] as? String
+            
+            impressionEvents.append(RecomEvent(date: Date(), productId: productId ?? ""))
         }
         
         for click in clicks {
-            if let date = click["date"] as? Date, let productId = click["productId"] as? String {
-                clickEvents.append(RecomEvent(date: date, productId: productId))
-            }
+            let productId = click["productId"] as? String
+            
+            clickEvents.append(RecomEvent(date: Date(), productId: productId ?? ""))
         }
         
         Reteno.recommendations().logEvent(recomVariantId: recomVariantId, impressions: impressionEvents, clicks: clickEvents, forcePush: forcePush)

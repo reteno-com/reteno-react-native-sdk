@@ -655,7 +655,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = RetenoSdkExample/RetenoSdkExample.entitlements;
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 290;
+				CURRENT_PROJECT_VERSION = 291;
 				DEFINES_MODULE = NO;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = X9JJR3XKX7;
@@ -693,7 +693,7 @@
 				CODE_SIGN_ENTITLEMENTS = RetenoSdkExample/RetenoSdkExample.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 290;
+				CURRENT_PROJECT_VERSION = 291;
 				DEFINES_MODULE = NO;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = X9JJR3XKX7;

@@ -85,8 +85,16 @@ export default function Main({ navigation }: Props) {
   const handleLogRecommendationEvent = () => {
     const recommendationEventPayload = {
       recomVariantId: 'r1107v1482',
-      impressions: [{ date: new Date(), productId: '240-LV09' }],
-      clicks: [{ date: new Date(), productId: '24-WG080' }],
+      impressions: [
+        {
+          productId: '240-LV09',
+        },
+      ],
+      clicks: [
+        {
+          productId: '24-WG080',
+        },
+      ],
       forcePush: true,
     };
 
