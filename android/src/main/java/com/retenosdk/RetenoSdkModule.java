@@ -14,12 +14,24 @@ import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeMap;
+import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.reteno.core.RetenoApplication;
 import com.reteno.core.domain.model.user.User;
 import com.reteno.core.domain.model.user.UserAttributesAnonymous;
+import com.reteno.core.domain.model.recommendation.get.RecomRequest;
+import com.reteno.core.data.remote.model.recommendation.get.Recoms;
+import com.reteno.core.features.recommendation.GetRecommendationResponseCallback;
+import com.reteno.core.domain.model.recommendation.post.RecomEvent;
+import com.reteno.core.domain.model.recommendation.post.RecomEventType;
+import com.reteno.core.domain.model.recommendation.post.RecomEvents;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.time.ZonedDateTime;
 
 public class RetenoSdkModule extends ReactContextBaseJavaModule {
   public static final String NAME = "RetenoSdk";
@@ -174,7 +186,6 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
       promise.reject("Reteno Android SDK forcePushData Error", e);
     }
   }
-}
 
   @ReactMethod
   public void updatePushPermissionStatusAndroid(Promise promise) {
@@ -186,3 +197,114 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
       promise.reject("Reteno Android SDK forcePushData Error", e);
     }
   }
+
+  private List<String> convertReadableArrayToStringList(ReadableArray array) {
+    List<String> list = new ArrayList<>();
+    for (int i = 0; i < array.size(); i++) {
+      list.add(array.getString(i));
+    }
+    return list;
+  }
+
+  @ReactMethod
+  public void getRecommendations(ReadableMap payload, Promise promise) {
+    if (payload == null) {
+      promise.reject("PayloadError", "Payload cannot be null");
+      return;
+    }
+
+    String recomVariantId = payload.hasKey("recomVariantId") ? payload.getString("recomVariantId") : null;
+    ReadableArray productIdsArray = payload.getArray("productIds");
+    ReadableArray fieldsArray = payload.getArray("fields");
+    String categoryId = payload.hasKey("categoryId") ? payload.getString("categoryId") : null;
+
+    if (recomVariantId == null || productIdsArray == null || fieldsArray == null) {
+      promise.reject("PayloadError", "Required fields are missing in the payload");
+      return;
+    }
+
+    List<String> productIds = convertReadableArrayToStringList(productIdsArray);
+    List<String> fields = convertReadableArrayToStringList(fieldsArray);
+
+    RecomRequest request = new RecomRequest(productIds, categoryId, fields, null);
+
+    ((RetenoApplication) this.context.getCurrentActivity().getApplication())
+      .getRetenoInstance().getRecommendation().fetchRecommendation(recomVariantId, request, RetenoRecommendationsResponse.class, new GetRecommendationResponseCallback<RetenoRecommendationsResponse>() {
+        @Override
+        public void onSuccess(@NonNull Recoms<RetenoRecommendationsResponse> response) {
+          List<WritableMap> recoms = new ArrayList<>();
+
+          for (RetenoRecommendationsResponse recom : response.getRecoms()) {
+            WritableMap recomMap = Arguments.createMap();
+            recomMap.putString("productId", recom.getProductId());
+            recomMap.putString("description", recom.getDescr());
+            recoms.add(recomMap);
+          }
+
+          WritableArray recomsArray = Arguments.createArray();
+          for (WritableMap map : recoms) {
+            recomsArray.pushMap(map);
+          }
+          promise.resolve(recomsArray);
+        }
+
+        @Override
+        public void onSuccessFallbackToJson(@NonNull String response) {
+          promise.resolve(response);
+        }
+
+        @Override
+        public void onFailure(Integer statusCode, String response, Throwable throwable) {
+          promise.reject(String.valueOf(statusCode), response, throwable);
+        }
+      });
+  }
+
+  @ReactMethod
+  public void logRecommendationEvent(ReadableMap payload, Promise promise) {
+    if (payload == null) {
+      promise.reject("PayloadError", "Payload cannot be null");
+      return;
+    }
+
+    String recomVariantId = payload.hasKey("recomVariantId") ? payload.getString("recomVariantId") : null;
+    ReadableArray impressionsArray = payload.hasKey("impressions") ? payload.getArray("impressions") : null;
+    ReadableArray clicksArray = payload.hasKey("clicks") ? payload.getArray("clicks") : null;
+
+    if (recomVariantId == null || impressionsArray == null || clicksArray == null) {
+      promise.reject("PayloadError", "Required fields are missing in the payload");
+      return;
+    }
+
+    try {
+      List<RecomEvent> events = new ArrayList<>();
+
+      for (int i = 0; i < impressionsArray.size(); i++) {
+        ReadableMap eventMap = impressionsArray.getMap(i);
+          String productId = eventMap.hasKey("productId") ? eventMap.getString("productId") : null;
+          if (productId != null) {
+            events.add(new RecomEvent(RecomEventType.IMPRESSIONS, ZonedDateTime.now(), productId));
+          }
+      }
+
+      for (int i = 0; i < clicksArray.size(); i++) {
+        ReadableMap eventMap = clicksArray.getMap(i);
+          String productId = eventMap.hasKey("productId") ? eventMap.getString("productId") : null;
+          if (productId != null) {
+            events.add(new RecomEvent(RecomEventType.CLICKS, ZonedDateTime.now(), productId));
+          }
+      }
+
+      RecomEvents recomEvents = new RecomEvents(recomVariantId, events);
+
+      ((RetenoApplication) this.context.getCurrentActivity().getApplication())
+        .getRetenoInstance().getRecommendation().logRecommendations(recomEvents);
+
+      promise.resolve(true);
+    } catch (IllegalArgumentException e) {
+      promise.reject("InvalidEventType", "Invalid recommendation event type");
+    } catch (Exception e) {
+      promise.reject("Reteno Android SDK logRecommendationEvent Error", e);
+    }
+  }
+}
