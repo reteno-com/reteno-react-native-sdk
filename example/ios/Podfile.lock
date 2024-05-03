@@ -1120,7 +1120,7 @@ PODS:
     - React-perflogger (= 0.73.6)
   - Reteno (2.0.3):
     - Alamofire (= 5.9.0)
-  - reteno-react-native-sdk (1.4.0):
+  - reteno-react-native-sdk (1.4.8):
     - React-Core
     - Reteno (= 2.0.3)
   - RNFBApp (19.2.2):
@@ -1387,7 +1387,7 @@ SPEC CHECKSUMS:
   React-utils: a45dd70919baff681d43a4a457e9884ef96b4581
   ReactCommon: e168ee1704806f10f47ee8c7f825b5850b18eaea
   Reteno: c8589885fe23e6570b04ff293aa7a82885bd2a57
-  reteno-react-native-sdk: 27c6a1b102bdc5cf5d3bb9f5f64930ce6a048f48
+  reteno-react-native-sdk: a911160dda66e8db2fdeb2e18d480b438ef4d06b
   RNFBApp: 91311b27bc9a33e23b76a62825afd1635501018a
   RNFBMessaging: e86747e8bba79cb464f3f1f22aaae19f38ee7397
   RNScreens: 97a2a32820e632c5978d75250afa397ed9053910
