@@ -1,6 +1,6 @@
 {
   "name": "reteno-react-native-sdk",
-  "version": "1.4.0",
+  "version": "1.4.8",
   "description": "The Reteno React Native SDK for App Analytics and Engagement.",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",

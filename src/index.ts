@@ -86,6 +86,26 @@ export type InAppCustomData = {
   url?: string;
 };
 
+export type RecommendationsPayload = {
+  recomVariantId: string;
+  productIds: string[];
+  categoryId: string;
+  filters?: { [key: string]: any }[];
+  fields: string[];
+};
+
+export type RecommendationEvent = {
+  productId: string;
+};
+
+export type RecommendationEventPayload = {
+  recomVariantId: string;
+  impressions: RecommendationEvent[];
+  clicks: RecommendationEvent[];
+  // forcePush is only for IOS
+  forcePush?: boolean;
+};
+
 const RetenoSdk = NativeModules.RetenoSdk
   ? NativeModules.RetenoSdk
   : new Proxy(
@@ -115,6 +135,18 @@ export function setUserAttributes(
 
 export function getInitialNotification(): Promise<any> {
   return RetenoSdk.getInitialNotification();
+}
+
+export function getRecommendations(
+  payload: RecommendationsPayload
+): Promise<any> {
+  return RetenoSdk.getRecommendations(payload);
+}
+
+export function logRecommendationEvent(
+  payload: RecommendationEventPayload
+): Promise<void> {
+  return RetenoSdk.logRecommendationEvent(payload);
 }
 
 const eventEmitter = Platform.select({

@@ -23,6 +23,8 @@ import {
   onInAppErrorHandler,
   removeInAppLifecycleCallback,
   addInAppMessageCustomDataHandler,
+  getRecommendations,
+  logRecommendationEvent,
 } from 'reteno-react-native-sdk';
 
 type Props = NativeStackScreenProps<RootStackParamList, ScreenNames.home>;
@@ -66,6 +68,58 @@ export default function Main({ navigation }: Props) {
   const onRetenoPushReceived = useCallback((event) => {
     Alert.alert('onRetenoPushReceived', event ? JSON.stringify(event) : event);
   }, []);
+
+  const handleGetRecommendations = () => {
+    const recommendationsPayload = {
+      recomVariantId: 'r1107v1482',
+      productIds: ['240-LV09', '24-WG080'],
+      categoryId: '',
+      filters: [],
+      fields: ['productId', 'name', 'descr', 'imageUrl', 'price'],
+    };
+
+    getRecommendations(recommendationsPayload)
+      .then((response) => {
+        Alert.alert(
+          'Recommendations received:',
+          response ? JSON.stringify(response) : response
+        );
+      })
+      .catch((error) => {
+        Alert.alert(
+          'Error fetching recommendations:',
+          error ? JSON.stringify(error) : error
+        );
+      });
+  };
+
+  const handleLogRecommendationEvent = () => {
+    const recommendationEventPayload = {
+      recomVariantId: 'r1107v1482',
+      impressions: [
+        {
+          productId: '240-LV09',
+        },
+      ],
+      clicks: [
+        {
+          productId: '24-WG080',
+        },
+      ],
+      forcePush: true,
+    };
+
+    logRecommendationEvent(recommendationEventPayload)
+      .then(() => {
+        Alert.alert('Recommendation event logged successfully');
+      })
+      .catch((error) => {
+        Alert.alert(
+          'Error logging recommendation event:',
+          error ? JSON.stringify(error) : error
+        );
+      });
+  };
 
   useEffect(() => {
     getInitialNotification().then((data) => {
@@ -163,6 +217,18 @@ export default function Main({ navigation }: Props) {
           <Text style={styles.submitBtnText}>
             Unsubscribe from in app messages events (Android)
           </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.submitBtn}
+          onPress={handleGetRecommendations}
+        >
+          <Text style={styles.submitBtnText}>Get Recommendations</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.submitBtn}
+          onPress={handleLogRecommendationEvent}
+        >
+          <Text style={styles.submitBtnText}>Log Recommendations</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>

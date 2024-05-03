@@ -30,6 +30,14 @@ RCT_EXTERN_METHOD(pauseInAppMessages:(BOOL)isPaused
 
 RCT_EXTERN_METHOD(setInAppLifecycleCallback)
 
+RCT_EXTERN_METHOD(getRecommendations:(NSDictionary*)payload
+                  withResolver:(RCTPromiseResolveBlock)resolve
+                  withRejecter:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(logRecommendationEvent:(NSDictionary*)payload
+                 withResolver:(RCTPromiseResolveBlock)resolve
+                 withRejecter:(RCTPromiseRejectBlock)reject)
+
 RCT_EXTERN_METHOD(supportedEvents)
 
 + (BOOL)requiresMainQueueSetup

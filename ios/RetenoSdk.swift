@@ -106,24 +106,100 @@ open class RetenoSdk: RCTEventEmitter {
     }
     
     @objc(setInAppLifecycleCallback)
-        func setInAppLifecycleCallback() {
-            Reteno.addInAppStatusHandler { inAppMessageStatus in
-                switch inAppMessageStatus {
-                case .inAppShouldBeDisplayed:
-                    self.sendEvent(withName: "reteno-before-in-app-display", body: nil)
-                case .inAppIsDisplayed:
-                    self.sendEvent(withName: "reteno-on-in-app-display", body: nil)
-                case .inAppShouldBeClosed(let action):
-                    self.sendEvent(withName: "reteno-before-in-app-close", body: ["action": action])
-                    Reteno.addLinkHandler { linkInfo in
-                        self.sendEvent(withName: "reteno-in-app-custom-data-received", body: ["customData": linkInfo.customData])
-                        UIApplication.shared.open(linkInfo.url)
-                    }
-                case .inAppIsClosed(let action):
-                    self.sendEvent(withName: "reteno-after-in-app-close", body: ["action": action])
-                case .inAppReceivedError(let error):
-                    self.sendEvent(withName: "reteno-on-in-app-error", body: ["error": error])
+    func setInAppLifecycleCallback() {
+        Reteno.addInAppStatusHandler { inAppMessageStatus in
+            switch inAppMessageStatus {
+            case .inAppShouldBeDisplayed:
+                self.sendEvent(withName: "reteno-before-in-app-display", body: nil)
+            case .inAppIsDisplayed:
+                self.sendEvent(withName: "reteno-on-in-app-display", body: nil)
+            case .inAppShouldBeClosed(let action):
+                self.sendEvent(withName: "reteno-before-in-app-close", body: ["action": action])
+                Reteno.addLinkHandler { linkInfo in
+                    self.sendEvent(withName: "reteno-in-app-custom-data-received", body: ["customData": linkInfo.customData])
+                    UIApplication.shared.open(linkInfo.url)
                 }
+            case .inAppIsClosed(let action):
+                self.sendEvent(withName: "reteno-after-in-app-close", body: ["action": action])
+            case .inAppReceivedError(let error):
+                self.sendEvent(withName: "reteno-on-in-app-error", body: ["error": error])
             }
         }
+    }
+
+    @objc(getRecommendations:withResolver:withRejecter:)
+    func getRecommendations(payload: NSDictionary, resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) -> Void {
+        guard let recomVariantId = payload["recomVariantId"] as? String,
+              let productIds = payload["productIds"] as? [String],
+              let categoryId = payload["categoryId"] as? String,
+              let filters = payload["filters"] as? [NSDictionary],
+              let fields = payload["fields"] as? [String] else {
+            let error = NSError(domain: "RetenoSdk", code: 100, userInfo: [NSLocalizedDescriptionKey: "Invalid payload"])
+            reject("100", "Reteno iOS SDK Error: Invalid payload", error)
+            return
+        }
+
+        var recomFilters: [RecomFilter]? = nil
+        if let filters = filters as? [[String: Any]] {
+            recomFilters = filters.compactMap { dict in
+                guard let name = dict["name"] as? String, let values = dict["values"] as? [String] else {
+                    return nil
+                }
+                return RecomFilter(name: name, values: values)
+            }
+        }
+        
+        Reteno.recommendations().getRecoms(recomVariantId: recomVariantId, productIds: productIds, categoryId: categoryId, filters: recomFilters, fields: fields) { (result: Result<[Recommendation], Error>) in
+            
+            switch result {
+            case .success(let recommendations):
+                let serializedRecommendations = recommendations.map { recommendation in
+                    return [
+                        "productId": recommendation.productId,
+                        "name": recommendation.name,
+                        "description": recommendation.description ?? "",
+                        "imageUrl": recommendation.imageUrl?.absoluteString ?? "",
+                        "price": recommendation.price
+                    ]
+                }
+                resolve(serializedRecommendations)
+                
+            case .failure(let error):
+                reject("100", "Reteno iOS SDK getRecommendations Error", error)
+            }
+        }
+    }
+    
+    @objc(logRecommendationEvent:withResolver:withRejecter:)
+    func logRecommendationEvent(payload: NSDictionary, resolve:RCTPromiseResolveBlock, reject:RCTPromiseRejectBlock) -> Void {
+        
+        guard let recomVariantId = payload["recomVariantId"] as? String,
+              let impressions = payload["impressions"] as? [[String: Any]],
+              let clicks = payload["clicks"] as? [[String: Any]],
+              let forcePush = payload["forcePush"] as? Bool else {
+            let error = NSError(domain: "InvalidPayload", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid payload"])
+            reject("100", "Reteno iOS SDK logRecommendationEvent Error", error)
+            return
+        }
+        
+        var impressionEvents: [RecomEvent] = []
+        var clickEvents: [RecomEvent] = []
+        
+        for impression in impressions {
+            let productId = impression["productId"] as? String
+            
+            impressionEvents.append(RecomEvent(date: Date(), productId: productId ?? ""))
+        }
+        
+        for click in clicks {
+            let productId = click["productId"] as? String
+            
+            clickEvents.append(RecomEvent(date: Date(), productId: productId ?? ""))
+        }
+        
+        Reteno.recommendations().logEvent(recomVariantId: recomVariantId, impressions: impressionEvents, clicks: clickEvents, forcePush: forcePush)
+        
+        let res: [String: Bool] = ["success": true]
+        resolve(res)
+    }
 }
