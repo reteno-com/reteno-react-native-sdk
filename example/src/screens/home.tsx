@@ -14,6 +14,15 @@ import {
   forcePushData,
   setOnRetenoPushReceivedListener,
   getInitialNotification,
+  pauseInAppMessages,
+  setInAppLifecycleCallback,
+  beforeInAppDisplayHandler,
+  onInAppDisplayHandler,
+  beforeInAppCloseHandler,
+  afterInAppCloseHandler,
+  onInAppErrorHandler,
+  removeInAppLifecycleCallback,
+  addInAppMessageCustomDataHandler,
   getRecommendations,
   logRecommendationEvent,
 } from 'reteno-react-native-sdk';
@@ -39,6 +48,16 @@ export default function Main({ navigation }: Props) {
     []
   );
 
+  const handleInAppMessagesStatus = (isPaused: boolean) => {
+    pauseInAppMessages(isPaused)
+      .then(() => {
+        Alert.alert('Success', 'Pause state changed');
+      })
+      .catch((error) => {
+        Alert.alert('Error', error);
+      });
+  };
+
   const goTo = useCallback(
     (routeName: ScreenNames) => {
       navigation.navigate(routeName);
@@ -49,14 +68,6 @@ export default function Main({ navigation }: Props) {
   const onRetenoPushReceived = useCallback((event) => {
     Alert.alert('onRetenoPushReceived', event ? JSON.stringify(event) : event);
   }, []);
-
-  useEffect(() => {
-    getInitialNotification().then((data) => {
-      Alert.alert('getInitialNotification', data ? JSON.stringify(data) : data);
-    });
-    const pushListener = setOnRetenoPushReceivedListener(onRetenoPushReceived);
-    return () => pushListener.remove();
-  }, [onRetenoPushReceived]);
 
   const handleGetRecommendations = () => {
     const recommendationsPayload = {
@@ -110,6 +121,60 @@ export default function Main({ navigation }: Props) {
       });
   };
 
+  useEffect(() => {
+    getInitialNotification().then((data) => {
+      Alert.alert('getInitialNotification', data ? JSON.stringify(data) : data);
+    });
+    const pushListener = setOnRetenoPushReceivedListener(onRetenoPushReceived);
+    return () => pushListener.remove();
+  }, [onRetenoPushReceived]);
+
+  useEffect(() => {
+    setInAppLifecycleCallback();
+
+    const beforeInAppDisplayListener = beforeInAppDisplayHandler((data) =>
+      Alert.alert(
+        'beforeInAppDisplayHandler',
+        data ? JSON.stringify(data) : data
+      )
+    );
+    const onInAppDisplayListener = onInAppDisplayHandler((data) =>
+      Alert.alert('onInAppDisplayHandler', data ? JSON.stringify(data) : data)
+    );
+    const beforeInAppCloseListener = beforeInAppCloseHandler((data) =>
+      Alert.alert('beforeInAppCloseHandler', data ? JSON.stringify(data) : data)
+    );
+    const afterInAppCloseListener = afterInAppCloseHandler((data) =>
+      Alert.alert('afterInAppCloseHandler', data ? JSON.stringify(data) : data)
+    );
+    const onInAppErrorListener = onInAppErrorHandler((data) =>
+      Alert.alert(
+        'beforeInAppDisplayHandler',
+        data ? JSON.stringify(data) : data
+      )
+    );
+
+    const addInAppMessageCustomDataListener = addInAppMessageCustomDataHandler(
+      (data) =>
+        Alert.alert(
+          'addInAppMessageCustomDataHandler',
+          data ? JSON.stringify(data) : data
+        )
+    );
+
+    return () => {
+      beforeInAppDisplayListener.remove();
+      onInAppDisplayListener.remove();
+      beforeInAppCloseListener.remove();
+      afterInAppCloseListener.remove();
+      onInAppErrorListener.remove();
+
+      removeInAppLifecycleCallback();
+
+      addInAppMessageCustomDataListener.remove();
+    };
+  }, []);
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
@@ -124,6 +189,34 @@ export default function Main({ navigation }: Props) {
         ))}
         <TouchableOpacity style={styles.submitBtn} onPress={forcePushData}>
           <Text style={styles.submitBtnText}>Force push data</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.submitBtn}
+          onPress={() => handleInAppMessagesStatus(true)}
+        >
+          <Text style={styles.submitBtnText}>Pause in app messages</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.submitBtn}
+          onPress={() => handleInAppMessagesStatus(false)}
+        >
+          <Text style={styles.submitBtnText}>Unpause in app messages</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.submitBtn}
+          onPress={setInAppLifecycleCallback}
+        >
+          <Text style={styles.submitBtnText}>
+            Subscribe to in app messages events
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.submitBtn}
+          onPress={removeInAppLifecycleCallback}
+        >
+          <Text style={styles.submitBtnText}>
+            Unsubscribe from in app messages events (Android)
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.submitBtn}
