@@ -83,42 +83,26 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
   }
 
   public static void onRetenoPushReceived(Context context, Intent intent) {
-    WritableMap params;
-    Bundle extras = intent.getExtras();
-    if (extras != null) {
-      try {
-        params = Arguments.fromBundle(extras);
-      } catch (Exception e) {
-        params = Arguments.createMap();
-      }
-    } else {
-      params = Arguments.createMap();
-    }
-
     ReactContext reactContext = ((RetenoReactNativeApplication) context.getApplicationContext())
       .getReactContext();
 
     if (reactContext != null) {
       reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-        .emit("reteno-push-received", params);
+        .emit("reteno-push-received", parseIntent(intent));
     }
   }
 
   public static void onRetenoPushClicked(Context context, Intent intent) {
-    WritableMap params;
-    Bundle extras = intent.getExtras();
-    if (extras != null) {
-      try {
-        params = Arguments.fromBundle(extras);
-      } catch (Exception e) {
-        params = Arguments.createMap();
-      }
-    } else {
-      params = Arguments.createMap();
+    ReactContext reactContext = ((RetenoReactNativeApplication) context.getApplicationContext())
+      .getReactContext();
+
+    if (reactContext != null) {
+      reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+        .emit("reteno-push-clicked", parseIntent(intent));
     }
   }
 
-  private WritableMap parseIntent(Intent intent){
+  private static WritableMap parseIntent(Intent intent){
     WritableMap params;
     Bundle extras = intent.getExtras();
     if (extras != null) {
@@ -291,7 +275,7 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
       promise.reject("Reteno Android SDK removeInAppLifecycleCallback Error", e);
       }
   }
-  
+
   private List<String> convertReadableArrayToStringList(ReadableArray array) {
     List<String> list = new ArrayList<>();
     for (int i = 0; i < array.size(); i++) {
