@@ -161,6 +161,10 @@ export function setOnRetenoPushReceivedListener(
   return eventEmitter.addListener('reteno-push-received', listener);
 }
 
+export function setOnRetenoPushClickedListener(listener: (event: any) => void) {
+  return eventEmitter.addListener('reteno-push-clicked', listener);
+}
+
 export function setInAppLifecycleCallback() {
   RetenoSdk.setInAppLifecycleCallback();
 }

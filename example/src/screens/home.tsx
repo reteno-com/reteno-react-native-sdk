@@ -25,6 +25,7 @@ import {
   addInAppMessageCustomDataHandler,
   getRecommendations,
   logRecommendationEvent,
+  setOnRetenoPushClickedListener,
 } from 'reteno-react-native-sdk';
 
 type Props = NativeStackScreenProps<RootStackParamList, ScreenNames.home>;
@@ -67,6 +68,10 @@ export default function Main({ navigation }: Props) {
 
   const onRetenoPushReceived = useCallback((event) => {
     Alert.alert('onRetenoPushReceived', event ? JSON.stringify(event) : event);
+  }, []);
+
+  const onRetenoPushClicked = useCallback((event) => {
+    Alert.alert('onRetenoPushClicked', event ? JSON.stringify(event) : event);
   }, []);
 
   const handleGetRecommendations = () => {
@@ -126,8 +131,14 @@ export default function Main({ navigation }: Props) {
       Alert.alert('getInitialNotification', data ? JSON.stringify(data) : data);
     });
     const pushListener = setOnRetenoPushReceivedListener(onRetenoPushReceived);
-    return () => pushListener.remove();
-  }, [onRetenoPushReceived]);
+    const pushClickListener =
+      setOnRetenoPushClickedListener(onRetenoPushClicked);
+
+    return () => {
+      pushListener.remove();
+      pushClickListener.remove();
+    };
+  }, [onRetenoPushReceived, onRetenoPushClicked]);
 
   useEffect(() => {
     setInAppLifecycleCallback();

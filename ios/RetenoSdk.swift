@@ -11,6 +11,10 @@ open class RetenoSdk: RCTEventEmitter {
         Reteno.userNotificationService.didReceiveNotificationUserInfo = {userInfo in
             EventEmitter.sharedInstance.dispatch(name: "reteno-push-received", body: userInfo)
         }
+        
+        Reteno.userNotificationService.didReceiveNotificationResponseHandler = {response in
+              EventEmitter.sharedInstance.dispatch(name: "reteno-push-clicked", body: response.notification.request.content.userInfo)
+        }
     }
     
     /// Base overide for RCTEventEmitter.
