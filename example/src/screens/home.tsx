@@ -26,6 +26,10 @@ import {
   getRecommendations,
   logRecommendationEvent,
   setOnRetenoPushClickedListener,
+  downloadMessages,
+  getUnreadMessagesCount,
+  markAsOpened,
+  markAllAsOpened,
 } from 'reteno-react-native-sdk';
 
 type Props = NativeStackScreenProps<RootStackParamList, ScreenNames.home>;
@@ -53,6 +57,54 @@ export default function Main({ navigation }: Props) {
     pauseInAppMessages(isPaused)
       .then(() => {
         Alert.alert('Success', 'Pause state changed');
+      })
+      .catch((error) => {
+        Alert.alert('Error', error);
+      });
+  };
+
+  const handleDownloadMessages = () => {
+    downloadMessages({})
+      .then((response) => {
+        Alert.alert(
+          'Success download messages',
+          response ? JSON.stringify(response) : response
+        );
+      })
+      .catch((error) => {
+        Alert.alert('Error', error);
+      });
+  };
+
+  const handleGetUnreadMessagesCount = () => {
+    console.log('HERE');
+    getUnreadMessagesCount()
+      .then((response) => {
+        console.log('response', response);
+        Alert.alert(
+          'Success get unread messages count',
+          JSON.stringify(response)
+        );
+      })
+      .catch((error) => {
+        Alert.alert('Error', error);
+      });
+  };
+
+  const handleMarkAsOpened = () => {
+    markAsOpened([])
+      .then(() => {
+        Alert.alert('Success mark as opened');
+      })
+      .catch((error) => {
+        Alert.alert('Error', error);
+      });
+  };
+
+  const handleMarkAllAsOpened = () => {
+    markAllAsOpened()
+      .then(() => {
+        Alert.alert('Success mark all as opened');
       })
       .catch((error) => {
         Alert.alert('Error', error);
@@ -240,6 +292,29 @@ export default function Main({ navigation }: Props) {
           onPress={handleLogRecommendationEvent}
         >
           <Text style={styles.submitBtnText}>Log Recommendations</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.submitBtn}
+          onPress={handleDownloadMessages}
+        >
+          <Text style={styles.submitBtnText}>Download messages (Inbox)</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.submitBtn}
+          onPress={handleGetUnreadMessagesCount}
+        >
+          <Text style={styles.submitBtnText}>
+            Get unread messages count (Inbox)
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.submitBtn} onPress={handleMarkAsOpened}>
+          <Text style={styles.submitBtnText}>Mark as opened (Inbox)</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.submitBtn}
+          onPress={handleMarkAllAsOpened}
+        >
+          <Text style={styles.submitBtnText}>Mark all as opened (Inbox)</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>

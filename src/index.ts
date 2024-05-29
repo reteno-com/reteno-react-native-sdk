@@ -62,6 +62,11 @@ export type CustomEventParameter = {
   value?: string;
 };
 
+export type DownloadMessages = {
+  page?: number;
+  pageSize?: number;
+};
+
 export type InAppDisplayData = {
   id?: string;
   source?: 'DISPLAY_RULES' | 'PUSH_NOTIFICATION';
@@ -314,4 +319,22 @@ export function updatePushPermissionStatusAndroid(): Promise<void> {
     return RetenoSdk.updatePushPermissionStatusAndroid();
   }
   return Promise.resolve(undefined);
+}
+
+export function downloadMessages(
+  payload: DownloadMessages
+): Promise<{ messages: any[]; totalPages: number }> {
+  return RetenoSdk.downloadMessages(payload);
+}
+
+export function getUnreadMessagesCount(): Promise<number> {
+  return RetenoSdk.getUnreadMessagesCount();
+}
+
+export function markAsOpened(messageIds: string[]): Promise<void> {
+  return RetenoSdk.markAsOpened(messageIds);
+}
+
+export function markAllAsOpened(): Promise<void> {
+  return RetenoSdk.markAllAsOpened();
 }
