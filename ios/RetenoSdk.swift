@@ -234,10 +234,10 @@ open class RetenoSdk: RCTEventEmitter {
         }
     }
     
-    @objc(getUnreadMessagesCount:withRejecter:)
-        func getUnreadMessagesCount(resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+    @objc(onUnreadMessagesCountChanged)
+        func onUnreadMessagesCountChanged() {
             Reteno.inbox().onUnreadMessagesCountChanged = { count in
-                resolve(count)
+                self.sendEvent(withName: "reteno-unread-messages-count", body: ["count": count])
             }
         }
     

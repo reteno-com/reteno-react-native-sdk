@@ -111,6 +111,22 @@ export type RecommendationEventPayload = {
   forcePush?: boolean;
 };
 
+export type InboxMessage = {
+  id: string;
+  title: string;
+  createdDate: string;
+  imageURL?: string;
+  linkURL?: string;
+  isNew: boolean;
+  content?: string;
+  // Only on Android
+  category?: string;
+};
+
+export type UnreadMessagesCountData = {
+  count: number;
+};
+
 const RetenoSdk = NativeModules.RetenoSdk
   ? NativeModules.RetenoSdk
   : new Proxy(
@@ -323,12 +339,22 @@ export function updatePushPermissionStatusAndroid(): Promise<void> {
 
 export function downloadMessages(
   payload: DownloadMessages
-): Promise<{ messages: any[]; totalPages: number }> {
+): Promise<{ messages: InboxMessage[]; totalPages: number }> {
   return RetenoSdk.downloadMessages(payload);
 }
 
-export function getUnreadMessagesCount(): Promise<number> {
-  return RetenoSdk.getUnreadMessagesCount();
+export function onUnreadMessagesCountChanged() {
+  RetenoSdk.onUnreadMessagesCountChanged();
+}
+
+export function unreadMessagesCountHandler(
+  callback: (data: UnreadMessagesCountData) => void
+) {
+  return eventEmitter.addListener('reteno-unread-messages-count', (data) => {
+    if (callback && typeof callback === 'function') {
+      callback(data);
+    }
+  });
 }
 
 export function markAsOpened(messageIds: string[]): Promise<void> {

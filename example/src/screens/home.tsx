@@ -27,9 +27,10 @@ import {
   logRecommendationEvent,
   setOnRetenoPushClickedListener,
   downloadMessages,
-  getUnreadMessagesCount,
+  onUnreadMessagesCountChanged,
   markAsOpened,
   markAllAsOpened,
+  unreadMessagesCountHandler,
 } from 'reteno-react-native-sdk';
 
 type Props = NativeStackScreenProps<RootStackParamList, ScreenNames.home>;
@@ -69,21 +70,6 @@ export default function Main({ navigation }: Props) {
         Alert.alert(
           'Success download messages',
           response ? JSON.stringify(response) : response
-        );
-      })
-      .catch((error) => {
-        Alert.alert('Error', error);
-      });
-  };
-
-  const handleGetUnreadMessagesCount = () => {
-    console.log('HERE');
-    getUnreadMessagesCount()
-      .then((response) => {
-        console.log('response', response);
-        Alert.alert(
-          'Success get unread messages count',
-          JSON.stringify(response)
         );
       })
       .catch((error) => {
@@ -193,6 +179,19 @@ export default function Main({ navigation }: Props) {
   }, [onRetenoPushReceived, onRetenoPushClicked]);
 
   useEffect(() => {
+    const unreadMessagesCountListener = unreadMessagesCountHandler((data) =>
+      Alert.alert(
+        'unreadMessagesCountHandler',
+        data ? JSON.stringify(data) : data
+      )
+    );
+
+    return () => {
+      unreadMessagesCountListener.remove();
+    };
+  }, [onRetenoPushReceived, onRetenoPushClicked]);
+
+  useEffect(() => {
     setInAppLifecycleCallback();
 
     const beforeInAppDisplayListener = beforeInAppDisplayHandler((data) =>
@@ -295,17 +294,17 @@ export default function Main({ navigation }: Props) {
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.submitBtn}
-          onPress={handleDownloadMessages}
+          onPress={onUnreadMessagesCountChanged}
         >
-          <Text style={styles.submitBtnText}>Download messages (Inbox)</Text>
+          <Text style={styles.submitBtnText}>
+            Subscribe on unread messages count event (Inbox)
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.submitBtn}
-          onPress={handleGetUnreadMessagesCount}
+          onPress={handleDownloadMessages}
         >
-          <Text style={styles.submitBtnText}>
-            Get unread messages count (Inbox)
-          </Text>
+          <Text style={styles.submitBtnText}>Download messages (Inbox)</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.submitBtn} onPress={handleMarkAsOpened}>
           <Text style={styles.submitBtnText}>Mark as opened (Inbox)</Text>
