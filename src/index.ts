@@ -62,7 +62,7 @@ export type CustomEventParameter = {
   value?: string;
 };
 
-export type DownloadMessages = {
+export type GetAppInboxMessages = {
   page?: number;
   pageSize?: number;
 };
@@ -125,6 +125,12 @@ export type InboxMessage = {
 
 export type UnreadMessagesCountData = {
   count: number;
+};
+
+export type UnreadMessagesCountErrorData = {
+  statusCode?: number | null;
+  response?: string | null;
+  error?: string | null;
 };
 
 const RetenoSdk = NativeModules.RetenoSdk
@@ -337,14 +343,32 @@ export function updatePushPermissionStatusAndroid(): Promise<void> {
   return Promise.resolve(undefined);
 }
 
-export function downloadMessages(
-  payload: DownloadMessages
+export function getAppInboxMessages(
+  payload: GetAppInboxMessages
 ): Promise<{ messages: InboxMessage[]; totalPages: number }> {
-  return RetenoSdk.downloadMessages(payload);
+  return RetenoSdk.getAppInboxMessages(payload);
 }
 
 export function onUnreadMessagesCountChanged() {
   RetenoSdk.onUnreadMessagesCountChanged();
+}
+
+/**
+ * Android Only
+ */
+export function unsubscribeMessagesCountChanged() {
+  if (Platform.OS === 'android') {
+    RetenoSdk.unsubscribeMessagesCountChanged();
+  }
+}
+
+/**
+ * Android Only
+ */
+export function unsubscribeAllMessagesCountChanged() {
+  if (Platform.OS === 'android') {
+    RetenoSdk.unsubscribeAllMessagesCountChanged();
+  }
 }
 
 export function unreadMessagesCountHandler(
@@ -357,10 +381,47 @@ export function unreadMessagesCountHandler(
   });
 }
 
+/**
+ * Android Only
+ */
+export function unreadMessagesCountErrorHandler(
+  callback: (data: UnreadMessagesCountErrorData) => void
+) {
+  if (Platform.OS === 'android') {
+    return eventEmitter.addListener(
+      'reteno-unread-messages-count-error',
+      (data) => {
+        if (callback && typeof callback === 'function') {
+          callback(data);
+        }
+      }
+    );
+  }
+
+  return undefined;
+}
+
 export function markAsOpened(messageIds: string[]): Promise<void> {
-  return RetenoSdk.markAsOpened(messageIds);
+  if (Platform.OS === 'android') {
+    return Promise.all(
+      messageIds.map((messageId) => RetenoSdk.markAsOpened(messageId))
+    ).then(() => undefined);
+  } else {
+    return RetenoSdk.markAsOpened(messageIds);
+  }
 }
 
 export function markAllAsOpened(): Promise<void> {
   return RetenoSdk.markAllAsOpened();
+}
+
+/**
+ * Android Only
+ */
+export function getAppInboxMessagesCount(): Promise<number | undefined> {
+  if (Platform.OS === 'android') {
+    return RetenoSdk.getAppInboxMessagesCount();
+  }
+
+  return Promise.resolve(undefined);
 }

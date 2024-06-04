@@ -26,11 +26,15 @@ import {
   getRecommendations,
   logRecommendationEvent,
   setOnRetenoPushClickedListener,
-  downloadMessages,
+  getAppInboxMessages,
   onUnreadMessagesCountChanged,
   markAsOpened,
   markAllAsOpened,
   unreadMessagesCountHandler,
+  getAppInboxMessagesCount,
+  unreadMessagesCountErrorHandler,
+  unsubscribeMessagesCountChanged,
+  unsubscribeAllMessagesCountChanged,
 } from 'reteno-react-native-sdk';
 
 type Props = NativeStackScreenProps<RootStackParamList, ScreenNames.home>;
@@ -64,8 +68,21 @@ export default function Main({ navigation }: Props) {
       });
   };
 
+  const handleGetAppInboxMessagesCount = () => {
+    getAppInboxMessagesCount()
+      .then((response) => {
+        Alert.alert(
+          'Success',
+          response !== null ? JSON.stringify(response) : response
+        );
+      })
+      .catch((error) => {
+        Alert.alert('Error', error);
+      });
+  };
+
   const handleDownloadMessages = () => {
-    downloadMessages({})
+    getAppInboxMessages({})
       .then((response) => {
         Alert.alert(
           'Success download messages',
@@ -192,6 +209,22 @@ export default function Main({ navigation }: Props) {
   }, [onRetenoPushReceived, onRetenoPushClicked]);
 
   useEffect(() => {
+    const unreadMessagesCountErrorListener = unreadMessagesCountErrorHandler(
+      (error) =>
+        Alert.alert(
+          'unreadMessagesCountErrorHandler',
+          error ? JSON.stringify(error) : error
+        )
+    );
+
+    return () => {
+      if (unreadMessagesCountErrorListener) {
+        unreadMessagesCountErrorListener.remove();
+      }
+    };
+  }, [onRetenoPushReceived, onRetenoPushClicked]);
+
+  useEffect(() => {
     setInAppLifecycleCallback();
 
     const beforeInAppDisplayListener = beforeInAppDisplayHandler((data) =>
@@ -298,6 +331,30 @@ export default function Main({ navigation }: Props) {
         >
           <Text style={styles.submitBtnText}>
             Subscribe on unread messages count event (Inbox)
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.submitBtn}
+          onPress={unsubscribeMessagesCountChanged}
+        >
+          <Text style={styles.submitBtnText}>
+            Unsubscribe from unread messages count event (Inbox) (Android)
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.submitBtn}
+          onPress={unsubscribeAllMessagesCountChanged}
+        >
+          <Text style={styles.submitBtnText}>
+            Unsubscribe from all unread messages count event (Inbox) (Android)
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.submitBtn}
+          onPress={handleGetAppInboxMessagesCount}
+        >
+          <Text style={styles.submitBtnText}>
+            Get App Inbox Messages Count (Android)
           </Text>
         </TouchableOpacity>
         <TouchableOpacity

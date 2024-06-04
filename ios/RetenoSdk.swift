@@ -207,8 +207,8 @@ open class RetenoSdk: RCTEventEmitter {
         resolve(res)
     }
     
-    @objc(downloadMessages:withResolver:withRejecter:)
-    func downloadMessages(payload: NSDictionary, resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+    @objc(getAppInboxMessages:withResolver:withRejecter:)
+    func getAppInboxMessages(payload: NSDictionary, resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         let page = payload["page"] as? Int
         let pageSize = payload["pageSize"] as? Int
         

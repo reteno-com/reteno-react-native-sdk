@@ -38,7 +38,7 @@ RCT_EXTERN_METHOD(logRecommendationEvent:(NSDictionary*)payload
                  withResolver:(RCTPromiseResolveBlock)resolve
                  withRejecter:(RCTPromiseRejectBlock)reject)
 
-RCT_EXTERN_METHOD(downloadMessages:(NSDictionary*)payload
+RCT_EXTERN_METHOD(getAppInboxMessages:(NSDictionary*)payload
                  withResolver:(RCTPromiseResolveBlock)resolve
                  withRejecter:(RCTPromiseRejectBlock)reject)
 
