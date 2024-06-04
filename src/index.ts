@@ -401,18 +401,37 @@ export function unreadMessagesCountErrorHandler(
   return undefined;
 }
 
-export function markAsOpened(messageIds: string[]): Promise<void> {
+export function markAsOpened(
+  messageIds: string[]
+): Promise<{ ids: string[]; status: string } | UnreadMessagesCountErrorData> {
+  const response = {
+    ids: messageIds,
+    status: messageIds?.length ? 'OPENED' : '',
+  };
   if (Platform.OS === 'android') {
     return Promise.all(
-      messageIds.map((messageId) => RetenoSdk.markAsOpened(messageId))
-    ).then(() => undefined);
+      messageIds.map((messageId) =>
+        RetenoSdk.markAsOpened(messageId).then(
+          () => response,
+          (error: any) => Promise.reject(error)
+        )
+      )
+    ) as any;
   } else {
-    return RetenoSdk.markAsOpened(messageIds);
+    return RetenoSdk.markAsOpened(messageIds).then(
+      () => response,
+      (error: any) => Promise.reject(error)
+    );
   }
 }
 
-export function markAllAsOpened(): Promise<void> {
-  return RetenoSdk.markAllAsOpened();
+export function markAllAsOpened(): Promise<
+  { status: string } | UnreadMessagesCountErrorData
+> {
+  return RetenoSdk.markAllAsOpened().then(
+    () => ({ status: 'OPENED' }),
+    (error: any) => Promise.reject(error)
+  );
 }
 
 /**

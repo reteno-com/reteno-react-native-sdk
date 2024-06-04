@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useEffect } from 'react';
+import React, { useCallback, useMemo, useEffect, useState } from 'react';
 
 import {
   StyleSheet,
@@ -40,6 +40,8 @@ import {
 type Props = NativeStackScreenProps<RootStackParamList, ScreenNames.home>;
 
 export default function Main({ navigation }: Props) {
+  const [messagesId, setMessagesId] = useState<string[]>([]);
+
   const form = useMemo(
     () => [
       {
@@ -95,9 +97,12 @@ export default function Main({ navigation }: Props) {
   };
 
   const handleMarkAsOpened = () => {
-    markAsOpened([])
-      .then(() => {
-        Alert.alert('Success mark as opened');
+    markAsOpened(messagesId)
+      .then((response) => {
+        Alert.alert(
+          'Success mark as opened',
+          response ? JSON.stringify(response) : response
+        );
       })
       .catch((error) => {
         Alert.alert('Error', error);
@@ -106,8 +111,11 @@ export default function Main({ navigation }: Props) {
 
   const handleMarkAllAsOpened = () => {
     markAllAsOpened()
-      .then(() => {
-        Alert.alert('Success mark all as opened');
+      .then((response) => {
+        Alert.alert(
+          'Success mark all as opened',
+          response ? JSON.stringify(response) : response
+        );
       })
       .catch((error) => {
         Alert.alert('Error', error);
@@ -196,12 +204,19 @@ export default function Main({ navigation }: Props) {
   }, [onRetenoPushReceived, onRetenoPushClicked]);
 
   useEffect(() => {
-    const unreadMessagesCountListener = unreadMessagesCountHandler((data) =>
+    const unreadMessagesCountListener = unreadMessagesCountHandler((data) => {
       Alert.alert(
         'unreadMessagesCountHandler',
         data ? JSON.stringify(data) : data
-      )
-    );
+      );
+
+      getAppInboxMessages({}).then((response) => {
+        const newMessagesIds: string[] = response?.messages
+          ?.filter((el) => el?.isNew)
+          ?.map((el) => el?.id);
+        setMessagesId(newMessagesIds);
+      });
+    });
 
     return () => {
       unreadMessagesCountListener.remove();

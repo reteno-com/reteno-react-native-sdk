@@ -417,10 +417,10 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
               messageMap.putString("id", message.getId());
               messageMap.putString("title", message.getTitle());
               messageMap.putString("createdDate", message.getCreatedDate());
-              messageMap.putBoolean("isNewMessage", message.isNewMessage());
+              messageMap.putBoolean("isNew", message.isNewMessage());
               messageMap.putString("content", message.getContent());
-              messageMap.putString("imageUrl", message.getImageUrl());
-              messageMap.putString("linkUrl", message.getLinkUrl());
+              messageMap.putString("imageURL", message.getImageUrl());
+              messageMap.putString("linkURL", message.getLinkUrl());
               messageMap.putString("category", message.getCategory());
               messagesArray.pushMap(messageMap);
             }
