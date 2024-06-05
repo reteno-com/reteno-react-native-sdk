@@ -40,7 +40,7 @@ import {
 type Props = NativeStackScreenProps<RootStackParamList, ScreenNames.home>;
 
 export default function Main({ navigation }: Props) {
-  const [messagesId, setMessagesId] = useState<string[]>([]);
+  const [messagesId, setMessagesId] = useState<string>('');
 
   const form = useMemo(
     () => [
@@ -97,7 +97,7 @@ export default function Main({ navigation }: Props) {
   };
 
   const handleMarkAsOpened = () => {
-    markAsOpened(messagesId)
+    markAsOpened([messagesId])
       .then((response) => {
         Alert.alert(
           'Success mark as opened',
@@ -213,8 +213,13 @@ export default function Main({ navigation }: Props) {
       getAppInboxMessages({}).then((response) => {
         const newMessagesIds: string[] = response?.messages
           ?.filter((el) => el?.isNew)
+          ?.sort(
+            (a, b) =>
+              new Date(b.createdDate).getTime() -
+              new Date(a.createdDate).getTime()
+          )
           ?.map((el) => el?.id);
-        setMessagesId(newMessagesIds);
+        setMessagesId(newMessagesIds?.[0] ?? '');
       });
     });
 

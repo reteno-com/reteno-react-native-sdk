@@ -408,21 +408,18 @@ export function markAsOpened(
     ids: messageIds,
     status: messageIds?.length ? 'OPENED' : '',
   };
+
   if (Platform.OS === 'android') {
-    return Promise.all(
-      messageIds.map((messageId) =>
-        RetenoSdk.markAsOpened(messageId).then(
-          () => response,
-          (error: any) => Promise.reject(error)
-        )
-      )
-    ) as any;
-  } else {
-    return RetenoSdk.markAsOpened(messageIds).then(
+    return RetenoSdk.markAsOpened(messageIds?.[0]).then(
       () => response,
       (error: any) => Promise.reject(error)
     );
   }
+
+  return RetenoSdk.markAsOpened(messageIds).then(
+    () => response,
+    (error: any) => Promise.reject(error)
+  );
 }
 
 export function markAllAsOpened(): Promise<
