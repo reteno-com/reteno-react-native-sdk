@@ -1,6 +1,7 @@
 package com.retenosdk;
 
 import android.app.Activity;
+import androidx.annotation.Nullable;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -21,6 +22,9 @@ import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.reteno.core.RetenoApplication;
 import com.reteno.core.data.remote.model.recommendation.get.Recoms;
+import com.reteno.core.domain.callback.appinbox.RetenoResultCallback;
+import com.reteno.core.domain.model.appinbox.AppInboxMessages;
+import com.reteno.core.domain.model.appinbox.AppInboxMessage;
 import com.reteno.core.domain.model.user.User;
 import com.reteno.core.domain.model.user.UserAttributesAnonymous;
 import com.reteno.core.domain.model.recommendation.get.RecomRequest;
@@ -33,10 +37,11 @@ import com.reteno.core.view.iam.callback.InAppErrorData;
 import com.reteno.core.view.iam.callback.InAppLifecycleCallback;
 import com.reteno.core.features.recommendation.GetRecommendationResponseCallback;
 
-
 import java.util.ArrayList;
 import java.util.List;
 import java.time.ZonedDateTime;
+
+import kotlin.Unit;
 
 public class RetenoSdkModule extends ReactContextBaseJavaModule {
   public static final String NAME = "RetenoSdk";
@@ -383,6 +388,162 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
       promise.reject("InvalidEventType", "Invalid recommendation event type");
     } catch (Exception e) {
       promise.reject("Reteno Android SDK logRecommendationEvent Error", e);
+    }
+  }
+
+  @ReactMethod
+  public void getAppInboxMessages(ReadableMap payload, Promise promise) {
+    Integer page = null;
+    Integer pageSize = null;
+
+    if (payload.hasKey("page") && !payload.isNull("page")) {
+      page = payload.getInt("page");
+    }
+
+    if (payload.hasKey("pageSize") && !payload.isNull("pageSize")) {
+      pageSize = payload.getInt("pageSize");
+    }
+
+    try {
+      ((RetenoApplication) this.context.getCurrentActivity().getApplication())
+        .getRetenoInstance()
+        .getAppInbox()
+        .getAppInboxMessages(page, pageSize, new RetenoResultCallback<AppInboxMessages>() {
+          @Override
+          public void onSuccess(AppInboxMessages result) {
+            WritableArray messagesArray = Arguments.createArray();
+            for (AppInboxMessage message : result.getMessages()) {
+              WritableMap messageMap = Arguments.createMap();
+              messageMap.putString("id", message.getId());
+              messageMap.putString("title", message.getTitle());
+              messageMap.putString("createdDate", message.getCreatedDate());
+              messageMap.putBoolean("isNew", message.isNewMessage());
+              messageMap.putString("content", message.getContent());
+              messageMap.putString("imageURL", message.getImageUrl());
+              messageMap.putString("linkURL", message.getLinkUrl());
+              messageMap.putString("category", message.getCategory());
+              messagesArray.pushMap(messageMap);
+            }
+            WritableMap resultData = Arguments.createMap();
+            resultData.putArray("messages", messagesArray);
+            resultData.putInt("totalPages", result.getTotalPages());
+            promise.resolve(resultData);
+          }
+
+          @Override
+          public void onFailure(@Nullable Integer statusCode, @Nullable String response, @Nullable Throwable throwable) {
+            promise.reject("Reteno Android SDK getAppInboxMessages Error", response, throwable);
+          }
+        });
+    } catch (Exception e) {
+      promise.reject("Reteno Android SDK getAppInboxMessages Error", e);
+    }
+  }
+
+  @ReactMethod
+  public void getAppInboxMessagesCount(Promise promise) {
+    try {
+      ((RetenoApplication) this.context.getCurrentActivity().getApplication())
+        .getRetenoInstance()
+        .getAppInbox()
+        .getAppInboxMessagesCount(new RetenoResultCallback<Integer>() {
+          @Override
+          public void onSuccess(Integer count) {
+            promise.resolve(count);
+          }
+
+          @Override
+          public void onFailure(@Nullable Integer statusCode, @Nullable String response, @Nullable Throwable throwable) {
+            promise.reject("Reteno Android SDK getAppInboxMessagesCount Error", response, throwable);
+          }
+        });
+    } catch (Exception e) {
+      promise.reject("Reteno Android SDK getAppInboxMessagesCount Error", e);
+    }
+  }
+
+  @ReactMethod
+  public void markAsOpened(String messageId, Promise promise) {
+    try {
+      ((RetenoApplication) this.context.getCurrentActivity().getApplication())
+        .getRetenoInstance()
+        .getAppInbox()
+        .markAsOpened(messageId);
+      promise.resolve(true);
+    } catch (Exception e) {
+      promise.reject("Reteno Android SDK markAsOpened Error", e);
+    }
+  }
+
+  @ReactMethod
+  public void markAllAsOpened(Promise promise) {
+    try {
+      ((RetenoApplication) this.context.getCurrentActivity().getApplication())
+        .getRetenoInstance()
+        .getAppInbox()
+        .markAllMessagesAsOpened(new RetenoResultCallback<Unit>() {
+          @Override
+          public void onSuccess(Unit result) {
+            promise.resolve(true);
+          }
+
+          @Override
+          public void onFailure(@Nullable Integer statusCode, @Nullable String response, @Nullable Throwable throwable) {
+            promise.reject("Reteno Android SDK markAllAsOpened Error", response, throwable);
+          }
+        });
+    } catch (Exception e) {
+      promise.reject("Reteno Android SDK markAllAsOpened Error", e);
+    }
+  }
+
+  @ReactMethod
+  public void unsubscribeAllMessagesCountChanged(Promise promise) {
+    ((RetenoApplication) this.context.getCurrentActivity().getApplication())
+      .getRetenoInstance().getAppInbox().unsubscribeAllMessagesCountChanged();
+    promise.resolve(null);
+  }
+
+  private RetenoResultCallback<Integer> messagesCountChangedCallback;
+
+  @ReactMethod
+  public void onUnreadMessagesCountChanged(Promise promise) {
+    messagesCountChangedCallback = new RetenoResultCallback<Integer>() {
+      @Override
+      public void onSuccess(Integer count) {
+        WritableMap eventData = Arguments.createMap();
+        eventData.putInt("count", count);
+        sendEventToJS("reteno-unread-messages-count", eventData);
+      }
+
+      @Override
+      public void onFailure(@Nullable Integer statusCode, @Nullable String response, @Nullable Throwable throwable) {
+        WritableMap eventData = Arguments.createMap();
+        eventData.putInt("statusCode", statusCode != null ? statusCode : -1);
+        eventData.putString("response", response);
+        eventData.putString("error", throwable != null ? throwable.getMessage() : null);
+        sendEventToJS("reteno-unread-messages-count-error", eventData);
+      }
+    };
+
+    try {
+      ((RetenoApplication) this.context.getCurrentActivity().getApplication())
+        .getRetenoInstance().getAppInbox().subscribeOnMessagesCountChanged(messagesCountChangedCallback);
+      promise.resolve(null);
+    } catch (Exception e) {
+      promise.reject("SubscriptionError", e);
+    }
+  }
+
+  @ReactMethod
+  public void unsubscribeMessagesCountChanged(Promise promise) {
+    if (messagesCountChangedCallback != null) {
+      ((RetenoApplication) this.context.getCurrentActivity().getApplication())
+        .getRetenoInstance().getAppInbox().unsubscribeMessagesCountChanged(messagesCountChangedCallback);
+      messagesCountChangedCallback = null;
+      promise.resolve(null);
+    } else {
+      promise.reject("CallbackError", "No callback to unsubscribe");
     }
   }
 }

@@ -206,4 +206,62 @@ open class RetenoSdk: RCTEventEmitter {
         let res: [String: Bool] = ["success": true]
         resolve(res)
     }
+    
+    @objc(getAppInboxMessages:withResolver:withRejecter:)
+    func getAppInboxMessages(payload: NSDictionary, resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+        let page = payload["page"] as? Int
+        let pageSize = payload["pageSize"] as? Int
+        
+        Reteno.inbox().downloadMessages(page: page, pageSize: pageSize) { result in
+            switch result {
+            case .success(let response):
+                let messages = response.messages.map { message in
+                    return [
+                        "id": message.id,
+                        "createdDate": message.createdDate?.timeIntervalSince1970 as Any,
+                        "title": message.title as Any,
+                        "content": message.content as Any,
+                        "imageURL": message.imageURL?.absoluteString as Any,
+                        "linkURL": message.linkURL?.absoluteString as Any,
+                        "isNew": message.isNew
+                    ]
+                }
+                resolve(["messages": messages, "totalPages": response.totalPages as Any])
+                
+            case .failure(let error):
+                reject("100", "Reteno iOS SDK downloadMessages Error", error)
+            }
+        }
+    }
+    
+    @objc(onUnreadMessagesCountChanged)
+        func onUnreadMessagesCountChanged() {
+            Reteno.inbox().onUnreadMessagesCountChanged = { count in
+                self.sendEvent(withName: "reteno-unread-messages-count", body: ["count": count])
+            }
+        }
+    
+    @objc(markAsOpened:withResolver:withRejecter:)
+        func markAsOpened(messageIds: [String], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+            Reteno.inbox().markAsOpened(messageIds: messageIds) { result in
+                switch result {
+                case .success:
+                    resolve(true)
+                case .failure(let error):
+                    reject("100", "Reteno iOS SDK markAsOpened Error", error)
+                }
+            }
+        }
+    
+    @objc(markAllAsOpened:withRejecter:)
+        func markAllAsOpened(resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+            Reteno.inbox().markAllAsOpened { result in
+                switch result {
+                case .success:
+                    resolve(true)
+                case .failure(let error):
+                    reject("100", "Reteno iOS SDK markAllAsOpened Error", error)
+                }
+            }
+        }
 }

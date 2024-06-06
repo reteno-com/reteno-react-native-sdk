@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useEffect } from 'react';
+import React, { useCallback, useMemo, useEffect, useState } from 'react';
 
 import {
   StyleSheet,
@@ -26,11 +26,22 @@ import {
   getRecommendations,
   logRecommendationEvent,
   setOnRetenoPushClickedListener,
+  getAppInboxMessages,
+  onUnreadMessagesCountChanged,
+  markAsOpened,
+  markAllAsOpened,
+  unreadMessagesCountHandler,
+  getAppInboxMessagesCount,
+  unreadMessagesCountErrorHandler,
+  unsubscribeMessagesCountChanged,
+  unsubscribeAllMessagesCountChanged,
 } from 'reteno-react-native-sdk';
 
 type Props = NativeStackScreenProps<RootStackParamList, ScreenNames.home>;
 
 export default function Main({ navigation }: Props) {
+  const [messagesId, setMessagesId] = useState<string>('');
+
   const form = useMemo(
     () => [
       {
@@ -53,6 +64,58 @@ export default function Main({ navigation }: Props) {
     pauseInAppMessages(isPaused)
       .then(() => {
         Alert.alert('Success', 'Pause state changed');
+      })
+      .catch((error) => {
+        Alert.alert('Error', error);
+      });
+  };
+
+  const handleGetAppInboxMessagesCount = () => {
+    getAppInboxMessagesCount()
+      .then((response) => {
+        Alert.alert(
+          'Success',
+          response !== null ? JSON.stringify(response) : response
+        );
+      })
+      .catch((error) => {
+        Alert.alert('Error', error);
+      });
+  };
+
+  const handleDownloadMessages = () => {
+    getAppInboxMessages({})
+      .then((response) => {
+        Alert.alert(
+          'Success download messages',
+          response ? JSON.stringify(response) : response
+        );
+      })
+      .catch((error) => {
+        Alert.alert('Error', error);
+      });
+  };
+
+  const handleMarkAsOpened = () => {
+    markAsOpened([messagesId])
+      .then((response) => {
+        Alert.alert(
+          'Success mark as opened',
+          response ? JSON.stringify(response) : response
+        );
+      })
+      .catch((error) => {
+        Alert.alert('Error', error);
+      });
+  };
+
+  const handleMarkAllAsOpened = () => {
+    markAllAsOpened()
+      .then((response) => {
+        Alert.alert(
+          'Success mark all as opened',
+          response ? JSON.stringify(response) : response
+        );
       })
       .catch((error) => {
         Alert.alert('Error', error);
@@ -139,6 +202,47 @@ export default function Main({ navigation }: Props) {
       pushClickListener.remove();
     };
   }, [onRetenoPushReceived, onRetenoPushClicked]);
+
+  useEffect(() => {
+    const unreadMessagesCountListener = unreadMessagesCountHandler((data) => {
+      Alert.alert(
+        'unreadMessagesCountHandler',
+        data ? JSON.stringify(data) : data
+      );
+
+      getAppInboxMessages({}).then((response) => {
+        const newMessagesIds: string[] = response?.messages
+          ?.filter((el) => el?.isNew)
+          ?.sort(
+            (a, b) =>
+              new Date(b.createdDate).getTime() -
+              new Date(a.createdDate).getTime()
+          )
+          ?.map((el) => el?.id);
+        setMessagesId(newMessagesIds?.[0] ?? '');
+      });
+    });
+
+    return () => {
+      unreadMessagesCountListener.remove();
+    };
+  }, []);
+
+  useEffect(() => {
+    const unreadMessagesCountErrorListener = unreadMessagesCountErrorHandler(
+      (error) =>
+        Alert.alert(
+          'unreadMessagesCountErrorHandler',
+          error ? JSON.stringify(error) : error
+        )
+    );
+
+    return () => {
+      if (unreadMessagesCountErrorListener) {
+        unreadMessagesCountErrorListener.remove();
+      }
+    };
+  }, []);
 
   useEffect(() => {
     setInAppLifecycleCallback();
@@ -240,6 +344,53 @@ export default function Main({ navigation }: Props) {
           onPress={handleLogRecommendationEvent}
         >
           <Text style={styles.submitBtnText}>Log Recommendations</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.submitBtn}
+          onPress={onUnreadMessagesCountChanged}
+        >
+          <Text style={styles.submitBtnText}>
+            Subscribe on unread messages count event (Inbox)
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.submitBtn}
+          onPress={unsubscribeMessagesCountChanged}
+        >
+          <Text style={styles.submitBtnText}>
+            Unsubscribe from unread messages count event (Inbox) (Android)
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.submitBtn}
+          onPress={unsubscribeAllMessagesCountChanged}
+        >
+          <Text style={styles.submitBtnText}>
+            Unsubscribe from all unread messages count event (Inbox) (Android)
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.submitBtn}
+          onPress={handleGetAppInboxMessagesCount}
+        >
+          <Text style={styles.submitBtnText}>
+            Get App Inbox Messages Count (Android)
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.submitBtn}
+          onPress={handleDownloadMessages}
+        >
+          <Text style={styles.submitBtnText}>Download messages (Inbox)</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.submitBtn} onPress={handleMarkAsOpened}>
+          <Text style={styles.submitBtnText}>Mark as opened (Inbox)</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.submitBtn}
+          onPress={handleMarkAllAsOpened}
+        >
+          <Text style={styles.submitBtnText}>Mark all as opened (Inbox)</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
