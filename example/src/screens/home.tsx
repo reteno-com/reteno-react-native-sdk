@@ -226,7 +226,7 @@ export default function Main({ navigation }: Props) {
     return () => {
       unreadMessagesCountListener.remove();
     };
-  }, [onRetenoPushReceived, onRetenoPushClicked]);
+  }, []);
 
   useEffect(() => {
     const unreadMessagesCountErrorListener = unreadMessagesCountErrorHandler(
@@ -242,7 +242,7 @@ export default function Main({ navigation }: Props) {
         unreadMessagesCountErrorListener.remove();
       }
     };
-  }, [onRetenoPushReceived, onRetenoPushClicked]);
+  }, []);
 
   useEffect(() => {
     setInAppLifecycleCallback();
