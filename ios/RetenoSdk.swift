@@ -121,7 +121,7 @@ open class RetenoSdk: RCTEventEmitter {
                 self.sendEvent(withName: "reteno-before-in-app-close", body: ["action": action])
                 Reteno.addLinkHandler { linkInfo in
                     self.sendEvent(withName: "reteno-in-app-custom-data-received", body: ["customData": linkInfo.customData])
-                    UIApplication.shared.open(linkInfo.url)
+                    UIApplication.shared.open(linkInfo.url!)
                 }
             case .inAppIsClosed(let action):
                 self.sendEvent(withName: "reteno-after-in-app-close", body: ["action": action])
