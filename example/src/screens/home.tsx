@@ -35,6 +35,7 @@ import {
   unreadMessagesCountErrorHandler,
   unsubscribeMessagesCountChanged,
   unsubscribeAllMessagesCountChanged,
+  setOnRetenoPushButtonClickedListener,
 } from 'reteno-react-native-sdk';
 
 type Props = NativeStackScreenProps<RootStackParamList, ScreenNames.home>;
@@ -137,6 +138,13 @@ export default function Main({ navigation }: Props) {
     Alert.alert('onRetenoPushClicked', event ? JSON.stringify(event) : event);
   }, []);
 
+  const onRetenoPushButtonClicked = useCallback((event) => {
+    Alert.alert(
+      'onRetenoPushButtonClicked',
+      event ? JSON.stringify(event) : event
+    );
+  }, []);
+
   const handleGetRecommendations = () => {
     const recommendationsPayload = {
       recomVariantId: 'r1107v1482',
@@ -196,12 +204,16 @@ export default function Main({ navigation }: Props) {
     const pushListener = setOnRetenoPushReceivedListener(onRetenoPushReceived);
     const pushClickListener =
       setOnRetenoPushClickedListener(onRetenoPushClicked);
+    const pushButtonClickListener = setOnRetenoPushButtonClickedListener(
+      onRetenoPushButtonClicked
+    );
 
     return () => {
       pushListener.remove();
       pushClickListener.remove();
+      if (pushButtonClickListener) pushButtonClickListener.remove();
     };
-  }, [onRetenoPushReceived, onRetenoPushClicked]);
+  }, [onRetenoPushReceived, onRetenoPushClicked, onRetenoPushButtonClicked]);
 
   useEffect(() => {
     const unreadMessagesCountListener = unreadMessagesCountHandler((data) => {
@@ -373,9 +385,7 @@ export default function Main({ navigation }: Props) {
           style={styles.submitBtn}
           onPress={handleGetAppInboxMessagesCount}
         >
-          <Text style={styles.submitBtnText}>
-            Get App Inbox Messages Count (Android)
-          </Text>
+          <Text style={styles.submitBtnText}>Get App Inbox Messages Count</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.submitBtn}

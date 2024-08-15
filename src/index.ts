@@ -133,6 +133,13 @@ export type UnreadMessagesCountErrorData = {
   error?: string | null;
 };
 
+export type PushButton = {
+  actionId: string;
+  customData: string | null;
+  actionLink: string | null;
+  userInfo: any;
+};
+
 const RetenoSdk = NativeModules.RetenoSdk
   ? NativeModules.RetenoSdk
   : new Proxy(
@@ -190,6 +197,19 @@ export function setOnRetenoPushReceivedListener(
 
 export function setOnRetenoPushClickedListener(listener: (event: any) => void) {
   return eventEmitter.addListener('reteno-push-clicked', listener);
+}
+
+/**
+ * iOS Only
+ */
+export function setOnRetenoPushButtonClickedListener(
+  listener: (event: PushButton) => void
+) {
+  if (Platform.OS === 'ios') {
+    return eventEmitter.addListener('reteno-push-button-clicked', listener);
+  }
+
+  return undefined;
 }
 
 export function setInAppLifecycleCallback() {
@@ -431,13 +451,6 @@ export function markAllAsOpened(): Promise<
   );
 }
 
-/**
- * Android Only
- */
-export function getAppInboxMessagesCount(): Promise<number | undefined> {
-  if (Platform.OS === 'android') {
-    return RetenoSdk.getAppInboxMessagesCount();
-  }
-
-  return Promise.resolve(undefined);
+export function getAppInboxMessagesCount(): Promise<number> {
+  return RetenoSdk.getAppInboxMessagesCount();
 }

@@ -15,6 +15,13 @@ open class RetenoSdk: RCTEventEmitter {
         Reteno.userNotificationService.didReceiveNotificationResponseHandler = {response in
               EventEmitter.sharedInstance.dispatch(name: "reteno-push-clicked", body: response.notification.request.content.userInfo)
         }
+        
+        Reteno.userNotificationService.notificationActionHandler = { userInfo, action in
+            let actionId = action.actionId
+            let customData = action.customData
+            let actionLink = action.link
+            EventEmitter.sharedInstance.dispatch(name: "reteno-push-button-clicked", body: ["userInfo": userInfo, "actionId": actionId, "customData": customData as Any, "actionLink": actionLink as Any])
+        }
     }
     
     /// Base overide for RCTEventEmitter.
@@ -121,7 +128,9 @@ open class RetenoSdk: RCTEventEmitter {
                 self.sendEvent(withName: "reteno-before-in-app-close", body: ["action": action])
                 Reteno.addLinkHandler { linkInfo in
                     self.sendEvent(withName: "reteno-in-app-custom-data-received", body: ["customData": linkInfo.customData])
-                    UIApplication.shared.open(linkInfo.url!)
+                    if let url = linkInfo.url {
+                                        UIApplication.shared.open(url)
+                                    }
                 }
             case .inAppIsClosed(let action):
                 self.sendEvent(withName: "reteno-after-in-app-close", body: ["action": action])
@@ -261,6 +270,18 @@ open class RetenoSdk: RCTEventEmitter {
                     resolve(true)
                 case .failure(let error):
                     reject("100", "Reteno iOS SDK markAllAsOpened Error", error)
+                }
+            }
+        }
+    
+    @objc(getAppInboxMessagesCount:withRejecter:)
+        func getAppInboxMessagesCount(resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+            Reteno.inbox().getUnreadMessagesCount { result in
+                switch result {
+                case .success(let unreadCount):
+                    resolve(unreadCount)
+                case .failure(let error):
+                    reject("100", "Reteno iOS SDK getAppInboxMessagesCount Error", error)
                 }
             }
         }
