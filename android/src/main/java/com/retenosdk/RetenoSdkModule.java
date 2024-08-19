@@ -37,9 +37,12 @@ import com.reteno.core.view.iam.callback.InAppErrorData;
 import com.reteno.core.view.iam.callback.InAppLifecycleCallback;
 import com.reteno.core.features.recommendation.GetRecommendationResponseCallback;
 
+import android.util.Log;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.time.ZonedDateTime;
+import java.util.Map;
 
 import kotlin.Unit;
 
@@ -107,20 +110,55 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
     }
   }
 
-  private static WritableMap parseIntent(Intent intent){
-    WritableMap params;
+  private static WritableMap parseIntent(Intent intent) {
+    WritableMap params = Arguments.createMap();
     Bundle extras = intent.getExtras();
+
     if (extras != null) {
       try {
-        params = Arguments.fromBundle(extras);
-      } catch (Exception e){
-        params = Arguments.createMap();
+        for (String key : extras.keySet()) {
+          Object value = extras.get(key);
+          if (value instanceof HashMap) {
+            @SuppressWarnings("unchecked")
+            WritableMap map = convertHashMap((HashMap<String, Object>) value);
+            params.putMap(key, map);
+          } else {
+            params.putString(key, value != null ? value.toString() : null);
+          }
+        }
+      } catch (Exception e) {
+        Log.e("parseIntent", "Error converting Bundle to WritableMap: " + e.getMessage(), e);
       }
-    } else {
-      params = Arguments.createMap();
     }
 
     return params;
+  }
+
+  private static WritableMap convertHashMap(HashMap<String, Object> map) {
+    WritableMap writableMap = Arguments.createMap();
+
+    for (Map.Entry<String, Object> entry : map.entrySet()) {
+      String key = entry.getKey();
+      Object value = entry.getValue();
+
+      if (value instanceof String) {
+        writableMap.putString(key, (String) value);
+      } else if (value instanceof Integer) {
+        writableMap.putInt(key, (Integer) value);
+      } else if (value instanceof Double) {
+        writableMap.putDouble(key, (Double) value);
+      } else if (value instanceof Boolean) {
+        writableMap.putBoolean(key, (Boolean) value);
+      } else if (value instanceof HashMap) {
+        @SuppressWarnings("unchecked")
+        WritableMap nestedMap = convertHashMap((HashMap<String, Object>) value);
+        writableMap.putMap(key, nestedMap);
+      } else {
+        writableMap.putString(key, value != null ? value.toString() : null);
+      }
+    }
+
+    return writableMap;
   }
 
   @ReactMethod

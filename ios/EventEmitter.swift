@@ -19,7 +19,7 @@ class EventEmitter {
 
     /// All Events which must be support by React Native.
     lazy var allEvents: [String] = {
-        var allEventNames: [String] = ["reteno-push-received", "reteno-in-app-custom-data-received", "reteno-before-in-app-display", "reteno-on-in-app-display", "reteno-before-in-app-close", "reteno-after-in-app-close", "reteno-on-in-app-error", "reteno-push-clicked", "reteno-unread-messages-count"]
+        var allEventNames: [String] = ["reteno-push-received", "reteno-in-app-custom-data-received", "reteno-before-in-app-display", "reteno-on-in-app-display", "reteno-before-in-app-close", "reteno-after-in-app-close", "reteno-on-in-app-error", "reteno-push-clicked", "reteno-unread-messages-count", "reteno-push-button-clicked"]
 
         // Append all events here
         

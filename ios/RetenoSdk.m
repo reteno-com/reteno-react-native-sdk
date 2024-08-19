@@ -51,6 +51,9 @@ RCT_EXTERN_METHOD(markAsOpened:(NSArray<NSString *> *)messageIds
 RCT_EXTERN_METHOD(markAllAsOpened:(RCTPromiseResolveBlock)resolve
                  withRejecter:(RCTPromiseRejectBlock)reject)
 
+RCT_EXTERN_METHOD(getAppInboxMessagesCount:(RCTPromiseResolveBlock)resolve
+                 withRejecter:(RCTPromiseRejectBlock)reject)
+
 RCT_EXTERN_METHOD(supportedEvents)
 
 + (BOOL)requiresMainQueueSetup
