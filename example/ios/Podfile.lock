@@ -1,5 +1,4 @@
 PODS:
-  - Alamofire (5.9.0)
   - boost (1.83.0)
   - DoubleConversion (1.1.6)
   - FBLazyVector (0.73.6)
@@ -1118,11 +1117,10 @@ PODS:
     - React-jsi (= 0.73.6)
     - React-logger (= 0.73.6)
     - React-perflogger (= 0.73.6)
-  - Reteno (2.0.11):
-    - Alamofire (= 5.9.0)
-  - reteno-react-native-sdk (1.5.1):
+  - Reteno (2.0.13)
+  - reteno-react-native-sdk (1.5.2):
     - React-Core
-    - Reteno (= 2.0.11)
+    - Reteno (= 2.0.13)
   - RNFBApp (19.2.2):
     - Firebase/CoreOnly (= 10.24.0)
     - React-Core
@@ -1199,7 +1197,6 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
-    - Alamofire
     - Firebase
     - FirebaseCore
     - FirebaseCoreExtension
@@ -1325,7 +1322,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
 SPEC CHECKSUMS:
-  Alamofire: 02b772c9910e8eba1a079227c32fbd9e46c90a24
   boost: d3f49c53809116a5d38da093a8aa78bf551aed09
   DoubleConversion: fea03f2699887d960129cc54bba7e52542b6f953
   FBLazyVector: f64d1e2ea739b4d8f7e4740cde18089cd97fe864
@@ -1386,8 +1382,8 @@ SPEC CHECKSUMS:
   React-runtimescheduler: 4fa81221f3bb96df737d682fa828b574bea3827c
   React-utils: a45dd70919baff681d43a4a457e9884ef96b4581
   ReactCommon: e168ee1704806f10f47ee8c7f825b5850b18eaea
-  Reteno: 07fdbd6644a491b3b80f0f233d9c31fc23c2522f
-  reteno-react-native-sdk: 0d82e596cd751b3e007cf796525b76c2b6fd27c9
+  Reteno: 08d032fad92a260600a0f17e7e1a95d233602966
+  reteno-react-native-sdk: 0104c383f129deeab083aa7ed97d647772e7ee26
   RNFBApp: 91311b27bc9a33e23b76a62825afd1635501018a
   RNFBMessaging: e86747e8bba79cb464f3f1f22aaae19f38ee7397
   RNScreens: 97a2a32820e632c5978d75250afa397ed9053910
