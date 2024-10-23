@@ -183,11 +183,10 @@ export function logRecommendationEvent(
   return RetenoSdk.logRecommendationEvent(payload);
 }
 
-const eventEmitter = Platform.select({
-  ios: new NativeEventEmitter(RetenoSdk),
-  // @ts-ignore
-  android: DeviceEventEmitter,
-});
+const eventEmitter =
+  Platform.OS === 'android'
+    ? DeviceEventEmitter
+    : new NativeEventEmitter(RetenoSdk);
 
 export function setOnRetenoPushReceivedListener(
   listener: (event: any) => void
