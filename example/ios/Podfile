@@ -39,6 +39,8 @@ target 'RetenoSdkExample' do
 
   use_react_native!(
     :path => config[:reactNativePath],
+    :hermes_enabled => true,
+    :fabric_enabled => true,
     # Enables Flipper.
     #
     # Note that if you have use_frameworks! enabled, Flipper will not work and

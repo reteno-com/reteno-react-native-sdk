@@ -72,10 +72,10 @@ dependencies {
   //noinspection GradleDynamicVersion
   implementation "com.facebook.react:react-native"
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-  implementation 'com.reteno:fcm:2.0.15'
-  implementation "com.google.firebase:firebase-messaging:23.1.0"
-  implementation "com.google.firebase:firebase-messaging-ktx:23.1.0"
-  coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.2.2'
+  implementation 'com.reteno:fcm:2.0.16'
+  implementation "com.google.firebase:firebase-messaging:24.0.3"
+  implementation "com.google.firebase:firebase-messaging-ktx:24.0.3"
+  coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.3'
 }
 
 if (isNewArchitectureEnabled()) {
