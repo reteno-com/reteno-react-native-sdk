@@ -80,10 +80,7 @@ android {
 
     ndkVersion rootProject.ext.ndkVersion
 
-    compileSdkVersion rootProject.ext.compileSdkVersion
-
     namespace "com.reteno.sample"
-
     defaultConfig {
         applicationId "com.reteno.sample"
         minSdkVersion rootProject.ext.minSdkVersion
@@ -128,7 +125,7 @@ dependencies {
     implementation("com.facebook.react:react-android")
     // implementation("com.facebook.react:flipper-integration")
 
-    implementation 'com.reteno:fcm:2.0.16'
+    implementation 'com.reteno:fcm:2.0.18'
     implementation "com.google.firebase:firebase-messaging:24.0.3"
     implementation "com.google.firebase:firebase-messaging-ktx:24.0.3"
 

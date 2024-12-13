@@ -4,6 +4,7 @@ import {
   NativeModules,
   Platform,
 } from 'react-native';
+import type { Spec } from 'src/specs/NativeRetenoSdk';
 
 const LINKING_ERROR =
   `The package 'reteno-react-native-sdk' doesn't seem to be linked. Make sure: \n\n` +
@@ -140,16 +141,16 @@ export type PushButton = {
   userInfo: any;
 };
 
-const RetenoSdk = NativeModules.RetenoSdk
-  ? NativeModules.RetenoSdk
-  : new Proxy(
-      {},
-      {
-        get() {
-          throw new Error(LINKING_ERROR);
-        },
-      }
-    );
+const RetenoSdk: Spec =
+  NativeModules.RetenoSdk ??
+  new Proxy(
+    {},
+    {
+      get() {
+        throw new Error(LINKING_ERROR);
+      },
+    }
+  );
 
 export function setDeviceToken(deviceToken: string): Promise<void> {
   return RetenoSdk.setDeviceToken(deviceToken);
@@ -429,7 +430,7 @@ export function markAsOpened(
   };
 
   if (Platform.OS === 'android') {
-    return RetenoSdk.markAsOpened(messageIds?.[0]).then(
+    return RetenoSdk.markAsOpened([messageIds?.[0] ?? ''] ?? []).then(
       () => response,
       (error: any) => Promise.reject(error)
     );

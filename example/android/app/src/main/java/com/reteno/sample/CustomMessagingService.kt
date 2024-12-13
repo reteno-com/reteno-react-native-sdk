@@ -1,9 +1,8 @@
-package com.reteno.sample
+package com.reteno.sample // <-- make sure to replace it with your package name
 
 import com.google.firebase.messaging.RemoteMessage
 import com.reteno.fcm.RetenoFirebaseMessagingService
 
-// <-- make sure to replace it with your package name
 class CustomMessagingService : RetenoFirebaseMessagingService() {
   override fun onCreate() {
     super.onCreate()

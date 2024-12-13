@@ -66,8 +66,8 @@
     "@react-native-community/eslint-config": "^3.0.2",
     "@release-it/conventional-changelog": "^5.0.0",
     "@types/jest": "^28.1.2",
-    "@types/react": "~17.0.21",
-    "@types/react-native": "0.70.0",
+    "@types/react": "~18.3.1",
+    "@types/react-native": "0.73.0",
     "commitlint": "^17.0.2",
     "del-cli": "^5.0.0",
     "eslint": "^8.4.1",
@@ -78,7 +78,7 @@
     "pod-install": "^0.1.0",
     "prettier": "^2.0.5",
     "react": "18.3.1",
-    "react-native": "0.76.1",
+    "react-native": "0.76.3",
     "react-native-builder-bob": "^0.20.0",
     "release-it": "^15.11.0",
     "typescript": "^4.5.2"
@@ -91,7 +91,7 @@
     "react-native": "*"
   },
   "engines": {
-    "node": ">= 16.0.0"
+    "node": ">=18"
   },
   "packageManager": "yarn@1.22.22",
   "jest": {
@@ -167,5 +167,13 @@
         }
       ]
     ]
+  },
+  "codegenConfig": {
+    "name": "RetenoSdkSpec",
+    "type": "modules",
+    "jsSrcsDir": "./src/specs",
+    "android": {
+      "javaPackageName": "com.retenosdk"
+    }
   }
 }
