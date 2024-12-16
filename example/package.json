@@ -8,6 +8,7 @@
     "ios": "react-native run-ios",
     "start": "react-native start",
     "pods": "pod-install --quiet",
+    "pods-new": "RCT_NEW_ARCH_ENABLED=1 bundle exec pod install",
     "port-reverse": "adb reverse tcp:8081 tcp:8081"
   },
   "dependencies": {
