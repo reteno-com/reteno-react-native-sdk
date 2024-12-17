@@ -70,14 +70,16 @@ class RetenoSdk: RCTEventEmitter {
     
   @objc func registerForRemoteNotifications() async throws -> Bool {
       return try await withCheckedThrowingContinuation { continuation in
-          Reteno.userNotificationService.registerForRemoteNotifications(
-              with: [.sound, .alert, .badge],
-              application: UIApplication.shared
-          ) { success, error in
-              if let error = error {
-                  continuation.resume(throwing: NSError(domain: "RetenoSDK", code: 102, userInfo: [NSLocalizedDescriptionKey: error.localizedDescription]))
-              } else {
-                  continuation.resume(returning: success)
+          Task { @MainActor in
+              Reteno.userNotificationService.registerForRemoteNotifications(
+                  with: [.sound, .alert, .badge],
+                  application: UIApplication.shared
+              ) { success in
+                  if success {
+                      continuation.resume(returning: true)
+                  } else {
+                      continuation.resume(throwing: NSError(domain: "RetenoSDK", code: 102, userInfo: [NSLocalizedDescriptionKey: "Failed to register for remote notifications"]))
+                  }
               }
           }
       }
