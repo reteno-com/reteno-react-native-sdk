@@ -3,7 +3,7 @@ import UserNotifications
 import Reteno
 import React
 
-@objc(RetenoSdk)
+@objc
 class RetenoSdk: RCTEventEmitter {
   override static func moduleName() -> String! {
         return "RetenoSdk"
@@ -39,16 +39,11 @@ class RetenoSdk: RCTEventEmitter {
         return ["reteno-push-received", "reteno-in-app-custom-data-received", "reteno-before-in-app-display", "reteno-on-in-app-display", "reteno-before-in-app-close", "reteno-after-in-app-close", "reteno-on-in-app-error", "reteno-push-clicked", "reteno-unread-messages-count", "reteno-push-button-clicked"];
     }
     
-  @objc
-  func setDeviceToken(deviceToken: String) async {
-    await withCheckedContinuation { continuation in
-        Reteno.userNotificationService.processRemoteNotificationsToken(deviceToken)
-        continuation.resume()
-    }
+  @objc func setDeviceToken(_ deviceToken: String) {
+    Reteno.userNotificationService.processRemoteNotificationsToken(deviceToken)
   }
     
-  @objc
-  func setUserAttributes(payload: NSDictionary) async throws {
+  @objc func setUserAttributes(payload: NSDictionary) async throws {
       do {
           let externalUserId = payload["externalUserId"] as? String
           let requestPayload = try RetenoUserAttributes.buildSetUserAttributesPayload(payload: payload)
@@ -69,42 +64,22 @@ class RetenoSdk: RCTEventEmitter {
       }
   }
     
-  @objc
-  func getInitialNotification() async -> Any? {
-      if let remoteUserInfo = bridge.launchOptions?[UIApplication.LaunchOptionsKey.remoteNotification] {
-          return remoteUserInfo
+  @objc func getInitialNotification() -> Any? {
+          return bridge.launchOptions?[UIApplication.LaunchOptionsKey.remoteNotification]
       }
-      return nil
-  }
     
-  @objc
-  func logEvent(payload: NSDictionary) async throws {
-      do {
-          let requestPayload = try RetenoEvent.buildEventPayload(payload: payload)
-          
-        return try await withCheckedThrowingContinuation { continuation in
-                Reteno.logEvent(
-                    eventTypeKey: requestPayload.eventName,
-                    date: requestPayload.date,
-                    parameters: requestPayload.parameters,
-                    forcePush: requestPayload.forcePush
-                )
-                continuation.resume()
-            }
-      } catch {
-          throw NSError(domain: "Reteno iOS SDK logEvent Error", code: 100, userInfo: [NSLocalizedDescriptionKey: error.localizedDescription])
-      }
-  }
-    
-  @objc
-  @MainActor
-  func registerForRemoteNotifications() async throws -> Bool {
+  @objc func registerForRemoteNotifications() async throws -> Bool {
       return try await withCheckedThrowingContinuation { continuation in
           Reteno.userNotificationService.registerForRemoteNotifications(
               with: [.sound, .alert, .badge],
               application: UIApplication.shared
-          )
-          continuation.resume(returning: true)
+          ) { success, error in
+              if let error = error {
+                  continuation.resume(throwing: NSError(domain: "RetenoSDK", code: 102, userInfo: [NSLocalizedDescriptionKey: error.localizedDescription]))
+              } else {
+                  continuation.resume(returning: success)
+              }
+          }
       }
   }
     

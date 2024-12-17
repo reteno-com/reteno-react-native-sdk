@@ -1,6 +1,8 @@
 #import "AppDelegate.h"
 #import <Firebase.h>
 #import <FirebaseCore/FirebaseCore.h>
+#import <React/RCTBridgeModule.h>
+#import "RetenoTransitionLayer.swift"
 
 #import <React/RCTBundleURLProvider.h>
 

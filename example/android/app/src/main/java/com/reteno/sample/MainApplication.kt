@@ -50,7 +50,7 @@ class MainApplication : Application(), ReactApplication, RetenoReactNativeApplic
   }
   override fun onCreate() {
     super.onCreate()
-    retenoInstance = RetenoImpl(this, "630A66AF-C1D3-4F2A-ACC1-0D51C38D2B05")
+    retenoInstance = RetenoImpl(this, "your_access_key_here")
 
     SoLoader.init(this, OpenSourceMergedSoMapping)
     if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {

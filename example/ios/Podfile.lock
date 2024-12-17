@@ -1640,13 +1640,28 @@ PODS:
     - React-utils (= 0.76.3)
   - Reteno (2.0.19)
   - reteno-react-native-sdk (1.6.0):
-    - RCT-Folly
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.01.01.00)
     - RCTRequired
     - RCTTypeSafety
     - React-Codegen
     - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Reteno (= 2.0.19)
+    - Yoga
   - RNFBApp (19.3.0):
     - Firebase/CoreOnly (= 10.24.0)
     - React-Core
@@ -2007,13 +2022,13 @@ SPEC CHECKSUMS:
   ReactCodegen: 11ba5753ff8fd0eade9f701a238b6bfbcfcc241d
   ReactCommon: cef332bed205215d2a0270e12e1feb337974ccfe
   Reteno: d9a372b1b89d2a146b065b8da1239c19af8ff465
-  reteno-react-native-sdk: 663bbc33c20fe77f73f30bfefc4568197b760953
+  reteno-react-native-sdk: bd2b2dd8613e2006594767bfc49a9da7e3a5b289
   RNFBApp: de81f7eb68c1e6107574f2b102b0dee92a9862fa
   RNFBMessaging: bcceb47d52080700672f4a46aa9096d9754a988f
   RNScreens: 61099dac2e3cd356d2f7818ef15e9b6ad2769408
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
-  Yoga: 748f06daed00132bf0a051dbb2f4347660ac1a98
+  Yoga: e6c2f5a192a47cd0c5523ec8c4f7eca01d15d077
 
 PODFILE CHECKSUM: e566f6c929d83c08ce4dc64cba38848a0d778c1d
 
-COCOAPODS: 1.16.2
+COCOAPODS: 1.15.2
