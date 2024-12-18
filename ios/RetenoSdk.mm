@@ -1,5 +1,4 @@
 #import "RetenoSdk.h"
-#import "reteno-react-native-sdk-Swift.h"
 
 @implementation RetenoSdk
 
@@ -99,12 +98,12 @@ RCT_EXPORT_METHOD(getRecommendations:(NSDictionary *)payload
         NSString *categoryId = payload[@"categoryId"];
         NSArray *filters = payload[@"filters"];
         NSArray *fields = payload[@"fields"];
-        
+
         if (!recomVariantId || !productIds || !categoryId || !filters || !fields) {
             reject(@"INVALID_PAYLOAD", @"Missing required fields in payload", nil);
             return;
         }
-        
+
         NSArray<RecomFilter *> *recomFilters = [filters map:^id(NSDictionary *dict) {
             NSString *name = dict[@"name"];
             NSArray *values = dict[@"values"];
@@ -147,12 +146,12 @@ RCT_EXPORT_METHOD(logRecommendationEvent:(NSDictionary *)payload
         NSArray *impressions = payload[@"impressions"];
         NSArray *clicks = payload[@"clicks"];
         BOOL forcePush = [payload[@"forcePush"] boolValue];
-        
+
         if (!recomVariantId || !impressions || !clicks) {
             reject(@"INVALID_PAYLOAD", @"Missing required fields in payload", nil);
             return;
         }
-        
+
         NSArray<RecomEvent *> *impressionEvents = [impressions map:^id(NSDictionary *impression) {
             return [[RecomEvent alloc] initWithDate:[NSDate date]
                                          productId:impression[@"productId"]];

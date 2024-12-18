@@ -3,47 +3,60 @@ import UserNotifications
 import Reteno
 import React
 
-@objc
-class RetenoSdk: RCTEventEmitter {
-  override static func moduleName() -> String! {
-        return "RetenoSdk"
-    }
-
-  override static func requiresMainQueueSetup() -> Bool {
-        return true
-    }
+@objc(RetenoSdk)
+public class RetenoSdk: NSObject {
+  private let eventDispatcher: RCTEventDispatcherProtocol
+  private var initialNotification: [String: Any]?
+      
+    @objc
+      init(eventDispatcher: RCTEventDispatcherProtocol) {
+          self.eventDispatcher = eventDispatcher
+          super.init()
+          setupRetenoCallbacks()
+      }
     
-    override init() {
-        super.init()
-        
-      Reteno.userNotificationService.didReceiveNotificationUserInfo = { [weak self] userInfo in
-              self?.sendEvent(withName: "reteno-push-received", body: userInfo)
+  private func setupRetenoCallbacks() {
+          Reteno.userNotificationService.didReceiveNotificationUserInfo = { [weak self] userInfo in
+              self?.sendEvent(name: "reteno-push-received", body: userInfo)
           }
-          
+
           Reteno.userNotificationService.didReceiveNotificationResponseHandler = { [weak self] response in
-              self?.sendEvent(withName: "reteno-push-clicked", body: response.notification.request.content.userInfo)
+              self?.sendEvent(name: "reteno-push-clicked", body: response.notification.request.content.userInfo)
           }
-          
+
           Reteno.userNotificationService.notificationActionHandler = { [weak self] userInfo, action in
               let actionId = action.actionId
               let customData = action.customData
               let actionLink = action.link
-              self?.sendEvent(withName: "reteno-push-button-clicked", body: ["userInfo": userInfo, "actionId": actionId, "customData": customData as Any, "actionLink": actionLink as Any])
+              self?.sendEvent(
+                  name: "reteno-push-button-clicked",
+                  body: [
+                      "userInfo": userInfo,
+                      "actionId": actionId,
+                      "customData": customData as Any,
+                      "actionLink": actionLink as Any
+                  ]
+              )
           }
-    }
+      }
+  
+  private func sendEvent(name: String, body: Any?) {
+    let event = RCTComponentEvent(name: name, viewTag: NSNumber(value: 0), body: body as! [AnyHashable : Any])
+    eventDispatcher.send(event)
+  }
     
     /// Base overide for RCTEventEmitter.
     ///
     /// - Returns: all supported events
-  @objc override func supportedEvents() -> [String] {
+  @objc public func supportedEvents() -> [String] {
         return ["reteno-push-received", "reteno-in-app-custom-data-received", "reteno-before-in-app-display", "reteno-on-in-app-display", "reteno-before-in-app-close", "reteno-after-in-app-close", "reteno-on-in-app-error", "reteno-push-clicked", "reteno-unread-messages-count", "reteno-push-button-clicked"];
     }
     
-  @objc func setDeviceToken(_ deviceToken: String) {
+  @objc public func setDeviceToken(_ deviceToken: String) {
     Reteno.userNotificationService.processRemoteNotificationsToken(deviceToken)
   }
     
-  @objc func setUserAttributes(payload: NSDictionary) async throws {
+  @objc public func setUserAttributes(payload: NSDictionary) async throws {
       do {
           let externalUserId = payload["externalUserId"] as? String
           let requestPayload = try RetenoUserAttributes.buildSetUserAttributesPayload(payload: payload)
@@ -64,11 +77,12 @@ class RetenoSdk: RCTEventEmitter {
       }
   }
     
-  @objc func getInitialNotification() -> Any? {
-          return bridge.launchOptions?[UIApplication.LaunchOptionsKey.remoteNotification]
+  @objc public func getInitialNotification() -> [String: Any]? {
+          guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return nil }
+          return appDelegate.initialNotification
       }
     
-  @objc func registerForRemoteNotifications() async throws -> Bool {
+  @objc public func registerForRemoteNotifications() async throws -> Bool {
       return try await withCheckedThrowingContinuation { continuation in
           Task { @MainActor in
               Reteno.userNotificationService.registerForRemoteNotifications(
@@ -86,7 +100,7 @@ class RetenoSdk: RCTEventEmitter {
   }
     
   @objc
-  func setAnonymousUserAttributes(payload: NSDictionary) async throws {
+  public func setAnonymousUserAttributes(payload: NSDictionary) async throws {
       do {
           let anonymousUser = try RetenoUserAttributes.buildSetAnonymousUserAttributesPayload(payload: payload)
           return try await withCheckedThrowingContinuation { continuation in
@@ -103,7 +117,7 @@ class RetenoSdk: RCTEventEmitter {
   }
     
   @objc
-  func pauseInAppMessages(isPaused: Bool) async throws {
+  public func pauseInAppMessages(isPaused: Bool) async throws {
       return try await withCheckedThrowingContinuation { continuation in
           Reteno.pauseInAppMessages(isPaused: isPaused)
           continuation.resume()
@@ -111,7 +125,7 @@ class RetenoSdk: RCTEventEmitter {
   }
     
   @objc
-  func setInAppLifecycleCallback() async throws {
+  public func setInAppLifecycleCallback() async throws {
       return try await withCheckedThrowingContinuation { continuation in
           Reteno.addInAppStatusHandler { [weak self] inAppMessageStatus in
               guard let self = self else { return }
@@ -146,7 +160,7 @@ class RetenoSdk: RCTEventEmitter {
   }
   
   @objc
-  func getRecommendations(payload: NSDictionary) async throws -> [[String: Any]] {
+  public func getRecommendations(payload: NSDictionary) async throws -> [[String: Any]] {
       guard let recomVariantId = payload["recomVariantId"] as? String,
             let productIds = payload["productIds"] as? [String],
             let categoryId = payload["categoryId"] as? String,
@@ -191,7 +205,7 @@ class RetenoSdk: RCTEventEmitter {
   }
    
   @objc
-  func logRecommendationEvent(payload: NSDictionary) async throws {
+  public func logRecommendationEvent(payload: NSDictionary) async throws {
       guard let recomVariantId = payload["recomVariantId"] as? String,
             let impressions = payload["impressions"] as? [[String: Any]],
             let clicks = payload["clicks"] as? [[String: Any]],
@@ -221,7 +235,7 @@ class RetenoSdk: RCTEventEmitter {
   }
 
   @objc
-  func getAppInboxMessages(payload: NSDictionary) async throws -> [String: Any] {
+  public func getAppInboxMessages(payload: NSDictionary) async throws -> [String: Any] {
       let page = payload["page"] as? Int
       let pageSize = payload["pageSize"] as? Int
 
@@ -250,14 +264,14 @@ class RetenoSdk: RCTEventEmitter {
   }
     
   @objc
-  func onUnreadMessagesCountChanged() {
+  public func onUnreadMessagesCountChanged() {
       Reteno.inbox().onUnreadMessagesCountChanged = { count in
           self.sendEvent(withName: "reteno-unread-messages-count", body: ["count": count])
       }
   }
 
   @objc
-  func markAsOpened(messageIds: [String]) async throws -> Bool {
+  public func markAsOpened(messageIds: [String]) async throws -> Bool {
       return try await withCheckedThrowingContinuation { continuation in
           Reteno.inbox().markAsOpened(messageIds: messageIds) { result in
               switch result {
@@ -271,7 +285,7 @@ class RetenoSdk: RCTEventEmitter {
   }
 
   @objc
-  func markAllAsOpened() async throws -> Bool {
+  public func markAllAsOpened() async throws -> Bool {
       return try await withCheckedThrowingContinuation { continuation in
           Reteno.inbox().markAllAsOpened { result in
               switch result {
@@ -285,7 +299,7 @@ class RetenoSdk: RCTEventEmitter {
   }
 
   @objc
-  func getAppInboxMessagesCount() async throws -> Int {
+  public func getAppInboxMessagesCount() async throws -> Int {
       return try await withCheckedThrowingContinuation { continuation in
           Reteno.inbox().getUnreadMessagesCount { result in
               switch result {
