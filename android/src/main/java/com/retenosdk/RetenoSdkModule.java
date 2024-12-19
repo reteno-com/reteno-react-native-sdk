@@ -31,6 +31,7 @@ import com.reteno.core.domain.model.recommendation.get.RecomRequest;
 import com.reteno.core.domain.model.recommendation.post.RecomEvent;
 import com.reteno.core.domain.model.recommendation.post.RecomEventType;
 import com.reteno.core.domain.model.recommendation.post.RecomEvents;
+import com.reteno.core.features.appinbox.AppInboxStatus;
 import com.reteno.core.view.iam.callback.InAppData;
 import com.reteno.core.view.iam.callback.InAppCloseData;
 import com.reteno.core.view.iam.callback.InAppErrorData;
@@ -433,6 +434,7 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
   public void getAppInboxMessages(ReadableMap payload, Promise promise) {
     Integer page = null;
     Integer pageSize = null;
+    AppInboxStatus status = null;
 
     if (payload.hasKey("page") && !payload.isNull("page")) {
       page = payload.getInt("page");
@@ -442,11 +444,20 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
       pageSize = payload.getInt("pageSize");
     }
 
+    if (payload.hasKey("status") && !payload.isNull("status")) {
+      String statusString = payload.getString("status");
+      if ("OPENED".equalsIgnoreCase(statusString)) {
+        status = AppInboxStatus.OPENED;
+      } else if ("UNOPENED".equalsIgnoreCase(statusString)) {
+        status = AppInboxStatus.UNOPENED;
+      }
+    }
+
     try {
       ((RetenoApplication) this.context.getCurrentActivity().getApplication())
         .getRetenoInstance()
         .getAppInbox()
-        .getAppInboxMessages(page, pageSize, new RetenoResultCallback<AppInboxMessages>() {
+        .getAppInboxMessages(page, pageSize, status, new RetenoResultCallback<AppInboxMessages>() {
           @Override
           public void onSuccess(AppInboxMessages result) {
             WritableArray messagesArray = Arguments.createArray();
@@ -460,6 +471,7 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
               messageMap.putString("imageURL", message.getImageUrl());
               messageMap.putString("linkURL", message.getLinkUrl());
               messageMap.putString("category", message.getCategory());
+              messageMap.putString("status", message.getStatus() != null ? message.getStatus().name() : null);
               messagesArray.pushMap(messageMap);
             }
             WritableMap resultData = Arguments.createMap();
