@@ -27,6 +27,8 @@
   // They will be passed down to the ViewController used by React Native.
   self.initialProps = @{};
 
+  self.launchOptions = launchOptions;
+
   return [super application:application didFinishLaunchingWithOptions:launchOptions];
 }
 
