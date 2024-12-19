@@ -3,7 +3,7 @@ import Reteno
 
 @objc public class RetenoTransitionLayer: NSObject {
   @objc class func setup(forApplication application: UIApplication) {
-    Reteno.start(apiKey: "630A66AF-C1D3-4F2A-ACC1-0D51C38D2B05", isDebugMode: true);
+    Reteno.start(apiKey: "SDK_ACCESS_KEY", isDebugMode: true);
     // Register for receiving push notifications
     // registerForRemoteNotifications will show the native iOS notification permission prompt
     // Provide UNAuthorizationOptions or use default
