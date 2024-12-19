@@ -63,9 +63,12 @@ export type CustomEventParameter = {
   value?: string;
 };
 
+export type AppInboxStatus = 'OPENED' | 'UNOPENED';
+
 export type GetAppInboxMessages = {
   page?: number;
   pageSize?: number;
+  status?: AppInboxStatus;
 };
 
 export type InAppDisplayData = {
@@ -122,6 +125,7 @@ export type InboxMessage = {
   content?: string;
   // Only on Android
   category?: string;
+  status?: AppInboxStatus;
 };
 
 export type UnreadMessagesCountData = {
@@ -363,9 +367,10 @@ export function updatePushPermissionStatusAndroid(): Promise<void> {
   return Promise.resolve(undefined);
 }
 
-export function getAppInboxMessages(
-  payload: GetAppInboxMessages
-): Promise<{ messages: InboxMessage[]; totalPages: number }> {
+export function getAppInboxMessages(payload: GetAppInboxMessages): Promise<{
+  messages: InboxMessage[];
+  totalPages: number;
+}> {
   return RetenoSdk.getAppInboxMessages(payload);
 }
 

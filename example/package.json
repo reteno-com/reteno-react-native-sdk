@@ -5,6 +5,7 @@
   "scripts": {
     "android": "react-native run-android",
     "android:build": "cd android && ./gradlew assembleRelease",
+    "android:build:fix": "cd android && ./gradlew --stop && ./gradlew assembleRelease",
     "ios": "react-native run-ios",
     "start": "react-native start",
     "pods": "pod-install --quiet",
