@@ -220,8 +220,20 @@ open class RetenoSdk: RCTEventEmitter {
     func getAppInboxMessages(payload: NSDictionary, resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         let page = payload["page"] as? Int
         let pageSize = payload["pageSize"] as? Int
+        let statusString = payload["status"] as? String
+      
+      let status: AppInboxMessagesStatus? = {
+              switch statusString?.uppercased() {
+              case "OPENED":
+                  return .opened
+              case "UNOPENED":
+                  return .unopened
+              default:
+                  return nil
+              }
+          }()
         
-        Reteno.inbox().downloadMessages(page: page, pageSize: pageSize) { result in
+        Reteno.inbox().downloadMessages(page: page, pageSize: pageSize, status: status) { result in
             switch result {
             case .success(let response):
                 let messages = response.messages.map { message in
@@ -232,7 +244,7 @@ open class RetenoSdk: RCTEventEmitter {
                         "content": message.content as Any,
                         "imageURL": message.imageURL?.absoluteString as Any,
                         "linkURL": message.linkURL?.absoluteString as Any,
-                        "isNew": message.isNew
+                        "isNew": message.isNew,
                     ]
                 }
                 resolve(["messages": messages, "totalPages": response.totalPages as Any])
