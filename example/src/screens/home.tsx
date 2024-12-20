@@ -130,15 +130,15 @@ export default function Main({ navigation }: Props) {
     [navigation]
   );
 
-  const onRetenoPushReceived = useCallback((event) => {
+  const onRetenoPushReceived = useCallback((event: any) => {
     Alert.alert('onRetenoPushReceived', event ? JSON.stringify(event) : event);
   }, []);
 
-  const onRetenoPushClicked = useCallback((event) => {
+  const onRetenoPushClicked = useCallback((event: any) => {
     Alert.alert('onRetenoPushClicked', event ? JSON.stringify(event) : event);
   }, []);
 
-  const onRetenoPushButtonClicked = useCallback((event) => {
+  const onRetenoPushButtonClicked = useCallback((event: any) => {
     Alert.alert(
       'onRetenoPushButtonClicked',
       event ? JSON.stringify(event) : event

@@ -1,8 +1,15 @@
 import { InboxMessage } from '../index';
 import type { TurboModule } from 'react-native';
 import { TurboModuleRegistry } from 'react-native';
+import type { EventEmitter } from 'react-native/Libraries/Types/CodegenTypes';
 
 export interface Spec extends TurboModule {
+  readonly onRetenoPushReceived: EventEmitter<unknown>;
+
+  readonly onRetenoPushClicked: EventEmitter<unknown>;
+
+  readonly onRetenoPushButtonClicked: EventEmitter<unknown>;
+
   logEvent: (payload: { [key: string]: unknown }) => Promise<void>;
 
   setDeviceToken: (deviceToken: string) => Promise<void>;

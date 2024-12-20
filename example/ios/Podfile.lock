@@ -1639,7 +1639,7 @@ PODS:
     - React-perflogger (= 0.76.5)
     - React-utils (= 0.76.5)
   - Reteno (2.0.19)
-  - reteno-react-native-sdk (1.6.0):
+  - reteno-react-native-sdk (1.6.1):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2022,7 +2022,7 @@ SPEC CHECKSUMS:
   ReactCodegen: 8d7f9f05befdeb108948bbaa18d149b25a964f72
   ReactCommon: 858d61cce81635d57be89348568b603e838b3cac
   Reteno: d9a372b1b89d2a146b065b8da1239c19af8ff465
-  reteno-react-native-sdk: bd2b2dd8613e2006594767bfc49a9da7e3a5b289
+  reteno-react-native-sdk: c43d381d59facc3cef91f497355ed427bf537e90
   RNFBApp: de81f7eb68c1e6107574f2b102b0dee92a9862fa
   RNFBMessaging: bcceb47d52080700672f4a46aa9096d9754a988f
   RNScreens: 61099dac2e3cd356d2f7818ef15e9b6ad2769408

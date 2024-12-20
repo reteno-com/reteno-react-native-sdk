@@ -34,7 +34,7 @@ open class RetenoSdk: NSObject {
         }
     }
   
-  @objc protocol RetenoEvents: AnyObject {
+  @objc public protocol RetenoEvents: AnyObject {
       func onPushReceived(userInfo: [String: Any])
       func onPushClicked(userInfo: [String: Any])
       func onPushButtonClicked(data: [String: Any])
