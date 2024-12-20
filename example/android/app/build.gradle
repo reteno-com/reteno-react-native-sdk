@@ -80,10 +80,7 @@ android {
 
     ndkVersion rootProject.ext.ndkVersion
 
-    compileSdkVersion rootProject.ext.compileSdkVersion
-
     namespace "com.reteno.sample"
-
     defaultConfig {
         applicationId "com.reteno.sample"
         minSdkVersion rootProject.ext.minSdkVersion
@@ -129,8 +126,8 @@ dependencies {
     // implementation("com.facebook.react:flipper-integration")
 
     implementation 'com.reteno:fcm:2.0.18'
-    implementation "com.google.firebase:firebase-messaging:23.1.0"
-    implementation "com.google.firebase:firebase-messaging-ktx:23.1.0"
+    implementation "com.google.firebase:firebase-messaging:24.0.3"
+    implementation "com.google.firebase:firebase-messaging-ktx:24.0.3"
 
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")
@@ -138,5 +135,5 @@ dependencies {
         implementation jscFlavor
     }
 
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.2.2'
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.3'
 }

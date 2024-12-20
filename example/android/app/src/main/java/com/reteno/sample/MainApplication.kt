@@ -42,7 +42,7 @@ class MainApplication : Application(), ReactApplication, RetenoReactNativeApplic
   }
 
   override val reactHost: ReactHost
-    get() = getDefaultReactHost(this.applicationContext, reactNativeHost)
+    get() = getDefaultReactHost(applicationContext, reactNativeHost)
 
 
   override fun getReactContext(): ReactContext? {
@@ -52,7 +52,7 @@ class MainApplication : Application(), ReactApplication, RetenoReactNativeApplic
     super.onCreate()
     retenoInstance = RetenoImpl(this, "your_access_key_here")
 
-    SoLoader.init(this, false)
+    SoLoader.init(this, OpenSourceMergedSoMapping)
     if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
       // If you opted-in for the New Architecture, we load the native entry point for this app.
       load()

@@ -1,0 +1,7 @@
+{
+  "modules": {
+    "specs": "./src/specs/RetenoSdkSpec.ts"
+  },
+  "outputDir": "./ios/build/generated",
+  "libraryName": "reteno-react-native-sdk"
+}
