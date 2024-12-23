@@ -3,7 +3,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface RetenoSdk : NSObject <NativeRetenoSdkSpec>
+@interface RetenoSdk : NativeRetenoSdkSpecBase <NativeRetenoSdkSpec>
 
 - (void)setDeviceToken:(NSString *)deviceToken resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject;
 - (void)getInitialNotificationWithResolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject;

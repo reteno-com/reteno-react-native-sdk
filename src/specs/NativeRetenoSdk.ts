@@ -10,6 +10,49 @@ export interface Spec extends TurboModule {
 
   readonly onRetenoPushButtonClicked: EventEmitter<unknown>;
 
+  readonly beforeInAppDisplayHandler: EventEmitter<{
+    id?: string;
+    source?: 'DISPLAY_RULES' | 'PUSH_NOTIFICATION';
+  }>;
+
+  readonly onInAppDisplayHandler: EventEmitter<{
+    id?: string;
+    source?: 'DISPLAY_RULES' | 'PUSH_NOTIFICATION';
+  }>;
+
+  readonly beforeInAppCloseHandler: EventEmitter<{
+    id?: string;
+    source?: 'DISPLAY_RULES' | 'PUSH_NOTIFICATION';
+    closeAction?: 'OPEN_URL' | 'BUTTON' | 'CLOSE_BUTTON';
+  }>;
+
+  readonly afterInAppCloseHandler: EventEmitter<{
+    id?: string;
+    source?: 'DISPLAY_RULES' | 'PUSH_NOTIFICATION';
+    closeAction?: 'OPEN_URL' | 'BUTTON' | 'CLOSE_BUTTON';
+  }>;
+
+  readonly onInAppErrorHandler: EventEmitter<{
+    id?: string;
+    source?: 'DISPLAY_RULES' | 'PUSH_NOTIFICATION';
+    errorMessage?: string;
+  }>;
+
+  readonly addInAppMessageCustomDataHandler: EventEmitter<{
+    customData?: { [key: string]: unknown };
+    inapp_id?: string;
+    inapp_source?: 'DISPLAY_RULES' | 'PUSH_NOTIFICATION';
+    url?: string;
+  }>;
+
+  readonly unreadMessagesCountHandler: EventEmitter<{ count: number }>;
+
+  readonly unreadMessagesCountErrorHandler: EventEmitter<{
+    statusCode?: number | null;
+    response?: string | null;
+    error?: string | null;
+  }>;
+
   logEvent: (payload: { [key: string]: unknown }) => Promise<void>;
 
   setDeviceToken: (deviceToken: string) => Promise<void>;

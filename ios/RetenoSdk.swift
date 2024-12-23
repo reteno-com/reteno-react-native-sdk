@@ -10,14 +10,14 @@ open class RetenoSdk: NSObject {
 
         Reteno.userNotificationService.didReceiveNotificationUserInfo = {userInfo in
           if let stringKeyedUserInfo = userInfo as? [String: Any] {
-                  EventDispatcher.dispatchPushReceived(userInfo: stringKeyedUserInfo)
+                RetenoSdk.emitPushReceived(userInfo: stringKeyedUserInfo)
               }
         }
         
         Reteno.userNotificationService.didReceiveNotificationResponseHandler = {response in
           let userInfo = response.notification.request.content.userInfo
               if let stringKeyedUserInfo = userInfo as? [String: Any] {
-                  EventDispatcher.dispatchPushClicked(userInfo: stringKeyedUserInfo)
+                RetenoSdk.emitPushClicked(stringKeyedUserInfo)
               }
         }
         
@@ -29,16 +29,10 @@ open class RetenoSdk: NSObject {
                       "customData": action.customData as Any,
                       "actionLink": action.link as Any
                   ]
-                  EventDispatcher.dispatchPushButtonClicked(data: actionData)
+            RetenoSdk.emitPushButtonClicked(actionData)
               }
         }
     }
-  
-  @objc public protocol RetenoEvents: AnyObject {
-      func onPushReceived(userInfo: [String: Any])
-      func onPushClicked(userInfo: [String: Any])
-      func onPushButtonClicked(data: [String: Any])
-  }
     
     @objc(setDeviceToken:withResolver:withRejecter:)
     func setDeviceToken(deviceToken: String, resolve:RCTPromiseResolveBlock,reject:RCTPromiseRejectBlock) -> Void {
