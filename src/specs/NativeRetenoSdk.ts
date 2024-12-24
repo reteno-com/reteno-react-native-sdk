@@ -10,27 +10,13 @@ export interface Spec extends TurboModule {
 
   readonly onRetenoPushButtonClicked: EventEmitter<unknown>;
 
-  readonly beforeInAppDisplayHandler: EventEmitter<{
-    id?: string;
-    source?: 'DISPLAY_RULES' | 'PUSH_NOTIFICATION';
-  }>;
+  readonly beforeInAppDisplayHandler: EventEmitter<void>;
 
-  readonly onInAppDisplayHandler: EventEmitter<{
-    id?: string;
-    source?: 'DISPLAY_RULES' | 'PUSH_NOTIFICATION';
-  }>;
+  readonly onInAppDisplayHandler: EventEmitter<void>;
 
-  readonly beforeInAppCloseHandler: EventEmitter<{
-    id?: string;
-    source?: 'DISPLAY_RULES' | 'PUSH_NOTIFICATION';
-    closeAction?: 'OPEN_URL' | 'BUTTON' | 'CLOSE_BUTTON';
-  }>;
+  readonly beforeInAppCloseHandler: EventEmitter<void>;
 
-  readonly afterInAppCloseHandler: EventEmitter<{
-    id?: string;
-    source?: 'DISPLAY_RULES' | 'PUSH_NOTIFICATION';
-    closeAction?: 'OPEN_URL' | 'BUTTON' | 'CLOSE_BUTTON';
-  }>;
+  readonly afterInAppCloseHandler: EventEmitter<void>;
 
   readonly onInAppErrorHandler: EventEmitter<{
     id?: string;
