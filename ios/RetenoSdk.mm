@@ -10,58 +10,43 @@
 RCT_EXPORT_MODULE()
 
 - (void)emitOnRetenoPushReceived:(NSDictionary *)userInfo {
-    [self sendEventWithName:@"onRetenoPushReceived" body:userInfo];
+  [self emitOnRetenoPushReceived:userInfo];
 }
 
 - (void)emitOnRetenoPushClicked:(NSDictionary *)userInfo {
-    [self sendEventWithName:@"onRetenoPushClicked" body:userInfo];
+  [self emitOnRetenoPushClicked:userInfo];
 }
 
 - (void)emitOnRetenoPushButtonClicked:(NSDictionary *)actionData {
-  [self sendEventWithName:@"onRetenoPushButtonClicked" body:actionData];
+  [self emitOnRetenoPushButtonClicked:actionData];
 }
 
 - (void)emitBeforeInAppDisplayHandler {
-  [self sendEventWithName:@"beforeInAppDisplayHandler"];
+  [self emitBeforeInAppDisplayHandler];
 }
 
 - (void)emitOnInAppDisplayHandler {
-  [self sendEventWithName:@"onInAppDisplayHandler"];
+  [self emitOnInAppDisplayHandler];
 }
 
 - (void)emitBeforeInAppCloseHandler {
-  [self sendEventWithName:@"beforeInAppCloseHandler"];
+  [self emitBeforeInAppCloseHandler];
 }
 
 - (void)emitAfterInAppCloseHandler {
-  [self sendEventWithName:@"afterInAppCloseHandler"];
+  [self emitAfterInAppCloseHandler];
 }
 
 - (void)emitAddInAppMessageCustomDataHandler:(NSDictionary *)customData {
-  [self sendEventWithName:@"addInAppMessageCustomDataHandler" body:customData];
+  [self emitAddInAppMessageCustomDataHandler:customData];
 }
 
-- (void)emitOnInAppErrorHandler:(String *)error {
-  [self sendEventWithName:@"onInAppErrorHandler" body:error];
+- (void)emitOnInAppErrorHandler:(NSString *)error {
+  [self emitOnInAppErrorHandler:error];
 }
 
 - (void)emitUnreadMessagesCountHandler:(NSNumber *)count {
-  [self sendEventWithName:@"unreadMessagesCountHandler" body:count];
-}
-
-- (NSArray<NSString *> *)supportedEvents {
-    return @[
-        @"onRetenoPushReceived",
-        @"onRetenoPushClicked",
-        @"onRetenoPushButtonClicked",
-        @"beforeInAppDisplayHandler",
-        @"onInAppDisplayHandler",
-        @"beforeInAppCloseHandler",
-        @"afterInAppCloseHandler",
-        @"addInAppMessageCustomDataHandler",
-        @"onInAppErrorHandler",
-        @"unreadMessagesCountHandler"
-    ];
+  [self emitUnreadMessagesCountHandler:count];
 }
 
 // TurboModule integration
@@ -100,43 +85,22 @@ RCT_EXPORT_MODULE()
     NSNumber *page = payload[@"page"];
     NSNumber *pageSize = payload[@"pageSize"];
     NSString *statusString = payload[@"status"];
-    RetenoInboxMessagesStatus status = RetenoInboxMessagesStatusAll;
 
-    if ([statusString isEqualToString:@"OPENED"]) {
-        status = RetenoInboxMessagesStatusOpened;
-    } else if ([statusString isEqualToString:@"UNOPENED"]) {
-        status = RetenoInboxMessagesStatusUnopened;
-    }
-
-    [[Reteno inbox] downloadMessagesWithPage:page pageSize:pageSize status:status completion:^(NSArray<RetenoInboxMessage *> * _Nullable messages, NSInteger totalPages, NSError * _Nullable error) {
+    [[Reteno sharedInstance] getAppInboxMessagesWithPage:page pageSize:pageSize status:statusString completion:^(NSDictionary *result, NSError *error) {
         if (error) {
             reject(@"100", @"Reteno iOS SDK Error", error);
         } else {
-            NSMutableArray *serializedMessages = [NSMutableArray new];
-            for (RetenoInboxMessage *message in messages) {
-                [serializedMessages addObject:@{
-                    @"id": message.messageId ?: @"",
-                    @"title": message.title ?: @"",
-                    @"content": message.content ?: @"",
-                    @"imageUrl": message.imageUrl.absoluteString ?: @"",
-                    @"createdDate": @(message.createdDate.timeIntervalSince1970),
-                    @"isNew": @(message.isNew)
-                }];
-            }
-            resolve(@{
-                @"messages": serializedMessages,
-                @"totalPages": @(totalPages)
-            });
+            resolve(result);
         }
     }];
 }
 
 - (void)getAppInboxMessagesCount:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [[Reteno inbox] getUnreadMessagesCountWithCompletion:^(NSInteger unreadCount, NSError * _Nullable error) {
+    [[Reteno sharedInstance] getAppInboxMessagesCountWithCompletion:^(NSNumber *count, NSError *error) {
         if (error) {
             reject(@"100", @"Reteno iOS SDK Error", error);
         } else {
-            resolve(@(unreadCount));
+            resolve(count);
         }
     }];
 }
@@ -307,6 +271,6 @@ RCT_EXPORT_MODULE()
 
 - (void)unsubscribeMessagesCountChanged {}
 
-- (void)updatePushPermissionStatusAndroid {}
+- (void)updatePushPermissionStatusAndroid:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {}
 
 @end
