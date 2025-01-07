@@ -2,35 +2,51 @@ import Foundation
 import UserNotifications
 import Reteno
 
+@objc
+public protocol RetenoReactNativeSdkDelegate {
+  func emitOnRetenoPushReceived(_ userInfo: [String: Any]?)
+  func emitOnRetenoPushClicked(_ userInfo: [String: Any]?)
+  func emitOnRetenoPushButtonClicked(_ actionData: [String: Any]?)
+  func emitBeforeInAppDisplayHandler()
+  func emitOnInAppDisplayHandler()
+  func emitBeforeInAppCloseHandler()
+  func emitAfterInAppCloseHandler()
+  func emitAddInAppMessageCustomDataHandler(_ customData: [String: Any]?)
+  func emitOnInAppErrorHandler(_ error: String?)
+  func emitUnreadMessagesCountHandler(_ count: NSNumber?)
+}
+
 @objc(RetenoSdk)
-open class RetenoSdk: RCTEventEmitter {
+open class RetenoSdk: NSObject {
     
     override init() {
         super.init()
-        EventEmitter.sharedInstance.registerEventEmitter(externalEventEmitter: self);
+
         Reteno.userNotificationService.didReceiveNotificationUserInfo = {userInfo in
-            EventEmitter.sharedInstance.dispatch(name: "reteno-push-received", body: userInfo)
+          if let stringKeyedUserInfo = userInfo as? [String: Any] {
+                self.onRetenoPushReceived(userInfo: stringKeyedUserInfo)
+              }
         }
         
         Reteno.userNotificationService.didReceiveNotificationResponseHandler = {response in
-              EventEmitter.sharedInstance.dispatch(name: "reteno-push-clicked", body: response.notification.request.content.userInfo)
+          let userInfo = response.notification.request.content.userInfo
+              if let stringKeyedUserInfo = userInfo as? [String: Any] {
+                self.onRetenoPushClicked(userInfo: stringKeyedUserInfo)
+              }
         }
         
         Reteno.userNotificationService.notificationActionHandler = { userInfo, action in
-            let actionId = action.actionId
-            let customData = action.customData
-            let actionLink = action.link
-            EventEmitter.sharedInstance.dispatch(name: "reteno-push-button-clicked", body: ["userInfo": userInfo, "actionId": actionId, "customData": customData as Any, "actionLink": actionLink as Any])
+          if let stringKeyedUserInfo = userInfo as? [String: Any] {
+                  let actionData: [String: Any] = [
+                      "userInfo": stringKeyedUserInfo,
+                      "actionId": action.actionId,
+                      "customData": action.customData as Any,
+                      "actionLink": action.link as Any
+                  ]
+                self.onRetenoPushButtonClicked(actionData: actionData)
+              }
         }
     }
-    
-    /// Base overide for RCTEventEmitter.
-    ///
-    /// - Returns: all supported events
-    @objc open override func supportedEvents() -> [String] {
-        return EventEmitter.sharedInstance.allEvents;
-    }
-    
     
     @objc(setDeviceToken:withResolver:withRejecter:)
     func setDeviceToken(deviceToken: String, resolve:RCTPromiseResolveBlock,reject:RCTPromiseRejectBlock) -> Void {
@@ -58,19 +74,15 @@ open class RetenoSdk: RCTEventEmitter {
         }
     }
     
-    @objc(getInitialNotification:withRejecter:)
-    func getInitialNotification(_ resolve:RCTPromiseResolveBlock,reject:RCTPromiseRejectBlock) -> Void {
-        var initialNotif: Any? = nil;
-        let remoteUserInfo = bridge.launchOptions?[UIApplication.LaunchOptionsKey.remoteNotification];
-        if (remoteUserInfo != nil) {
-            initialNotif = remoteUserInfo;
-        }
-        if (initialNotif != nil) {
-            resolve(initialNotif);
-        } else {
-            resolve(nil);
-        }
-    }
+  @objc func getInitialNotification(resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+      UNUserNotificationCenter.current().getDeliveredNotifications { notifications in
+          if let firstNotification = notifications.first {
+              resolve(firstNotification.request.content.userInfo)
+          } else {
+              resolve(nil)
+          }
+      }
+  }
     
     @objc(logEvent:withResolver:withRejecter:)
     func logEvent(payload: NSDictionary, resolve:RCTPromiseResolveBlock,reject:RCTPromiseRejectBlock) -> Void {
@@ -102,7 +114,6 @@ open class RetenoSdk: RCTEventEmitter {
     func setAnonymousUserAttributes(payload: NSDictionary, resolve:RCTPromiseResolveBlock,reject:RCTPromiseRejectBlock) -> Void {
         do {
             let anonymousUser = try RetenoUserAttributes.buildSetAnonymousUserAttributesPayload(payload: payload)
-
             Reteno.updateAnonymousUserAttributes(userAttributes: anonymousUser)
             resolve(true)
         } catch {
@@ -121,25 +132,25 @@ open class RetenoSdk: RCTEventEmitter {
         Reteno.addInAppStatusHandler { inAppMessageStatus in
             switch inAppMessageStatus {
             case .inAppShouldBeDisplayed:
-                self.sendEvent(withName: "reteno-before-in-app-display", body: nil)
+                self.beforeInAppDisplayHandler()
             case .inAppIsDisplayed:
-                self.sendEvent(withName: "reteno-on-in-app-display", body: nil)
+                self.onInAppDisplayHandler()
             case .inAppShouldBeClosed(let action):
-                self.sendEvent(withName: "reteno-before-in-app-close", body: ["action": action])
+                self.beforeInAppCloseHandler()
                 Reteno.addLinkHandler { linkInfo in
-                    self.sendEvent(withName: "reteno-in-app-custom-data-received", body: ["customData": linkInfo.customData])
+                    self.addInAppMessageCustomDataHandler(customData: linkInfo.customData)
                     if let url = linkInfo.url {
                                         UIApplication.shared.open(url)
                                     }
                 }
             case .inAppIsClosed(let action):
-                self.sendEvent(withName: "reteno-after-in-app-close", body: ["action": action])
+                self.afterInAppCloseHandler()
             case .inAppReceivedError(let error):
-                self.sendEvent(withName: "reteno-on-in-app-error", body: ["error": error])
+              self.onInAppErrorHandler(error: error)
             }
         }
     }
-
+  
     @objc(getRecommendations:withResolver:withRejecter:)
     func getRecommendations(payload: NSDictionary, resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) -> Void {
         guard let recomVariantId = payload["recomVariantId"] as? String,
@@ -151,7 +162,6 @@ open class RetenoSdk: RCTEventEmitter {
             reject("100", "Reteno iOS SDK Error: Invalid payload", error)
             return
         }
-
         var recomFilters: [RecomFilter]? = nil
         if let filters = filters as? [[String: Any]] {
             recomFilters = filters.compactMap { dict in
@@ -221,7 +231,7 @@ open class RetenoSdk: RCTEventEmitter {
         let page = payload["page"] as? Int
         let pageSize = payload["pageSize"] as? Int
         let statusString = payload["status"] as? String
-      
+
       let status: AppInboxMessagesStatus? = {
               switch statusString?.uppercased() {
               case "OPENED":
@@ -232,8 +242,8 @@ open class RetenoSdk: RCTEventEmitter {
                   return nil
               }
           }()
-        
-        Reteno.inbox().downloadMessages(page: page, pageSize: pageSize, status: status) { result in
+      
+      Reteno.inbox().downloadMessages(page: page, pageSize: pageSize, status: status) { result in
             switch result {
             case .success(let response):
                 let messages = response.messages.map { message in
@@ -258,7 +268,7 @@ open class RetenoSdk: RCTEventEmitter {
     @objc(onUnreadMessagesCountChanged)
         func onUnreadMessagesCountChanged() {
             Reteno.inbox().onUnreadMessagesCountChanged = { count in
-                self.sendEvent(withName: "reteno-unread-messages-count", body: ["count": count])
+              self.unreadMessagesCountHandler(count: count as NSNumber)
             }
         }
     
@@ -297,4 +307,46 @@ open class RetenoSdk: RCTEventEmitter {
                 }
             }
         }
+  
+  @objc public weak var delegate: RetenoReactNativeSdkDelegate?
+  
+  private final func onRetenoPushReceived(userInfo: [String: Any]?) {
+          delegate?.emitOnRetenoPushReceived(userInfo)
+      }
+  
+  private final func onRetenoPushClicked(userInfo: [String: Any]?) {
+          delegate?.emitOnRetenoPushClicked(userInfo)
+      }
+  
+  private final func onRetenoPushButtonClicked(actionData: [String: Any]?) {
+          delegate?.emitOnRetenoPushButtonClicked(actionData)
+      }
+  
+  private final func beforeInAppDisplayHandler() {
+          delegate?.emitBeforeInAppDisplayHandler()
+      }
+  
+  private final func onInAppDisplayHandler() {
+          delegate?.emitOnInAppDisplayHandler()
+      }
+  
+  private final func beforeInAppCloseHandler() {
+          delegate?.emitBeforeInAppCloseHandler()
+      }
+  
+  private final func afterInAppCloseHandler() {
+          delegate?.emitAfterInAppCloseHandler()
+      }
+  
+  private final func addInAppMessageCustomDataHandler(customData: [String: Any]?) {
+          delegate?.emitAddInAppMessageCustomDataHandler(customData)
+      }
+  
+  private final func onInAppErrorHandler(error: String?) {
+          delegate?.emitOnInAppErrorHandler(error)
+      }
+  
+  private final func unreadMessagesCountHandler(count: NSNumber?) {
+          delegate?.emitUnreadMessagesCountHandler(count)
+      }
 }
