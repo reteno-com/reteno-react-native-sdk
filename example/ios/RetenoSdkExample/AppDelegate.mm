@@ -8,17 +8,20 @@
 
 - (void)application:(UIApplication *)application didFailToRegisterForRemoteNotificationsWithError:(NSError *)error {
 }
-//- (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
-//  [RetenoTransitionLayer processRemoteNotificationsTokenWithDeviceToken:deviceToken];
-//}
-- (void)messaging:(FIRMessaging *)messaging didReceiveRegistrationToken:(nullable NSString *)fcmToken {
-  [RetenoTransitionLayer processRemoteNotificationsTokenWithFCMToken:fcmToken];
+// Commit when using fsm token
+- (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
+ [RetenoTransitionLayer processRemoteNotificationsTokenWithDeviceToken:deviceToken];
 }
+// Uncommit when using fsm token
+// - (void)messaging:(FIRMessaging *)messaging didReceiveRegistrationToken:(nullable NSString *)fcmToken {
+//   [RetenoTransitionLayer processRemoteNotificationsTokenWithFCMToken:fcmToken];
+// }
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-  [FIRApp configure];
-  [FIRMessaging messaging].delegate = self;
+  // Uncommit when using fsm token
+  // [FIRApp configure];
+  // [FIRMessaging messaging].delegate = self;
   [RetenoTransitionLayer setupForApplication:application];
   self.moduleName = @"RetenoSdkExample";
   // You can add your custom initial props in the dictionary below.
