@@ -1561,10 +1561,10 @@ PODS:
     - React-logger (= 0.75.4)
     - React-perflogger (= 0.75.4)
     - React-utils (= 0.75.4)
-  - Reteno (2.0.20)
+  - Reteno (2.0.21)
   - reteno-react-native-sdk (1.6.1):
     - React-Core
-    - Reteno (= 2.0.20)
+    - Reteno (= 2.0.21)
   - RNFBApp (19.3.0):
     - Firebase/CoreOnly (= 10.24.0)
     - React-Core
@@ -1895,8 +1895,8 @@ SPEC CHECKSUMS:
   React-utils: d1bae5ac6a5fb94a772ebfc7a7e1aba3a6706a3a
   ReactCodegen: 99b435b58bd874bb0626b3fb16437d2e8735d370
   ReactCommon: 1007c09a406a451ddbd874e51511aa541d6034f6
-  Reteno: 223bf17389bf83783f2dc96140351a0338950bc8
-  reteno-react-native-sdk: 41d42a47342d63f1b3b5e1cef78a2d09013260c0
+  Reteno: f42a0094ab9e8ac1cb039371d5b8fb094c7b1f21
+  reteno-react-native-sdk: f73337419ff4d9426b4281147cb988bc64f12f98
   RNFBApp: de81f7eb68c1e6107574f2b102b0dee92a9862fa
   RNFBMessaging: bcceb47d52080700672f4a46aa9096d9754a988f
   RNScreens: 16b782596e80e475b7f3ec769c9a97d789d9b0ed

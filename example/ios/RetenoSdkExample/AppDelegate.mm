@@ -7,19 +7,19 @@
 @implementation AppDelegate
 
 - (void)application:(UIApplication *)application didFailToRegisterForRemoteNotificationsWithError:(NSError *)error {
+  NSLog(@"Failed to register for remote notifications: %@", error);
 }
-// Commit when using fsm token
+
 - (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
  [RetenoTransitionLayer processRemoteNotificationsTokenWithDeviceToken:deviceToken];
 }
-// Uncommit when using fsm token
+
 // - (void)messaging:(FIRMessaging *)messaging didReceiveRegistrationToken:(nullable NSString *)fcmToken {
 //   [RetenoTransitionLayer processRemoteNotificationsTokenWithFCMToken:fcmToken];
 // }
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-  // Uncommit when using fsm token
   // [FIRApp configure];
   // [FIRMessaging messaging].delegate = self;
   [RetenoTransitionLayer setupForApplication:application];
