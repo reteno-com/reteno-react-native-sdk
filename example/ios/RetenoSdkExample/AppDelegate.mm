@@ -7,18 +7,21 @@
 @implementation AppDelegate
 
 - (void)application:(UIApplication *)application didFailToRegisterForRemoteNotificationsWithError:(NSError *)error {
+  NSLog(@"Failed to register for remote notifications: %@", error);
 }
-//- (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
-//  [RetenoTransitionLayer processRemoteNotificationsTokenWithDeviceToken:deviceToken];
-//}
-- (void)messaging:(FIRMessaging *)messaging didReceiveRegistrationToken:(nullable NSString *)fcmToken {
-  [RetenoTransitionLayer processRemoteNotificationsTokenWithFCMToken:fcmToken];
+
+- (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
+ [RetenoTransitionLayer processRemoteNotificationsTokenWithDeviceToken:deviceToken];
 }
+
+// - (void)messaging:(FIRMessaging *)messaging didReceiveRegistrationToken:(nullable NSString *)fcmToken {
+//   [RetenoTransitionLayer processRemoteNotificationsTokenWithFCMToken:fcmToken];
+// }
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-  [FIRApp configure];
-  [FIRMessaging messaging].delegate = self;
+  // [FIRApp configure];
+  // [FIRMessaging messaging].delegate = self;
   [RetenoTransitionLayer setupForApplication:application];
   self.moduleName = @"RetenoSdkExample";
   // You can add your custom initial props in the dictionary below.
