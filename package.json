@@ -35,7 +35,8 @@
     "release:minor": "release-it minor",
     "example": "yarn --cwd example",
     "bootstrap": "yarn example && yarn install && yarn example pods",
-    "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build"
+    "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build",
+    "codegen": "react-native-codegen"
   },
   "keywords": [
     "react-native",
@@ -174,5 +175,9 @@
     "android": {
       "javaPackageName": "com.retenosdk"
     }
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e",
+  "dependencies": {
+    "react-native-codegen": "^0.70.7"
   }
 }
