@@ -1,0 +1,14 @@
+{
+  "$schema": "https://nitro.margelo.com/nitro.schema.json",
+  "cxxNamespace": ["reteno-react-native-sdk"],
+  "ios": {
+    "iosModuleName": "reteno-react-native-sdk"
+  },
+  "android": {
+    "androidNamespace": ["retenosdk"],
+    "androidCxxLibName": "RetenoSdk"
+  },
+  "autolinking": {},
+  "ignorePaths": ["**/node_modules"],
+  "createGitAttributes": true
+}
