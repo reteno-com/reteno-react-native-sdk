@@ -1645,7 +1645,7 @@ PODS:
     - FirebaseCoreExtension
     - React-Core
     - RNFBApp
-  - RNScreens (3.35.0):
+  - RNScreens (4.6.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1666,9 +1666,9 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNScreens/common (= 3.35.0)
+    - RNScreens/common (= 4.6.0)
     - Yoga
-  - RNScreens/common (3.35.0):
+  - RNScreens/common (4.6.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2012,7 +2012,7 @@ SPEC CHECKSUMS:
   reteno-react-native-sdk: 9ff048c5dfaa047a90cb163c6d42d0046470a403
   RNFBApp: 3cbad248e866e6c5d753612446ffc48f6ac3be3a
   RNFBMessaging: 7d5016a17a2e62e66b3c92ffdf4851249c06e9c0
-  RNScreens: 979b1896559566edb694e5fb79468f890e5f57be
+  RNScreens: 907675c47a5b44b8dbc5b507c66e5c70c8cb22be
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: 93a4c16be50e6f29a7ef8e2b19505d7857c651fb
 
