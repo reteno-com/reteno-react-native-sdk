@@ -37,6 +37,14 @@
     "bootstrap": "yarn example && yarn install && yarn example pods",
     "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build"
   },
+  "codegenConfig": {
+    "name": "NativeRetenoSdkSpec",
+    "type": "modules",
+    "jsSrcsDir": "specs",
+    "android": {
+      "javaPackageName": "com.nativeretenosdk"
+    }
+  },
   "keywords": [
     "react-native",
     "ios",
