@@ -5,6 +5,8 @@ import {
   Platform,
 } from 'react-native';
 
+import NativeRetenoSdk from '../specs/NativeRetenoSdk';
+
 const LINKING_ERROR =
   `The package 'reteno-react-native-sdk' doesn't seem to be linked. Make sure: \n\n` +
   Platform.select({ ios: "- You have run 'pod install'\n", default: '' }) +
@@ -156,7 +158,13 @@ const RetenoSdk = NativeModules.RetenoSdk
     );
 
 export function setDeviceToken(deviceToken: string): Promise<void> {
-  return RetenoSdk.setDeviceToken(deviceToken);
+  return NativeRetenoSdk.setDeviceToken(deviceToken);
+  // return RetenoSdk.setDeviceToken(deviceToken);
+}
+
+export function getIsUSBBatteryCharge(): number {
+  return NativeRetenoSdk.getIsUSBBatteryCharge();
+  // return RetenoSdk.setDeviceToken(deviceToken);
 }
 
 export function setUserAttributes(
@@ -168,23 +176,30 @@ export function setUserAttributes(
   ) {
     throw new Error('Missing argument: "externalUserId"');
   }
-  return RetenoSdk.setUserAttributes(payload);
+  return NativeRetenoSdk.setUserAttributes(payload);
+  // return RetenoSdk.setUserAttributes(payload);
 }
 
 export function getInitialNotification(): Promise<any> {
-  return RetenoSdk.getInitialNotification();
+  return NativeRetenoSdk.getInitialNotification();
+
+  // return RetenoSdk.getInitialNotification();
 }
 
 export function getRecommendations(
   payload: RecommendationsPayload
 ): Promise<any> {
-  return RetenoSdk.getRecommendations(payload);
+  return NativeRetenoSdk.getRecommendations(payload);
+
+  // return RetenoSdk.getRecommendations(payload);
 }
 
 export function logRecommendationEvent(
   payload: RecommendationEventPayload
 ): Promise<void> {
-  return RetenoSdk.logRecommendationEvent(payload);
+  return NativeRetenoSdk.logRecommendationEvent(payload);
+
+  // return RetenoSdk.logRecommendationEvent(payload);
 }
 
 const eventEmitter =
@@ -216,7 +231,9 @@ export function setOnRetenoPushButtonClickedListener(
 }
 
 export function setInAppLifecycleCallback() {
-  RetenoSdk.setInAppLifecycleCallback();
+  NativeRetenoSdk.setInAppLifecycleCallback();
+
+  // RetenoSdk.setInAppLifecycleCallback();
 }
 
 /**
@@ -224,7 +241,9 @@ export function setInAppLifecycleCallback() {
  */
 export function removeInAppLifecycleCallback() {
   if (Platform.OS === 'android') {
-    RetenoSdk.removeInAppLifecycleCallback();
+    NativeRetenoSdk.removeInAppLifecycleCallback();
+
+    // RetenoSdk.removeInAppLifecycleCallback();
   }
 }
 
@@ -303,12 +322,19 @@ export function logEvent(
   parameters: CustomEventParameter[],
   forcePush?: boolean
 ): Promise<void> {
-  return RetenoSdk.logEvent({
+  return NativeRetenoSdk.logEvent({
     eventName,
     date,
     parameters,
     forcePush,
   });
+
+  // return RetenoSdk.logEvent({
+  //   eventName,
+  //   date,
+  //   parameters,
+  //   forcePush,
+  // });
 }
 
 /**
@@ -316,18 +342,23 @@ export function logEvent(
  */
 export function registerForRemoteNotifications() {
   if (Platform.OS === 'ios') {
-    RetenoSdk.registerForRemoteNotifications();
+    NativeRetenoSdk.registerForRemoteNotifications();
+    // RetenoSdk.registerForRemoteNotifications();
   }
 }
 
 export function setAnonymousUserAttributes(
   payload: AnonymousUserAttributes
 ): Promise<void> {
-  return RetenoSdk.setAnonymousUserAttributes(payload);
+  return NativeRetenoSdk.setAnonymousUserAttributes(payload);
+
+  // return RetenoSdk.setAnonymousUserAttributes(payload);
 }
 
 export function pauseInAppMessages(isPaused: boolean): Promise<void> {
-  return RetenoSdk.pauseInAppMessages(isPaused);
+  return NativeRetenoSdk.pauseInAppMessages(isPaused);
+
+  // return RetenoSdk.pauseInAppMessages(isPaused);
 }
 
 /**
@@ -339,7 +370,11 @@ export function forcePushData(): Promise<void> {
   if (Platform.OS === 'ios') {
     // for ios we have to use this hack, because there isn't separate forcePush function as on android, sending an event with forcePush flag does the same thing
     return logEvent('', new Date().toISOString(), [], true);
-  } else return RetenoSdk.forcePushData();
+  } else {
+    return NativeRetenoSdk.forcePushData();
+
+    // return RetenoSdk.forcePushData();
+  }
 }
 /**
  * Send log screen view event
@@ -361,7 +396,9 @@ export function logScreenView(screenName: string) {
  */
 export function updatePushPermissionStatusAndroid(): Promise<void> {
   if (Platform.OS === 'android') {
-    return RetenoSdk.updatePushPermissionStatusAndroid();
+    return NativeRetenoSdk.updatePushPermissionStatusAndroid();
+
+    // return RetenoSdk.updatePushPermissionStatusAndroid();
   }
   return Promise.resolve(undefined);
 }
@@ -370,11 +407,15 @@ export function getAppInboxMessages(payload: GetAppInboxMessages): Promise<{
   messages: InboxMessage[];
   totalPages: number;
 }> {
-  return RetenoSdk.getAppInboxMessages(payload);
+  return NativeRetenoSdk.getAppInboxMessages(payload);
+
+  // return RetenoSdk.getAppInboxMessages(payload);
 }
 
 export function onUnreadMessagesCountChanged() {
-  RetenoSdk.onUnreadMessagesCountChanged();
+  NativeRetenoSdk.onUnreadMessagesCountChanged();
+
+  // RetenoSdk.onUnreadMessagesCountChanged();
 }
 
 /**
@@ -382,7 +423,9 @@ export function onUnreadMessagesCountChanged() {
  */
 export function unsubscribeMessagesCountChanged() {
   if (Platform.OS === 'android') {
-    RetenoSdk.unsubscribeMessagesCountChanged();
+    NativeRetenoSdk.unsubscribeMessagesCountChanged();
+
+    // RetenoSdk.unsubscribeMessagesCountChanged();
   }
 }
 
@@ -391,7 +434,9 @@ export function unsubscribeMessagesCountChanged() {
  */
 export function unsubscribeAllMessagesCountChanged() {
   if (Platform.OS === 'android') {
-    RetenoSdk.unsubscribeAllMessagesCountChanged();
+    NativeRetenoSdk.unsubscribeAllMessagesCountChanged();
+
+    // RetenoSdk.unsubscribeAllMessagesCountChanged();
   }
 }
 
@@ -434,27 +479,42 @@ export function markAsOpened(
   };
 
   if (Platform.OS === 'android') {
-    return RetenoSdk.markAsOpened(messageIds?.[0]).then(
+    return NativeRetenoSdk.markAsOpened(messageIds?.[0] as any).then(
       () => response,
       (error: any) => Promise.reject(error)
     );
+
+    // return RetenoSdk.markAsOpened(messageIds?.[0]).then(
+    //   () => response,
+    //   (error: any) => Promise.reject(error)
+    // );
   }
 
-  return RetenoSdk.markAsOpened(messageIds).then(
+  return NativeRetenoSdk.markAsOpened(messageIds).then(
     () => response,
     (error: any) => Promise.reject(error)
   );
+
+  // return RetenoSdk.markAsOpened(messageIds).then(
+  //   () => response,
+  //   (error: any) => Promise.reject(error)
+  // );
 }
 
 export function markAllAsOpened(): Promise<
   { status: string } | UnreadMessagesCountErrorData
 > {
-  return RetenoSdk.markAllAsOpened().then(
+  return NativeRetenoSdk.markAllAsOpened().then(
     () => ({ status: 'OPENED' }),
     (error: any) => Promise.reject(error)
   );
+  // return RetenoSdk.markAllAsOpened().then(
+  //   () => ({ status: 'OPENED' }),
+  //   (error: any) => Promise.reject(error)
+  // );
 }
 
 export function getAppInboxMessagesCount(): Promise<number> {
-  return RetenoSdk.getAppInboxMessagesCount();
+  return NativeRetenoSdk.getAppInboxMessagesCount();
+  // return RetenoSdk.getAppInboxMessagesCount();
 }
