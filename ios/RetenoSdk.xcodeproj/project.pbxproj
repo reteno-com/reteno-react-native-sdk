@@ -7,7 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		F4FF95D7245B92E800C19C63 /* RetenoSdk.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4FF95D6245B92E800C19C63 /* RetenoSdk.swift */; };
+		FA1AEC722D6CBD3500BFE1A5 /* NativeRetenoSdkImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA1AEC702D6CBD3500BFE1A5 /* NativeRetenoSdkImpl.swift */; };
+		FA1AEC732D6CBD3500BFE1A5 /* NativeRetenoSdk1.mm in Sources */ = {isa = PBXBuildFile; fileRef = FA1AEC6F2D6CBD3500BFE1A5 /* NativeRetenoSdk1.mm */; };
+		FA1AEC7C2D6CC0D400BFE1A5 /* NativeRetenoSdk.mm in Sources */ = {isa = PBXBuildFile; fileRef = FA1AEC7B2D6CC0D400BFE1A5 /* NativeRetenoSdk.mm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -24,11 +26,13 @@
 
 /* Begin PBXFileReference section */
 		134814201AA4EA6300B7C361 /* libRetenoSdk.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libRetenoSdk.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		1705822A2951B4DF00B65623 /* EventEmitter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventEmitter.swift; sourceTree = "<group>"; };
 		17C9E39A2949EE030021AF59 /* RetenoUserAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetenoUserAttributes.swift; sourceTree = "<group>"; };
-		B3E7B5891CC2AC0600A0062D /* RetenoSdk.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RetenoSdk.m; sourceTree = "<group>"; };
-		F4FF95D5245B92E700C19C63 /* RetenoSdk-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "RetenoSdk-Bridging-Header.h"; sourceTree = "<group>"; };
-		F4FF95D6245B92E800C19C63 /* RetenoSdk.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetenoSdk.swift; sourceTree = "<group>"; };
+		FA1AEC6E2D6CBD3500BFE1A5 /* NativeRetenoSdk1.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NativeRetenoSdk1.h; sourceTree = "<group>"; };
+		FA1AEC6F2D6CBD3500BFE1A5 /* NativeRetenoSdk1.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = NativeRetenoSdk1.mm; sourceTree = "<group>"; };
+		FA1AEC702D6CBD3500BFE1A5 /* NativeRetenoSdkImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeRetenoSdkImpl.swift; sourceTree = "<group>"; };
+		FA1AEC712D6CBD3500BFE1A5 /* RetenoSdkTurboModulePOC-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "RetenoSdkTurboModulePOC-Bridging-Header.h"; sourceTree = "<group>"; };
+		FA1AEC7A2D6CC0D400BFE1A5 /* NativeRetenoSdk.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NativeRetenoSdk.h; sourceTree = "<group>"; };
+		FA1AEC7B2D6CC0D400BFE1A5 /* NativeRetenoSdk.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = NativeRetenoSdk.mm; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -53,11 +57,13 @@
 		58B511D21A9E6C8500147676 = {
 			isa = PBXGroup;
 			children = (
-				1705822A2951B4DF00B65623 /* EventEmitter.swift */,
+				FA1AEC7A2D6CC0D400BFE1A5 /* NativeRetenoSdk.h */,
+				FA1AEC7B2D6CC0D400BFE1A5 /* NativeRetenoSdk.mm */,
+				FA1AEC6E2D6CBD3500BFE1A5 /* NativeRetenoSdk1.h */,
+				FA1AEC6F2D6CBD3500BFE1A5 /* NativeRetenoSdk1.mm */,
+				FA1AEC702D6CBD3500BFE1A5 /* NativeRetenoSdkImpl.swift */,
+				FA1AEC712D6CBD3500BFE1A5 /* RetenoSdkTurboModulePOC-Bridging-Header.h */,
 				17C9E39A2949EE030021AF59 /* RetenoUserAttributes.swift */,
-				F4FF95D6245B92E800C19C63 /* RetenoSdk.swift */,
-				B3E7B5891CC2AC0600A0062D /* RetenoSdk.m */,
-				F4FF95D5245B92E700C19C63 /* RetenoSdk-Bridging-Header.h */,
 				134814211AA4EA7D00B7C361 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -119,7 +125,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F4FF95D7245B92E800C19C63 /* RetenoSdk.swift in Sources */,
+				FA1AEC722D6CBD3500BFE1A5 /* NativeRetenoSdkImpl.swift in Sources */,
+				FA1AEC732D6CBD3500BFE1A5 /* NativeRetenoSdk1.mm in Sources */,
+				FA1AEC7C2D6CC0D400BFE1A5 /* NativeRetenoSdk.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

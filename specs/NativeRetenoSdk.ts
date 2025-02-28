@@ -91,6 +91,8 @@ export interface Spec extends TurboModule {
   addListener: (event: string) => void;
 
   removeListeners: (count: number) => void;
+
+  getIsUSBBatteryCharge: () => number;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('NativeRetenoSdk');

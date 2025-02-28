@@ -162,6 +162,11 @@ export function setDeviceToken(deviceToken: string): Promise<void> {
   // return RetenoSdk.setDeviceToken(deviceToken);
 }
 
+export function getIsUSBBatteryCharge(): number {
+  return NativeRetenoSdk.getIsUSBBatteryCharge();
+  // return RetenoSdk.setDeviceToken(deviceToken);
+}
+
 export function setUserAttributes(
   payload: SetUserAttributesPayload
 ): Promise<void> {
