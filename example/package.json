@@ -9,16 +9,18 @@
     "ios": "react-native run-ios",
     "start": "react-native start",
     "pods": "pod-install --quiet",
-    "port-reverse": "adb reverse tcp:8081 tcp:8081"
+    "port-reverse": "adb reverse tcp:8081 tcp:8081",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@react-native-firebase/app": "^19.2.2",
     "@react-native-firebase/messaging": "^19.2.2",
     "@react-navigation/native": "^6.1.6",
     "@react-navigation/native-stack": "^6.9.12",
+    "patch-package": "^8.0.0",
+    "postinstall-postinstall": "^2.1.0",
     "react": "19.0.0",
     "react-native": "0.78.0",
-    "react-native-safe-area-context": "^5.2.0",
     "react-native-screens": "^4.6.0"
   },
   "devDependencies": {

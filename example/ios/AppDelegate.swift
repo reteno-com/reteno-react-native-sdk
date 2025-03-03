@@ -41,16 +41,9 @@ class AppDelegate: RCTAppDelegate, MessagingDelegate {
   //       Reteno.userNotificationService.processRemoteNotificationsToken(tokenString)
   //   }
 
-  override func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
+  func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
         guard let fcmToken = fcmToken else { return }
 
         Reteno.userNotificationService.processRemoteNotificationsToken(fcmToken)
     }
-
-  // Handle push notifications received when the app is in foreground
-  override func application(_ application: UIApplication,
-                            didReceiveRemoteNotification userInfo: [AnyHashable: Any],
-                            fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
-    Reteno.userNotificationService.application(application, didReceiveRemoteNotification: userInfo, fetchCompletionHandler: completionHandler)
-  }
 }
