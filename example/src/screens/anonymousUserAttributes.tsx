@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useMemo } from 'react';
+import React, {useCallback, useState, useMemo} from 'react';
 
 import {
   View,
@@ -27,8 +27,8 @@ export default function AnonymousUserAttributesScreen() {
 
   const form = useMemo(
     () => [
-      { label: 'Firstname', value: firstName, onChange: setFirstName },
-      { label: 'Lastname', value: lastName, onChange: setLastName },
+      {label: 'Firstname', value: firstName, onChange: setFirstName},
+      {label: 'Lastname', value: lastName, onChange: setLastName},
       {
         label: 'Language code',
         value: languageCode,
@@ -69,7 +69,7 @@ export default function AnonymousUserAttributesScreen() {
       town,
       address,
       postcode,
-    ]
+    ],
   );
 
   const submit = useCallback(() => {
@@ -96,7 +96,7 @@ export default function AnonymousUserAttributesScreen() {
       .then(() => {
         Alert.alert('Success', 'Anonymous attributes sent');
       })
-      .catch((error) => {
+      .catch(error => {
         Alert.alert('Error', error);
       });
   }, [
@@ -112,7 +112,7 @@ export default function AnonymousUserAttributesScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
-        {form.map((item) => (
+        {form.map(item => (
           <View style={styles.row} key={item.label}>
             <View style={styles.rowText}>
               <Text style={styles.text}>

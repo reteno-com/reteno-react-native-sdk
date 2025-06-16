@@ -6,6 +6,7 @@ import {
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import {
+  logEcomEventProductViewed,
   logScreenView,
   registerForRemoteNotifications,
   updatePushPermissionStatusAndroid,
@@ -16,6 +17,13 @@ import HomeScreen from './screens/home';
 import AnonymousUserAttributes from './screens/anonymousUserAttributes';
 import { ScreenNames, RootStackParamList } from './config';
 import { PermissionsAndroid } from 'react-native';
+import EcomEventsScreen from './screens/ecomEvents';
+import ViewedEventScreen from './screens/ecomEventsScreens/viewedEventScreen';
+import ProductCategoryViewedScreen from './screens/ecomEventsScreens/ProductCategoryViewedScreen';
+import ProductAddedToWishlistEventScreen from './screens/ecomEventsScreens/ProductAddedToWishlistEventScreen';
+import CartUpdateScreen from './screens/ecomEventsScreens/CartUpdateScreen';
+import OrderCreatedScreen from './screens/ecomEventsScreens/OrderCreatedEventScreen';
+import SearchRequestEventScreen from './screens/ecomEventsScreens/SearchRequestEventScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -64,6 +72,34 @@ function Navigation() {
       >
         <Stack.Navigator initialRouteName={ScreenNames.home}>
           <Stack.Screen name={ScreenNames.home} component={HomeScreen} />
+          <Stack.Screen
+            name={ScreenNames.ecomEvents}
+            component={EcomEventsScreen}
+          />
+          <Stack.Screen
+            name={ScreenNames.ViewedEventScreen}
+            component={ViewedEventScreen}
+          />
+          <Stack.Screen
+            name={ScreenNames.ProductCategoryViewedScreen}
+            component={ProductCategoryViewedScreen}
+          />
+          <Stack.Screen
+            name={ScreenNames.ProductAddedToWishlistEventScreen}
+            component={ProductAddedToWishlistEventScreen}
+          />
+          <Stack.Screen
+            name={ScreenNames.SearchRequestEventScreen}
+            component={SearchRequestEventScreen}
+          />
+          <Stack.Screen
+            name={ScreenNames.CartUpdateScreenEventScreen}
+            component={CartUpdateScreen}
+          />
+          <Stack.Screen
+            name={ScreenNames.OrderCreatedScreen}
+            component={OrderCreatedScreen}
+          />
           <Stack.Screen
             name={ScreenNames.attributes}
             component={AttributesScreen}

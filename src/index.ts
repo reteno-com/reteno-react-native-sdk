@@ -458,3 +458,215 @@ export function markAllAsOpened(): Promise<
 export function getAppInboxMessagesCount(): Promise<number> {
   return RetenoSdk.getAppInboxMessagesCount();
 }
+
+//ECOMMERCE EVENTS
+
+export type EcomAttribute = {
+  name: string;
+  value: (string | null)[];
+};
+
+export type EcomSimpleAttribute = {
+  name: string;
+  value: string;
+};
+
+export type EcomProductView = {
+  productId: string;
+  price: number;
+  isInStock: boolean;
+  attributes?: EcomAttribute[] | null;
+};
+
+export type EcomCartItem = {
+  productId: string;
+  quantity: number;
+  price: number;
+  discount?: number | null;
+  name?: string | null;
+  category?: string | null;
+};
+
+export enum OrderStatus {
+  Initialized,
+  InProgress,
+  Delivered,
+  Cancelled,
+}
+
+export type EcomOrder = {
+  externalOrderId: string;
+  externalCustomerId?: string | null;
+  totalCost: number;
+  status: OrderStatus;
+  cartId?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  shipping?: number | null;
+  discount?: number | null;
+  taxes?: number | null;
+  restoreId?: string | null;
+  statusDescription?: string | null;
+  storeId?: string | null;
+  source?: string | null;
+  deliveryMethod?: string | null;
+  deliveryAddress?: string | null;
+  paymentMethod?: string | null;
+  orderItems?: EcomOrderItem[] | null;
+  attributes?: EcomSimpleAttribute[] | null;
+};
+
+export type EcomOrderItem = {
+  externalItemId: string;
+  name: string;
+  category: string;
+  quantity: number;
+  price: number;
+  url: string;
+  imageUrl?: string | null;
+  description?: string | null;
+};
+
+export type EcomCategoryView = {
+  productCategoryId: string;
+  attributes?: EcomAttribute[] | null;
+};
+
+export type EcomEventProductViewedPayload = {
+  product: EcomProductView;
+  currencyCode?: string | null;
+};
+
+// Function to log product viewed event
+export function logEcomEventProductViewed(
+  payload: EcomEventProductViewedPayload
+): Promise<void> {
+  return RetenoSdk.logEcomEventProductViewed(payload);
+}
+
+/**
+ * 2. Product Category Viewed Event
+ */
+
+// Type for product category viewed event
+export type EcomEventProductCategoryViewedPayload = {
+  category: EcomCategoryView;
+};
+
+// Function to log product category viewed event
+export function logEcomEventProductCategoryViewed(
+  payload: EcomEventProductCategoryViewedPayload
+): Promise<void> {
+  return RetenoSdk.logEcomEventProductCategoryViewed(payload);
+}
+
+/**
+ * 3. Product Added to Wishlist Event
+ */
+
+// Type for product added to wishlist event
+export type EcomEventProductAddedToWishlistPayload = {
+  product: EcomProductView;
+  currencyCode?: string | null;
+};
+
+// Function to log product added to wishlist event
+export function logEcomEventProductAddedToWishlist(
+  payload: EcomEventProductAddedToWishlistPayload
+): Promise<void> {
+  return RetenoSdk.logEcomEventProductAddedToWishlist(payload);
+}
+
+/**
+ * 4. Cart Updated Event
+ */
+
+export type EcomEventCartUpdatedPayload = {
+  cartItems: EcomCartItem[];
+  currencyCode?: string | null;
+  cartId: string;
+};
+
+// Function to log product added to cart event
+export function logEcomEventCartUpdated(
+  payload: EcomEventCartUpdatedPayload
+): Promise<void> {
+  return RetenoSdk.logEcomEventCartUpdated(payload);
+}
+
+/**
+ * 5. Order Created Event
+ */
+
+export type EcomEventOrderCreatedPayload = {
+  order: EcomOrder;
+  currencyCode?: string | null;
+};
+
+export function logEcomEventOrderCreated(
+  payload: EcomEventOrderCreatedPayload
+): Promise<void> {
+  return RetenoSdk.logEcomEventOrderCreated(payload);
+}
+
+/**
+ * 6. Order Updated
+ */
+
+export type EcomEventOrderUpdatedPayload = {
+  order: EcomOrder;
+  currencyCode?: string | null;
+};
+
+export function logEcomEventOrderUpdated(
+  payload: EcomEventOrderUpdatedPayload
+): Promise<void> {
+  return RetenoSdk.logEcomEventOrderUpdated(payload);
+}
+
+/**
+ * 7. Order Delivered
+ */
+
+export type EcomEventOrderDeliveredPayload = {
+  externalOrderId: string;
+};
+
+// Function to log checkout started event
+export function logEcomEventOrderDelivered(
+  payload: EcomEventOrderDeliveredPayload
+): Promise<void> {
+  return RetenoSdk.logEcomEventOrderDelivered(payload);
+}
+
+/**
+ * 8. Order Cancelled
+ */
+
+export type EcomEventOrderCancelledPayload = {
+  externalOrderId: string;
+};
+
+// Function to log order placed event
+export function logEcomEventOrderCancelled(
+  payload: EcomEventOrderCancelledPayload
+): Promise<void> {
+  return RetenoSdk.logEcomEventOrderCancelled(payload);
+}
+
+/**
+ * 9. Search Request Event
+ */
+
+export type EcomEventSearchRequestPayload = {
+  searchQuery: string;
+  isFound: boolean;
+};
+
+export function logEcomEventSearchRequest(
+  payload: EcomEventSearchRequestPayload
+): Promise<void> {
+  return RetenoSdk.logEcomEventSearchRequest(payload);
+}

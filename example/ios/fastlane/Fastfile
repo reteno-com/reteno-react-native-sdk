@@ -43,7 +43,7 @@ platform :ios do
       match(clone_branch_directly: true, readonly: true)
     else
       ['development', 'adhoc', 'appstore'].each do |x|
-        match(type: x, clone_branch_directly: true, readonly: true) 
+        match(type: x, clone_branch_directly: true, readonly: true, git_branch: "renetoexample-11-06-25") 
       end
     end
   end
@@ -54,10 +54,10 @@ platform :ios do
     # register_devices
 
     if ENV.key?('MATCH_TYPE') then
-      match(shallow_clone: true, clone_branch_directly: true, force: true)
+      match(shallow_clone: true, clone_branch_directly: true, git_branch: "renetoexample-11-06-25")
     else
       ['development', 'adhoc', 'appstore'].each do |x|
-        match(type: x, shallow_clone: true, clone_branch_directly: true, force: true)
+        match(type: x, shallow_clone: true, clone_branch_directly: true, git_branch: "renetoexample-11-06-25")
       end
     end
   end
@@ -65,7 +65,7 @@ platform :ios do
   desc 'Drop development, adhoc and appstore certificates or the one, provided by MATCH_TYPE environment variable'
   lane :drop_certs do    
       ['development', 'adhoc', 'appstore'].each do |x|
-        match_nuke(type: x)
+        match_nuke(type: x, git_branch: "renetoexample-11-06-25")
       end
   end
 

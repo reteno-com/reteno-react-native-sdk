@@ -73,5 +73,7 @@ lib/
 
 # fastlane
 example/ios/fastlane/.env
+example/ios/fastlane/*.p8
+
 
 package-lock.json

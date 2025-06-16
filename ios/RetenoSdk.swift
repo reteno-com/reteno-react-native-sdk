@@ -287,6 +287,7 @@ open class RetenoSdk: RCTEventEmitter {
         }
     
     @objc(getAppInboxMessagesCount:withRejecter:)
+
         func getAppInboxMessagesCount(resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
             Reteno.inbox().getUnreadMessagesCount { result in
                 switch result {
@@ -297,4 +298,149 @@ open class RetenoSdk: RCTEventEmitter {
                 }
             }
         }
+
+      @objc func logEcomEventProductViewed(_ payload: [String: Any], resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+        guard let data = RetenoEcomEvent.buildProductDataFromPayload(payload) else {
+            reject("Payload Error", "Payload cannot be null", nil)
+            return
+        }
+        
+        do {
+            Reteno.ecommerce().logEvent(type: .productViewed(product: data.product, currencyCode: data.currencyCode),
+                                        date: Date(),
+                                        forcePush: true)
+            resolve(["success": true])
+        } catch {
+            reject("Reteno iOS SDK Error", error.localizedDescription, error)
+        }
+    }
+    
+    @objc func logEcomEventProductCategoryViewed(_ payload: [String: Any], resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+        guard let category = RetenoEcomEvent.buildProductCategoryDataFromPayload(payload) else {
+            reject("Payload Error", "Payload cannot be null", nil)
+            return
+        }
+        
+        do {
+            Reteno.ecommerce().logEvent(type: .productCategoryViewed(category: category),
+                                        date: Date(),
+                                        forcePush: true)
+            resolve(["success": true])
+        } catch {
+            reject("Reteno iOS SDK Error", error.localizedDescription, error)
+        }
+    }
+    
+    @objc func logEcomEventProductAddedToWishlist(_ payload: [String: Any], resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+        guard let data = RetenoEcomEvent.buildProductDataFromPayload(payload) else {
+            reject("Payload Error", "Payload cannot be null", nil)
+            return
+        }
+        
+        do {
+            Reteno.ecommerce().logEvent(type: .productAddedToWishlist(product: data.product, currencyCode: data.currencyCode),
+                                        date: Date(),
+                                        forcePush: true)
+            resolve(["success": true])
+        } catch {
+            reject("Reteno iOS SDK Error", error.localizedDescription, error)
+        }
+    }
+    
+    @objc func logEcomEventCartUpdated(_ payload: [String: Any], resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+        guard let data = RetenoEcomEvent.buildCartUpdatedDataFromPayload(payload) else {
+            reject("Payload Error", "Payload cannot be null", nil)
+            return
+        }
+        
+        do {
+            Reteno.ecommerce().logEvent(type: .cartUpdated(
+                cartId: data.cartId,
+                products: data.products,
+                currencyCode: data.currencyCode
+            ),
+                                        date: Date(),
+                                        forcePush: true)
+            resolve(["success": true])
+        } catch {
+            reject("Reteno iOS SDK Error", error.localizedDescription, error)
+        }
+    }
+    
+    
+    @objc func logEcomEventOrderCreated(_ payload: [String: Any], resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+        guard let data = RetenoEcomEvent.buildOrderDataFromPayload(payload) else {
+            reject("Payload Error", "Payload cannot be null", nil)
+            return
+        }
+        do {
+            Reteno.ecommerce().logEvent(type: .orderCreated(order: data.order, currencyCode: data.currencyCode),
+                                        date: Date(),
+                                        forcePush: true)
+           
+            
+            resolve(["success": true])
+        } catch {
+            reject("Reteno iOS SDK Error", error.localizedDescription, error)
+        }
+    }
+    
+    @objc func logEcomEventOrderUpdated(_ payload: [String: Any], resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+        guard let data = RetenoEcomEvent.buildOrderDataFromPayload(payload) else {
+            reject("Payload Error", "Payload cannot be null", nil)
+            return
+        }
+        
+        do {
+            Reteno.ecommerce().logEvent(type: .orderUpdated(order: data.order, currencyCode: data.currencyCode),
+                                        date: Date(),
+                                        forcePush: true)
+            resolve(["success": true])
+        } catch {
+            reject("Reteno iOS SDK Error", error.localizedDescription, error)
+        }
+    }
+    
+    @objc func logEcomEventOrderDelivered(_ payload: [String: Any], resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+        guard let externalOrderId = RetenoEcomEvent.buildOrderExternalIdFromPayload(payload) else {
+            reject("Payload Error", "Payload cannot be null", nil)
+            return
+        }
+        
+        do {
+            Reteno.ecommerce().logEvent(type: .orderDelivered(externalOrderId: externalOrderId))
+            resolve(["success": true])
+        } catch {
+            reject("Reteno iOS SDK Error", error.localizedDescription, error)
+        }
+    }
+    
+    @objc func logEcomEventOrderCancelled(_ payload: [String: Any], resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+        guard let externalOrderId = RetenoEcomEvent.buildOrderExternalIdFromPayload(payload) else {
+            reject("Payload Error", "Payload cannot be null", nil)
+            return
+        }
+        
+        do {
+            Reteno.ecommerce().logEvent(type: .orderCancelled(externalOrderId: externalOrderId),
+                                        date: Date(),
+                                        forcePush: true)
+            resolve(["success": true])
+        } catch {
+            reject("Reteno iOS SDK Error", error.localizedDescription, error)
+        }
+    }
+    
+    @objc func logEcomEventSearchRequest(_ payload: [String: Any], resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+        guard let data = RetenoEcomEvent.buildSearchRequestDataFromPayload(payload) else {
+            reject("Payload Error", "Payload cannot be null", nil)
+            return
+        }
+        do {
+            Reteno.ecommerce().logEvent(type: .searchRequest(query: data.searchQuery, isFound: data.isFound))
+            resolve(["success": true])
+        } catch {
+            reject("Reteno iOS SDK Error", error.localizedDescription, error)
+        }
+    }  
 }
