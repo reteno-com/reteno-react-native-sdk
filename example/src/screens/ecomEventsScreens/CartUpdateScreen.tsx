@@ -98,8 +98,8 @@ const CartUpdateScreen = () => {
       const cartItemsFormatted = cartItems.map(item => ({
         productId: item.productId,
         quantity: parseInt(item.quantity, 10),
-        price: parseFloat(item.price),
-        discount: item.discount ? parseFloat(item.discount) : null,
+        price: Number(item.price),
+        discount: item.discount ? Number(item.discount) : null,
         name: item.name || null,
         category: item.category || null,
       }));

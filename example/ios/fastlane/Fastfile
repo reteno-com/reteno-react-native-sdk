@@ -136,7 +136,7 @@ platform :ios do
   end
 
   desc "Make an archive from the current codebase"
-  private_lane :archive do |options|
+  lane :archive do |options|
     sync_certs
   
     # See https://docs.fastlane.tools/codesigning/getting-started/#automatic-manual-signing
@@ -146,7 +146,7 @@ platform :ios do
     export_icloud_container_env = ENV['GYM_EXPORT_ICLOUD_CONTAINER_ENV']
     export_options[:iCloudContainerEnvironment] = export_icloud_container_env unless export_icloud_container_env.nil?
 
-    build_app(export_options: export_options)
+    build_app(export_options: export_options, xcodebuild_formatter: nil)
     # enable_automatic_code_signing(path: ENV["XC_PROJECT"])
   end
 

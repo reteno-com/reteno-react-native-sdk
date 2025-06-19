@@ -89,7 +89,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
-        versionName "1.7.0"
+        versionName "1.7.1"
     }
 
     signingConfigs {
@@ -126,7 +126,7 @@ dependencies {
     implementation("com.facebook.react:react-android")
     // implementation("com.facebook.react:flipper-integration")
 
-    implementation 'com.reteno:fcm:2.0.20'
+    implementation 'com.reteno:fcm:2.6.6'
     implementation "com.google.firebase:firebase-messaging:23.1.0"
     implementation "com.google.firebase:firebase-messaging-ktx:23.1.0"
 

@@ -87,6 +87,14 @@ Bump type to be used to increment version. Available values are: 'major', 'minor
 
 Bump build number to current + 1
 
+### ios archive
+
+```sh
+[bundle exec] fastlane ios archive
+```
+
+Make an archive from the current codebase
+
 ### ios upload_symbols
 
 ```sh

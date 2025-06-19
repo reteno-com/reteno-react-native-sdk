@@ -2,17 +2,19 @@ import React, {useState} from 'react';
 import {
   SafeAreaView,
   Text,
-  TextInput,
   View,
   ScrollView,
   Switch,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import {logEcomEventProductViewed} from 'reteno-react-native-sdk';
 import styles from '../styles';
+import {InputRow} from '../../components/InputRow';
 
 const ViewedEventScreen = () => {
   const [form, setFormValue] = useState({
+    currencyCode: '',
     productId: '',
     price: '',
     isInStock: false,
@@ -52,68 +54,57 @@ const ViewedEventScreen = () => {
     });
   };
 
-  const handleEcomEvent = () => {
-    const {productId, price, isInStock, attributes} = form;
+  const handleEcomEvent = async () => {
+    const {productId, price, isInStock, attributes, currencyCode} = form;
 
-    logEcomEventProductViewed({
-      product: {
-        productId,
-        price: parseFloat(price),
-        isInStock,
-        attributes,
-      },
-    });
+    try {
+      if (!price || !productId) {
+        return Alert.alert(
+          'Помилка валідації',
+          'Обовязкові поля з "*" повинно бути цілим заповнені',
+        );
+      }
+      const res = await logEcomEventProductViewed({
+        product: {
+          productId,
+          price: Number(price),
+          isInStock,
+          attributes,
+        },
+        currencyCode: currencyCode || null,
+      });
+
+      Alert.alert(`Success ${JSON.stringify(res)}`);
+    } catch (error) {
+      Alert.alert(`Error ${JSON.stringify(error)}`);
+    }
   };
-
-  const renderInputRow = ({
-    label,
-    value,
-    onChange,
-    required = false,
-  }: {
-    label: string;
-    value: string;
-    onChange: (text: string) => void;
-    required?: boolean;
-  }) => (
-    <View style={styles.row} key={label}>
-      <View style={styles.rowText}>
-        <Text style={styles.text}>
-          <Text style={styles.text}>{label}</Text>
-          {required && <Text style={styles.rowTextRequired}>*</Text>}
-        </Text>
-      </View>
-      <TextInput
-        style={[styles.textInput, styles.text]}
-        value={value}
-        onChangeText={onChange}
-      />
-    </View>
-  );
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
-        {renderInputRow({
-          label: 'Product ID',
-          value: form.productId,
-          onChange: text => handleChange('productId', text),
-          required: true,
-        })}
+        <InputRow
+          label="Currency code"
+          value={form.currencyCode}
+          onChange={text => handleChange('currencyCode', text)}
+        />
+        <InputRow
+          label="Product ID"
+          value={form.productId}
+          onChange={text => handleChange('productId', text)}
+          required
+        />
 
-        {renderInputRow({
-          label: 'Price',
-          value: form.price,
-          onChange: text => handleChange('price', text),
-          required: true,
-        })}
+        <InputRow
+          label="Price"
+          value={form.price}
+          onChange={text => handleChange('price', text)}
+          required
+        />
 
         <View style={styles.row}>
           <View style={styles.rowText}>
-            <Text style={styles.text}>
-              Is In Stock
-              <Text style={styles.rowTextRequired}>*</Text>
-            </Text>
+            <Text style={styles.text}>Is In Stock</Text>
           </View>
           <Switch
             value={form.isInStock}
@@ -123,16 +114,16 @@ const ViewedEventScreen = () => {
 
         {form.attributes.map((attr, index) => (
           <View key={index}>
-            {renderInputRow({
-              label: 'Attribute Name',
-              value: attr.name,
-              onChange: text => handleAttributeChange(index, 'name', text),
-            })}
-            {renderInputRow({
-              label: 'Attribute Value',
-              value: attr.value[0],
-              onChange: text => handleAttributeChange(index, 'value', text),
-            })}
+            <InputRow
+              label="Attribute Name"
+              value={attr.name}
+              onChange={text => handleAttributeChange(index, 'name', text)}
+            />
+            <InputRow
+              label="Attribute Value"
+              value={attr.value[0]}
+              onChange={text => handleAttributeChange(index, 'value', text)}
+            />
           </View>
         ))}
         <TouchableOpacity style={styles.submitBtn} onPress={handleEcomEvent}>

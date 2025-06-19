@@ -12,6 +12,7 @@ export enum ScreenNames {
   SearchRequestEventScreen = 'SearchRequestEventScreen',
 }
 
+
 export type RootStackParamList = {
   [ScreenNames.home]: undefined;
   [ScreenNames.attributes]: undefined;

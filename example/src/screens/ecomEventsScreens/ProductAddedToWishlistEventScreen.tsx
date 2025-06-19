@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Switch,
+  Alert,
 } from 'react-native';
 import {logEcomEventProductAddedToWishlist} from 'reteno-react-native-sdk';
 import styles from '../styles';
@@ -53,17 +54,29 @@ const ProductAddedToWishlistEventScreen = () => {
     });
   };
 
-  const handleEcomEvent = () => {
+  const handleEcomEvent = async () => {
     const {productId, price, isInStock, attributes, currencyCode} = form;
-    logEcomEventProductAddedToWishlist({
-      product: {
-        productId,
-        price: parseFloat(price),
-        isInStock,
-        attributes,
-      },
-      currencyCode: currencyCode ? currencyCode : null,
-    });
+
+    try {
+      if (!price || !productId) {
+        return Alert.alert(
+          'Помилка валідації',
+          'Обовязкові поля з "*" повинно бути цілим заповнені',
+        );
+      }
+      const res = await logEcomEventProductAddedToWishlist({
+        product: {
+          productId,
+          price: Number(price),
+          isInStock,
+          attributes,
+        },
+        currencyCode: currencyCode ? currencyCode : null,
+      });
+      Alert.alert(`Success ${JSON.stringify(res)}`);
+    } catch (error) {
+      Alert.alert(`Error ${JSON.stringify(error)}`);
+    }
   };
 
   return (
@@ -73,7 +86,6 @@ const ProductAddedToWishlistEventScreen = () => {
           label="Currency code"
           value={form.currencyCode}
           onChange={text => handleChange('currencyCode', text)}
-          required
         />
         <InputRow
           label="Product ID"
@@ -90,10 +102,7 @@ const ProductAddedToWishlistEventScreen = () => {
 
         <View style={styles.row}>
           <View style={styles.rowText}>
-            <Text style={styles.text}>
-              Is In Stock
-              <Text style={styles.rowTextRequired}>*</Text>
-            </Text>
+            <Text style={styles.text}>Is In Stock</Text>
           </View>
           <Switch
             value={form.isInStock}
@@ -107,13 +116,11 @@ const ProductAddedToWishlistEventScreen = () => {
               label="Attribute Name"
               value={attr.name}
               onChange={text => handleAttributeChange(index, 'name', text)}
-              required
             />
             <InputRow
               label="Attribute Value"
               value={attr.value[0] as string}
               onChange={text => handleAttributeChange(index, 'value', text)}
-              required
             />
           </View>
         ))}

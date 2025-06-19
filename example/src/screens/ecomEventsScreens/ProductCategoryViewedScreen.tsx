@@ -6,6 +6,7 @@ import {
   View,
   ScrollView,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import {logEcomEventProductCategoryViewed} from 'reteno-react-native-sdk';
 import styles from '../styles';
@@ -48,14 +49,26 @@ const ProductCategoryViewedScreen = () => {
     }));
   };
 
-  const handleEcomEvent = () => {
+  const handleEcomEvent = async () => {
     const {categoryId, attributes} = form;
-    logEcomEventProductCategoryViewed({
-      category: {
-        productCategoryId: categoryId,
-        attributes,
-      },
-    });
+
+    try {
+      if (!categoryId) {
+        return Alert.alert(
+          'Помилка валідації',
+          'Обовязкові поля з "Category ID" повинно бути цілим заповнені',
+        );
+      }
+      const res = await logEcomEventProductCategoryViewed({
+        category: {
+          productCategoryId: categoryId,
+          attributes,
+        },
+      });
+      Alert.alert(`Success ${JSON.stringify(res)}`);
+    } catch (error) {
+      Alert.alert(`Error ${JSON.stringify(error)}`);
+    }
   };
 
   const renderInputRow = ({

@@ -123,12 +123,7 @@ const OrderCreatedScreen = () => {
   };
 
   const validateRequiredFields = () => {
-    const {order, currencyCode} = form;
-
-    if (!currencyCode.trim()) {
-      Alert.alert('Помилка валідації', 'Поле "Currency code" є обов\'язковим');
-      return false;
-    }
+    const {order} = form;
 
     if (!order.externalOrderId.trim()) {
       Alert.alert(
@@ -199,7 +194,7 @@ const OrderCreatedScreen = () => {
     return {
       externalOrderId: order.externalOrderId,
       externalCustomerId: order.externalCustomerId || null,
-      totalCost: order.totalCost ? parseFloat(order.totalCost) : 0,
+      totalCost: order.totalCost ? Number(order.totalCost) : 0,
       status: parseOrderStatus(order.status) || 1,
       cartId: order.cartId || null,
       email: order.email || null,
@@ -307,7 +302,6 @@ const OrderCreatedScreen = () => {
           label="Currency code"
           value={form.currencyCode}
           onChange={text => setFormValue({...form, currencyCode: text})}
-          required
         />
 
         {orderFields.map(({key, label, required, keyboardType}) => (
