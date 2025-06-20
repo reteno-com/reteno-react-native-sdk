@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useMemo } from 'react';
+import React, {useCallback, useState, useMemo} from 'react';
 
 import {
   View,
@@ -9,7 +9,7 @@ import {
   SafeAreaView,
   Alert,
 } from 'react-native';
-import { setUserAttributes, UserAttributes } from 'reteno-react-native-sdk';
+import {setUserAttributes, UserAttributes} from 'reteno-react-native-sdk';
 import styles from './styles';
 
 export default function Attributes() {
@@ -33,10 +33,10 @@ export default function Attributes() {
         value: externalUserId,
         onChange: setExternalUserId,
       },
-      { label: 'Email', value: email, onChange: setEmail },
-      { label: 'Phone', value: phone, onChange: setPhone },
-      { label: 'Firstname', value: firstName, onChange: setFirstName },
-      { label: 'Lastname', value: lastName, onChange: setLastName },
+      {label: 'Email', value: email, onChange: setEmail},
+      {label: 'Phone', value: phone, onChange: setPhone},
+      {label: 'Firstname', value: firstName, onChange: setFirstName},
+      {label: 'Lastname', value: lastName, onChange: setLastName},
       {
         label: 'Language code',
         value: languageCode,
@@ -80,7 +80,7 @@ export default function Attributes() {
       town,
       address,
       postcode,
-    ]
+    ],
   );
 
   const submit = useCallback(() => {
@@ -123,7 +123,7 @@ export default function Attributes() {
         .then(() => {
           Alert.alert('Success', 'Attributes sent');
         })
-        .catch((error) => {
+        .catch(error => {
           Alert.alert('Error', error);
         });
     }
@@ -143,7 +143,7 @@ export default function Attributes() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
-        {form.map((item) => (
+        {form.map(item => (
           <View style={styles.row} key={item.label}>
             <View style={styles.rowText}>
               <Text style={styles.text}>

@@ -58,7 +58,7 @@ public class MainApplication extends Application implements ReactApplication, Re
     @Override
     public void onCreate() {
         super.onCreate();
-        retenoInstance = new RetenoImpl(this, "your_access_key_here");
+        retenoInstance = new RetenoImpl(this, "630A66AF-C1D3-4F2A-ACC1-0D51C38D2B05");
     }
 
     @NonNull

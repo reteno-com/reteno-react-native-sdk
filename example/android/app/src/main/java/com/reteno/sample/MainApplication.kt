@@ -13,6 +13,7 @@ import com.facebook.react.defaults.DefaultReactNativeHost
 import com.facebook.react.soloader.OpenSourceMergedSoMapping
 import com.facebook.soloader.SoLoader
 import com.reteno.core.Reteno
+import com.reteno.core.RetenoConfig
 import com.reteno.core.RetenoImpl
 import com.retenosdk.RetenoReactNativeApplication
 
@@ -38,7 +39,7 @@ class MainApplication : Application(), ReactApplication, RetenoReactNativeApplic
       }
 
   override fun getRetenoInstance(): Reteno {
-    return retenoInstance
+    return Reteno.instance
   }
 
   override val reactHost: ReactHost
@@ -50,8 +51,8 @@ class MainApplication : Application(), ReactApplication, RetenoReactNativeApplic
   }
   override fun onCreate() {
     super.onCreate()
-    retenoInstance = RetenoImpl(this, "your_access_key_here")
-
+    Reteno.initWithConfig(RetenoConfig.Builder()
+      .accessKey("630A66AF-C1D3-4F2A-ACC1-0D51C38D2B05").build())
     SoLoader.init(this, OpenSourceMergedSoMapping)
     if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
       // If you opted-in for the New Architecture, we load the native entry point for this app.

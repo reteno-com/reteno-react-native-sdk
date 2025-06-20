@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useMemo } from 'react';
+import React, {useCallback, useState, useMemo} from 'react';
 
 import {
   StyleSheet,
@@ -10,15 +10,15 @@ import {
   SafeAreaView,
   Alert,
 } from 'react-native';
-import { logEvent } from 'reteno-react-native-sdk';
+import {logEvent} from 'reteno-react-native-sdk';
 
 export default function Events() {
   const [eventName, setEventName] = useState('test_event_type');
   const [parameterName, setParameterName] = useState('');
   const [parameterValue, setParameterValue] = useState('');
-  const [parameters, setParameters] = useState<
-    { name: string; value: string }[]
-  >([]);
+  const [parameters, setParameters] = useState<{name: string; value: string}[]>(
+    [],
+  );
   const [showParameterForm, setShowParameterForm] = useState(false);
 
   const form = useMemo(
@@ -30,14 +30,14 @@ export default function Events() {
         onChange: setEventName,
       },
     ],
-    [eventName]
+    [eventName],
   );
 
   const addParameter = useCallback(() => {
     if (parameterName && parameterValue) {
       setParameters([
         ...parameters,
-        { name: parameterName, value: parameterValue },
+        {name: parameterName, value: parameterValue},
       ]);
       setParameterName('');
       setParameterValue('');
@@ -61,7 +61,7 @@ export default function Events() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
-        {form.map((item) => (
+        {form.map(item => (
           <View style={styles.row} key={item.label}>
             <View style={styles.rowText}>
               <Text style={styles.text}>
@@ -83,7 +83,7 @@ export default function Events() {
             <Text style={styles.text}>Parameters</Text>
           </View>
         )}
-        {parameters.map((item) => (
+        {parameters.map(item => (
           <View style={styles.row} key={item.name}>
             <View style={styles.rowText}>
               <Text style={styles.text}>
@@ -135,8 +135,7 @@ export default function Events() {
         ) : (
           <TouchableOpacity
             style={styles.submitBtn}
-            onPress={() => setShowParameterForm(true)}
-          >
+            onPress={() => setShowParameterForm(true)}>
             <Text style={styles.submitBtnText}>New parameter</Text>
           </TouchableOpacity>
         )}

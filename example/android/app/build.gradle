@@ -89,7 +89,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
-        versionName "1.7.0"
+        versionName "1.7.1"
     }
 
     signingConfigs {
@@ -99,13 +99,11 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
-        release {
-            if (project.hasProperty('MYAPP_UPLOAD_STORE_FILE')) {
-                storeFile file(MYAPP_UPLOAD_STORE_FILE)
-                storePassword MYAPP_UPLOAD_STORE_PASSWORD
-                keyAlias MYAPP_UPLOAD_KEY_ALIAS
-                keyPassword MYAPP_UPLOAD_KEY_PASSWORD
-            }
+         release {
+            storeFile file('your_key_name.keystore')
+            storePassword 'password123'
+            keyAlias 'your_key_alias'
+            keyPassword 'password123'
         }
     }
     
@@ -128,7 +126,7 @@ dependencies {
     implementation("com.facebook.react:react-android")
     // implementation("com.facebook.react:flipper-integration")
 
-    implementation 'com.reteno:fcm:2.0.20'
+    implementation 'com.reteno:fcm:2.6.6'
     implementation "com.google.firebase:firebase-messaging:23.1.0"
     implementation "com.google.firebase:firebase-messaging-ktx:23.1.0"
 

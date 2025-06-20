@@ -37,6 +37,7 @@ import com.reteno.core.view.iam.callback.InAppCloseData;
 import com.reteno.core.view.iam.callback.InAppErrorData;
 import com.reteno.core.view.iam.callback.InAppLifecycleCallback;
 import com.reteno.core.features.recommendation.GetRecommendationResponseCallback;
+import com.reteno.core.domain.model.ecom.EcomEvent;
 
 import android.util.Log;
 import java.util.ArrayList;
@@ -596,4 +597,188 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
       promise.reject("CallbackError", "No callback to unsubscribe");
     }
   }
+
+  /**
+   * Ecommerce Events
+ * 1. Product Viewed Event
+ */
+@ReactMethod
+public void logEcomEventProductViewed(ReadableMap payload, Promise promise) {
+  try {
+    EcomEvent.ProductViewed event = RetenoEcomEvent.buildProductViewedFromPayload(payload);
+    if (event == null) {
+      promise.reject("Payload Error", "Payload cannot be null");
+      return;
+    }
+    ((RetenoApplication) this.context.getCurrentActivity().getApplication())
+      .getRetenoInstance()
+      .logEcommerceEvent(event);
+  } catch (Exception e) {
+    promise.reject("Reteno Android SDK Error", e);
+    return;
+  }
+  WritableMap res = new WritableNativeMap();
+  res.putBoolean("success", true);
+  promise.resolve(res);
+}
+
+@ReactMethod
+public void logEcomEventProductCategoryViewed(ReadableMap payload, Promise promise) {
+  try {
+    EcomEvent.ProductCategoryViewed event = RetenoEcomEvent.buildProductCategoryViewedFromPayload(payload);
+    if (event == null) {
+      promise.reject("Payload Error", "Payload cannot be null");
+      return;
+    }
+    ((RetenoApplication) this.context.getCurrentActivity().getApplication())
+      .getRetenoInstance()
+      .logEcommerceEvent(event);
+  } catch (Exception e) {
+    promise.reject("Reteno Android SDK Error", e);
+    return;
+  }
+  WritableMap res = new WritableNativeMap();
+  res.putBoolean("success", true);
+  promise.resolve(res);
+}
+
+@ReactMethod
+public void logEcomEventProductAddedToWishlist(ReadableMap payload, Promise promise) {
+  try {
+    EcomEvent.ProductAddedToWishlist event = RetenoEcomEvent.buildProductAddedToWishlistFromPayload(payload);
+    if (event == null) {
+      promise.reject("Payload Error", "Payload cannot be null");
+      return;
+    }
+    ((RetenoApplication) this.context.getCurrentActivity().getApplication())
+      .getRetenoInstance()
+      .logEcommerceEvent(event);
+  } catch (Exception e) {
+    promise.reject("Reteno Android SDK Error", e);
+    return;
+  }
+  WritableMap res = new WritableNativeMap();
+  res.putBoolean("success", true);
+  promise.resolve(res);
+}
+
+@ReactMethod
+public void logEcomEventCartUpdated(ReadableMap payload, Promise promise) {
+  try {
+    EcomEvent.CartUpdated event = RetenoEcomEvent.buildCartUpdatedFromPayload(payload);
+    if (event == null) {
+      promise.reject("Payload Error", "Payload cannot be null");
+      return;
+    }
+    ((RetenoApplication) this.context.getCurrentActivity().getApplication())
+      .getRetenoInstance()
+      .logEcommerceEvent(event);
+  } catch (Exception e) {
+    promise.reject("Reteno Android SDK Error", e);
+    return;
+  }
+  WritableMap res = new WritableNativeMap();
+  res.putBoolean("success", true);
+  promise.resolve(res);
+}
+
+@ReactMethod
+public void logEcomEventOrderCreated(ReadableMap payload, Promise promise) {
+  try {
+    EcomEvent.OrderCreated event = RetenoEcomEvent.buildOrderCreatedFromPayload(payload);
+    if (event == null) {
+      promise.reject("Payload Error", "Payload cannot be null");
+      return;
+    }
+    ((RetenoApplication) this.context.getCurrentActivity().getApplication())
+      .getRetenoInstance()
+      .logEcommerceEvent(event);
+  } catch (Exception e) {
+    promise.reject("Reteno Android SDK Error", e);
+    return;
+  }
+  WritableMap res = new WritableNativeMap();
+  res.putBoolean("success", true);
+  promise.resolve(res);
+}
+
+@ReactMethod
+public void logEcomEventOrderUpdated(ReadableMap payload, Promise promise) {
+  try {
+    EcomEvent.OrderUpdated event = RetenoEcomEvent.buildOrderUpdatedFromPayload(payload);
+    if (event == null) {
+      promise.reject("Payload Error", "Payload cannot be null");
+      return;
+    }
+    ((RetenoApplication) this.context.getCurrentActivity().getApplication())
+      .getRetenoInstance()
+      .logEcommerceEvent(event);
+  } catch (Exception e) {
+    promise.reject("Reteno Android SDK Error", e);
+    return;
+  }
+  WritableMap res = new WritableNativeMap();
+  res.putBoolean("success", true);
+  promise.resolve(res);
+}
+
+@ReactMethod
+public void logEcomEventOrderDelivered(ReadableMap payload, Promise promise) {
+  try {
+    EcomEvent.OrderDelivered event = RetenoEcomEvent.buildOrderDeliveredFromPayload(payload);
+    if (event == null) {
+      promise.reject("Payload Error", "Payload cannot be null");
+      return;
+    }
+    ((RetenoApplication) this.context.getCurrentActivity().getApplication())
+      .getRetenoInstance()
+      .logEcommerceEvent(event);
+  } catch (Exception e) {
+    promise.reject("Reteno Android SDK Error", e);
+    return;
+  }
+  WritableMap res = new WritableNativeMap();
+  res.putBoolean("success", true);
+  promise.resolve(res);
+}
+
+@ReactMethod
+public void logEcomEventOrderCancelled(ReadableMap payload, Promise promise) {
+  try {
+    EcomEvent.OrderCancelled event = RetenoEcomEvent.buildOrderCancelledFromPayload(payload);
+    if (event == null) {
+      promise.reject("Payload Error", "Payload cannot be null");
+      return;
+    }
+    ((RetenoApplication) this.context.getCurrentActivity().getApplication())
+      .getRetenoInstance()
+      .logEcommerceEvent(event);
+  } catch (Exception e) {
+    promise.reject("Reteno Android SDK Error", e);
+    return;
+  }
+  WritableMap res = new WritableNativeMap();
+  res.putBoolean("success", true);
+  promise.resolve(res);
+}
+
+@ReactMethod
+public void logEcomEventSearchRequest(ReadableMap payload, Promise promise) {
+  try {
+    EcomEvent.SearchRequest event = RetenoEcomEvent.buildSearchRequestFromPayload(payload);
+    if (event == null) {
+      promise.reject("Payload Error", "Payload cannot be null");
+      return;
+    }
+    ((RetenoApplication) this.context.getCurrentActivity().getApplication())
+      .getRetenoInstance()
+      .logEcommerceEvent(event);
+  } catch (Exception e) {
+    promise.reject("Reteno Android SDK Error", e);
+    return;
+  }
+  WritableMap res = new WritableNativeMap();
+  res.putBoolean("success", true);
+  promise.resolve(res);
+}
 }
