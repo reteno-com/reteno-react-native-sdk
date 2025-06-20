@@ -92,6 +92,7 @@ const CartUpdateScreen = () => {
     if (!validateRequiredFields()) {
       return;
     }
+
     try {
       const {currencyCode, cartId, cartItems} = form;
 
