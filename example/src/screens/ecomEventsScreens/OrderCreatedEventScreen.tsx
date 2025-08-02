@@ -3,7 +3,6 @@ import {
   SafeAreaView,
   Text,
   ScrollView,
-  TouchableOpacity,
   Alert,
   KeyboardType,
 } from 'react-native';
@@ -20,6 +19,7 @@ import {
 } from 'reteno-react-native-sdk';
 import {attributeFields, orderFields, orderItemFields} from '../../utils/data';
 import {InputRow} from '../../components/InputRow';
+import { Button } from 'example/src/components/Button';
 
 interface FormState {
   currencyCode: string;
@@ -164,6 +164,10 @@ const OrderCreatedScreen = () => {
     const hasValidOrderItems = order?.orderItems?.some(item =>
       item.externalItemId.trim(),
     );
+    const hasValidAttributes = order?.attributes?.some(attr =>
+      attr.name.trim(),
+    );
+
     const orderItems: EcomOrderItem[] | null = hasValidOrderItems
       ? order
           .orderItems!.filter(item => item.externalItemId.trim())
@@ -179,9 +183,6 @@ const OrderCreatedScreen = () => {
           }))
       : null;
 
-    const hasValidAttributes = order?.attributes?.some(attr =>
-      attr.name.trim(),
-    );
     const attributes: EcomSimpleAttribute[] | null = hasValidAttributes
       ? order?.attributes
           ?.filter(attr => attr.name.trim())
@@ -292,8 +293,8 @@ const OrderCreatedScreen = () => {
     });
   };
 
-  const orderItem = form.order.orderItems[0];
-  const attribute = form.order.attributes[0];
+  const orderItem = form.order.orderItems?.[0];
+  const attribute = form.order.attributes?.[0];
 
   return (
     <SafeAreaView style={styles.container}>
@@ -344,27 +345,10 @@ const OrderCreatedScreen = () => {
             }
           />
         ))}
-
-        <TouchableOpacity
-          style={styles.submitBtn}
-          onPress={handleEcomOrderCreatedEvent}>
-          <Text style={styles.submitBtnText}>Log Order Created Event</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.submitBtn}
-          onPress={handleEcomOrderUpdatedEvent}>
-          <Text style={styles.submitBtnText}>Log Order Updated Event</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.submitBtn}
-          onPress={handleEcomOrderDeliveredEvent}>
-          <Text style={styles.submitBtnText}>Log Order Delivered Event</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.submitBtn, {marginBottom: 76}]}
-          onPress={handleEcomOrderCancelledEvent}>
-          <Text style={styles.submitBtnText}>Log Order Cancelled Event</Text>
-        </TouchableOpacity>
+        <Button onPress={handleEcomOrderCreatedEvent} label='Log Order Created Event' />
+        <Button onPress={handleEcomOrderUpdatedEvent} label='Log Order Updated Event' />
+        <Button onPress={handleEcomOrderDeliveredEvent} label='Log Order Delivered Event' />
+        <Button onPress={handleEcomOrderCancelledEvent} style={{marginBottom: 76}} label='Log Order Cancelled Event' />
       </ScrollView>
     </SafeAreaView>
   );

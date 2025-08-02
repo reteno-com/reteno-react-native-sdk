@@ -4,13 +4,13 @@ import {
   Text,
   View,
   ScrollView,
-  TouchableOpacity,
   Switch,
   Alert,
 } from 'react-native';
 import {logEcomEventProductAddedToWishlist} from 'reteno-react-native-sdk';
 import styles from '../styles';
 import {InputRow} from '../../components/InputRow';
+import { Button } from 'example/src/components/Button';
 
 const ProductAddedToWishlistEventScreen = () => {
   const [form, setFormValue] = useState({
@@ -99,7 +99,6 @@ const ProductAddedToWishlistEventScreen = () => {
           onChange={text => handleChange('price', text)}
           required
         />
-
         <View style={styles.row}>
           <View style={styles.rowText}>
             <Text style={styles.text}>Is In Stock</Text>
@@ -109,7 +108,6 @@ const ProductAddedToWishlistEventScreen = () => {
             onValueChange={val => handleChange('isInStock', val)}
           />
         </View>
-
         {form.attributes.map((attr, index) => (
           <View key={index}>
             <InputRow
@@ -124,11 +122,7 @@ const ProductAddedToWishlistEventScreen = () => {
             />
           </View>
         ))}
-        <TouchableOpacity style={styles.submitBtn} onPress={handleEcomEvent}>
-          <Text style={styles.submitBtnText}>
-            Log Product Added to wishlist event
-          </Text>
-        </TouchableOpacity>
+        <Button onPress={handleEcomEvent} label='Log Product Added to wishlist event' />
       </ScrollView>
     </SafeAreaView>
   );

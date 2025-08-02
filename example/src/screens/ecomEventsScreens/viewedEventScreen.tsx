@@ -5,12 +5,12 @@ import {
   View,
   ScrollView,
   Switch,
-  TouchableOpacity,
   Alert,
 } from 'react-native';
 import {logEcomEventProductViewed} from 'reteno-react-native-sdk';
 import styles from '../styles';
 import {InputRow} from '../../components/InputRow';
+import { Button } from 'example/src/components/Button';
 
 const ViewedEventScreen = () => {
   const [form, setFormValue] = useState({
@@ -121,14 +121,12 @@ const ViewedEventScreen = () => {
             />
             <InputRow
               label="Attribute Value"
-              value={attr.value[0]}
+              value={attr.value[0]!}
               onChange={text => handleAttributeChange(index, 'value', text)}
             />
           </View>
         ))}
-        <TouchableOpacity style={styles.submitBtn} onPress={handleEcomEvent}>
-          <Text style={styles.submitBtnText}>Log Product Viewed Event</Text>
-        </TouchableOpacity>
+        <Button onPress={handleEcomEvent} label='Log Product Viewed Event' />
       </ScrollView>
     </SafeAreaView>
   );

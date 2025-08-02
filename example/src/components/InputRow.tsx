@@ -1,7 +1,6 @@
-import React from 'react';
-import {FC} from 'react';
 import {KeyboardType, Text, TextInput, View} from 'react-native';
 import styles from '../screens/styles';
+import React, {FC} from 'react';
 
 interface IInputRowProps {
   label: string;

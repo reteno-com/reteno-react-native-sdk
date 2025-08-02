@@ -35,3 +35,12 @@ export const orderItemFields = [
     { key: 'name', label: 'Attribute Name' },
     { key: 'value', label: 'Attribute Value' },
   ];
+
+export const cartItemFields = [
+  {key: 'productId', label: 'Product ID', required: true},
+  {key: 'quantity', label: 'Quantity', required: true, keyboardType: 'numeric'},
+  {key: 'price', label: 'Price', required: true, keyboardType: 'decimal-pad'},
+  {key: 'discount', label: 'Discount', keyboardType: 'decimal-pad'},
+  {key: 'name', label: 'Product Name'},
+  {key: 'category', label: 'Category'},
+];

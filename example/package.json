@@ -10,7 +10,7 @@
     "start": "react-native start",
     "pods": "pod-install --quiet",
     "port-reverse": "adb reverse tcp:8081 tcp:8081",
-    "postinstall": "patch-package"
+    "postinstall": "patch-package",
   },
   "dependencies": {
     "@react-native-firebase/app": "^19.2.2",
@@ -34,6 +34,7 @@
     "@react-native/babel-preset": "0.78.0",
     "@react-native/metro-config": "0.78.0",
     "@react-native/typescript-config": "0.78.0",
+    "@types/react": "^19.1.9",
     "babel-plugin-module-resolver": "^4.1.0"
   }
 }

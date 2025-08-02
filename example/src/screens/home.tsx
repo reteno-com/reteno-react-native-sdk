@@ -37,6 +37,8 @@ import {
   unsubscribeAllMessagesCountChanged,
   setOnRetenoPushButtonClickedListener,
 } from 'reteno-react-native-sdk';
+import { Button } from '../components/Button';
+import styles from './styles';
 
 type Props = NativeStackScreenProps<RootStackParamList, ScreenNames.home>;
 
@@ -309,113 +311,24 @@ export default function Main({navigation}: Props) {
     <SafeAreaView style={styles.container}>
       <ScrollView>
         {form.map(item => (
-          <TouchableOpacity
-            key={item.route}
-            style={styles.submitBtn}
-            onPress={() => goTo(item.route)}>
-            <Text style={styles.submitBtnText}>{item.label}</Text>
-          </TouchableOpacity>
+          <Button key={item.route} onPress={() => goTo(item.route)} label={item.label} />
         ))}
-        <TouchableOpacity
-          style={styles.submitBtn}
-          onPress={() => goTo(ScreenNames.ecomEvents)}>
-          <Text style={styles.submitBtnText}>ecom events</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.submitBtn} onPress={forcePushData}>
-          <Text style={styles.submitBtnText}>Force push data</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.submitBtn}
-          onPress={() => handleInAppMessagesStatus(true)}>
-          <Text style={styles.submitBtnText}>Pause in app messages</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.submitBtn}
-          onPress={() => handleInAppMessagesStatus(false)}>
-          <Text style={styles.submitBtnText}>Unpause in app messages</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.submitBtn}
-          onPress={setInAppLifecycleCallback}>
-          <Text style={styles.submitBtnText}>
-            Subscribe to in app messages events
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.submitBtn}
-          onPress={removeInAppLifecycleCallback}>
-          <Text style={styles.submitBtnText}>
-            Unsubscribe from in app messages events (Android)
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.submitBtn}
-          onPress={handleGetRecommendations}>
-          <Text style={styles.submitBtnText}>Get Recommendations</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.submitBtn}
-          onPress={handleLogRecommendationEvent}>
-          <Text style={styles.submitBtnText}>Log Recommendations</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.submitBtn}
-          onPress={onUnreadMessagesCountChanged}>
-          <Text style={styles.submitBtnText}>
-            Subscribe on unread messages count event (Inbox)
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.submitBtn}
-          onPress={unsubscribeMessagesCountChanged}>
-          <Text style={styles.submitBtnText}>
-            Unsubscribe from unread messages count event (Inbox) (Android)
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.submitBtn}
-          onPress={unsubscribeAllMessagesCountChanged}>
-          <Text style={styles.submitBtnText}>
-            Unsubscribe from all unread messages count event (Inbox) (Android)
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.submitBtn}
-          onPress={handleGetAppInboxMessagesCount}>
-          <Text style={styles.submitBtnText}>Get App Inbox Messages Count</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.submitBtn}
-          onPress={handleDownloadMessages}>
-          <Text style={styles.submitBtnText}>Download messages (Inbox)</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.submitBtn} onPress={handleMarkAsOpened}>
-          <Text style={styles.submitBtnText}>Mark as opened (Inbox)</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.submitBtn}
-          onPress={handleMarkAllAsOpened}>
-          <Text style={styles.submitBtnText}>Mark all as opened (Inbox)</Text>
-        </TouchableOpacity>
+        <Button onPress={() => goTo(ScreenNames.ecomEvents)} label='ecom events' />
+        <Button  onPress={forcePushData} label='Force push data' />
+        <Button onPress={() => handleInAppMessagesStatus(true)} label='Pause in app messages' />
+        <Button onPress={() => handleInAppMessagesStatus(false)} label='Unpause in app messages' />
+        <Button onPress={setInAppLifecycleCallback} label='Subscribe to in app messages events' />
+        <Button  onPress={removeInAppLifecycleCallback} label='Unsubscribe from in app messages events (Android)' />
+        <Button  onPress={handleGetRecommendations} label='Get Recommendations' />
+        <Button onPress={handleLogRecommendationEvent} label='Log Recommendations' />
+        <Button onPress={onUnreadMessagesCountChanged} label='Subscribe on unread messages count event (Inbox)' />
+        <Button onPress={unsubscribeMessagesCountChanged}  label='Unsubscribe from unread messages count event (Inbox) (Android)'/>
+        <Button onPress={unsubscribeAllMessagesCountChanged} label='Unsubscribe from all unread messages count event (Inbox) (Android)' />
+        <Button onPress={handleGetAppInboxMessagesCount} label='Get App Inbox Messages Count' />
+        <Button onPress={handleDownloadMessages} label='Download messages (Inbox)' />
+        <Button onPress={handleMarkAsOpened} label='Mark as opened (Inbox)' />
+        <Button onPress={handleMarkAllAsOpened} label='Mark all as opened (Inbox)' />
       </ScrollView>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: 'white',
-    flex: 1,
-    justifyContent: 'center',
-  },
-  submitBtn: {
-    borderBottomColor: '#EBEBEB',
-    borderBottomWidth: 1,
-    borderRadius: 5,
-    alignItems: 'center',
-    paddingVertical: 20,
-  },
-  submitBtnText: {
-    color: '#000',
-  },
-});

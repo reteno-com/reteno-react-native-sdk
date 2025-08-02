@@ -2,15 +2,15 @@ import React, {useState} from 'react';
 import {
   SafeAreaView,
   Text,
-  TextInput,
   View,
   ScrollView,
-  TouchableOpacity,
   Alert,
   Switch,
 } from 'react-native';
 import {logEcomEventSearchRequest} from 'reteno-react-native-sdk';
 import styles from '../styles';
+import { InputRow } from 'example/src/components/InputRow';
+import { Button } from 'example/src/components/Button';
 
 const SearchRequestEventScreen = () => {
   const [form, setFormValue] = useState({
@@ -39,66 +39,22 @@ const SearchRequestEventScreen = () => {
     }
   };
 
-  const renderInputRow = ({
-    label,
-    value,
-    onChange,
-    required = false,
-  }: {
-    label: string;
-    value: string;
-    onChange: (text: string) => void;
-    required?: boolean;
-  }) => (
-    <View style={styles.row} key={label}>
-      <View style={styles.rowText}>
-        <Text style={styles.text}>
-          <Text style={styles.text}>{label}</Text>
-          {required && <Text style={styles.rowTextRequired}>*</Text>}
-        </Text>
-      </View>
-      <TextInput
-        style={[styles.textInput, styles.text]}
-        value={value}
-        onChangeText={onChange}
-      />
-    </View>
-  );
-
-  const renderSwitchRow = ({
-    label,
-    value,
-    onChange,
-  }: {
-    label: string;
-    value: boolean;
-    onChange: (value: boolean) => void;
-  }) => (
-    <View style={styles.row} key={label}>
-      <View style={styles.rowText}>
-        <Text style={styles.text}>{label}</Text>
-      </View>
-      <Switch value={value} onValueChange={onChange} />
-    </View>
-  );
-
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
-        {renderInputRow({
-          label: 'Search Query',
-          value: form.searchQuery,
-          onChange: text => handleChange('searchQuery', text),
-          required: true,
-        })}
-        {renderSwitchRow({
-          label: 'Is Found',
-          value: form.isFound,
-          onChange: value => handleChange('isFound', value),
-        })}
-        <TouchableOpacity style={styles.submitBtn} onPress={handleEcomEvent}>
-          <Text style={styles.submitBtnText}>Log Search request event</Text>
-        </TouchableOpacity>
+          <InputRow
+            label="Search Query"
+            value={form.searchQuery}
+            onChange={text => handleChange('searchQuery', text)}
+            required
+          />
+         <View style={styles.row} key='Is Found'> 
+      <View style={styles.rowText}>
+        <Text style={styles.text}>Is Found</Text>
+      </View>
+      <Switch value={form.isFound} onValueChange={value => handleChange('isFound', value)} />
+    </View>
+        <Button onPress={handleEcomEvent} label='Log Search request event' />
       </ScrollView>
     </SafeAreaView>
   );

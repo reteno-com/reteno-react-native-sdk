@@ -2,14 +2,15 @@ import React, {useState} from 'react';
 import {
   SafeAreaView,
   Text,
-  TextInput,
-  View,
   ScrollView,
   TouchableOpacity,
   Alert,
+  KeyboardType,
 } from 'react-native';
 import {logEcomEventCartUpdated} from 'reteno-react-native-sdk';
 import styles from '../styles';
+import { InputRow } from 'example/src/components/InputRow';
+import { cartItemFields } from 'example/src/utils/data';
 
 const CartUpdateScreen = () => {
   const [form, setFormValue] = useState({
@@ -117,90 +118,37 @@ const CartUpdateScreen = () => {
     }
   };
 
-  const renderInputRow = ({
-    label,
-    value,
-    onChange,
-    required = false,
-    keyboardType = 'default',
-  }: {
-    label: string;
-    value: string;
-    onChange: (text: string) => void;
-    required?: boolean;
-    keyboardType?: 'default' | 'numeric' | 'decimal-pad';
-  }) => (
-    <View style={styles.row} key={label}>
-      <View style={styles.rowText}>
-        <Text style={styles.text}>
-          {label}
-          {required && <Text style={styles.rowTextRequired}>*</Text>}
-        </Text>
-      </View>
-      <TextInput
-        style={[styles.textInput, styles.text]}
-        value={value}
-        onChangeText={onChange}
-        keyboardType={keyboardType}
-      />
-    </View>
-  );
-
   const cartItem = form.cartItems[0];
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
-        {renderInputRow({
-          label: 'Currency code',
-          value: form.currencyCode,
-          onChange: text => handleChange('currencyCode', text),
-        })}
-        {renderInputRow({
-          label: 'cartId',
-          value: form.cartId,
-          onChange: text => handleChange('cartId', text),
-          required: true,
-          keyboardType: 'decimal-pad',
-        })}
-        {renderInputRow({
-          label: 'Product ID',
-          value: cartItem?.productId ?? '',
-          onChange: text => handleCartItemChange('productId', text),
-          required: true,
-        })}
-        {renderInputRow({
-          label: 'Quantity',
-          value: cartItem?.quantity ?? '',
-          onChange: text => handleCartItemChange('quantity', text),
-          required: true,
-          keyboardType: 'numeric',
-        })}
-        {renderInputRow({
-          label: 'Price',
-          value: cartItem?.price ?? '',
-          onChange: text => handleCartItemChange('price', text),
-          required: true,
-          keyboardType: 'decimal-pad',
-        })}
-        {renderInputRow({
-          label: 'Discount',
-          value: cartItem?.discount ?? '',
-          onChange: text => handleCartItemChange('discount', text),
-          keyboardType: 'decimal-pad',
-          required: true,
-        })}
-        {renderInputRow({
-          label: 'Product Name',
-          value: cartItem?.name ?? '',
-          onChange: text => handleCartItemChange('name', text),
-        })}
-        {renderInputRow({
-          label: 'Category',
-          value: cartItem?.category ?? '',
-          onChange: text => handleCartItemChange('category', text),
-        })}
+        <InputRow
+            label='Currency code'
+            value={form.currencyCode}
+            onChange={text =>
+              handleChange('currencyCode', text)
+            }
+          />
+        <InputRow
+            label='cartId'
+            value={form.cartId}
+            onChange={text =>
+              handleChange('cartId', text)
+            }
+            keyboardType='decimal-pad'
+          />
 
+          {cartItemFields.map(field => (
+            <InputRow
+              key={field.key}
+              label={field.label}
+              value={cartItem?.[field.key as keyof typeof cartItem] ?? ''}
+              onChange={text => handleCartItemChange(field.key as keyof typeof cartItem, text)}
+              required={field.required}
+              keyboardType={field.keyboardType as KeyboardType}
+            />
+        ))}
         <TouchableOpacity style={styles.submitBtn} onPress={handleEcomEvent}>
           <Text style={styles.submitBtnText}>Log Cart Updated Event</Text>
         </TouchableOpacity>
