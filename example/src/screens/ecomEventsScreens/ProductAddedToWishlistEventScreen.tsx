@@ -10,7 +10,7 @@ import {
 import {logEcomEventProductAddedToWishlist} from 'reteno-react-native-sdk';
 import styles from '../styles';
 import {InputRow} from '../../components/InputRow';
-import { Button } from 'example/src/components/Button';
+import { Button } from '../../components/Button';
 
 const ProductAddedToWishlistEventScreen = () => {
   const [form, setFormValue] = useState({

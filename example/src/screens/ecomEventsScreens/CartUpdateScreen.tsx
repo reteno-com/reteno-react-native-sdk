@@ -9,8 +9,8 @@ import {
 } from 'react-native';
 import {logEcomEventCartUpdated} from 'reteno-react-native-sdk';
 import styles from '../styles';
-import { InputRow } from 'example/src/components/InputRow';
-import { cartItemFields } from 'example/src/utils/data';
+import { InputRow } from '../../components/InputRow';
+import { cartItemFields } from '../../utils/data';
 
 const CartUpdateScreen = () => {
   const [form, setFormValue] = useState({

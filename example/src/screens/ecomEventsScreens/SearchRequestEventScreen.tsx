@@ -9,8 +9,8 @@ import {
 } from 'react-native';
 import {logEcomEventSearchRequest} from 'reteno-react-native-sdk';
 import styles from '../styles';
-import { InputRow } from 'example/src/components/InputRow';
-import { Button } from 'example/src/components/Button';
+import { InputRow } from '../../components/InputRow';
+import { Button } from '../../components/Button';
 
 const SearchRequestEventScreen = () => {
   const [form, setFormValue] = useState({

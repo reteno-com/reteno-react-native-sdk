@@ -1,9 +1,6 @@
 import React, {useCallback, useMemo, useEffect, useState} from 'react';
 
 import {
-  StyleSheet,
-  Text,
-  TouchableOpacity,
   ScrollView,
   SafeAreaView,
   Alert,

@@ -19,7 +19,7 @@ import {
 } from 'reteno-react-native-sdk';
 import {attributeFields, orderFields, orderItemFields} from '../../utils/data';
 import {InputRow} from '../../components/InputRow';
-import { Button } from 'example/src/components/Button';
+import { Button } from '../../components/Button';
 
 interface FormState {
   currencyCode: string;
