@@ -10,7 +10,7 @@
     "start": "react-native start",
     "pods": "pod-install --quiet",
     "port-reverse": "adb reverse tcp:8081 tcp:8081",
-    "postinstall": "patch-package",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@react-native-firebase/app": "^19.2.2",
