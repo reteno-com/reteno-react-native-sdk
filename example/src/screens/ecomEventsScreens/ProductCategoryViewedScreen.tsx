@@ -1,15 +1,14 @@
 import React, {useState} from 'react';
 import {
   SafeAreaView,
-  Text,
-  TextInput,
   View,
   ScrollView,
-  TouchableOpacity,
   Alert,
 } from 'react-native';
 import {logEcomEventProductCategoryViewed} from 'reteno-react-native-sdk';
 import styles from '../styles';
+import { InputRow } from '../../components/InputRow';
+import { Button } from '../../components/Button';
 
 const ProductCategoryViewedScreen = () => {
   const [form, setFormValue] = useState({
@@ -71,59 +70,31 @@ const ProductCategoryViewedScreen = () => {
     }
   };
 
-  const renderInputRow = ({
-    label,
-    value,
-    onChange,
-    required = false,
-  }: {
-    label: string;
-    value: string;
-    onChange: (text: string) => void;
-    required?: boolean;
-  }) => (
-    <View style={styles.row} key={label}>
-      <View style={styles.rowText}>
-        <Text style={styles.text}>
-          <Text style={styles.text}>{label}</Text>
-          {required && <Text style={styles.rowTextRequired}>*</Text>}
-        </Text>
-      </View>
-      <TextInput
-        style={[styles.textInput, styles.text]}
-        value={value}
-        onChangeText={onChange}
-      />
-    </View>
-  );
-
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
-        {renderInputRow({
-          label: 'Category ID',
-          value: form.categoryId,
-          onChange: text => handleChange('categoryId', text),
-          required: true,
-        })}
+          <InputRow
+            label="Category ID"
+            value={form.categoryId}
+            onChange={text => handleChange('categoryId', text)}
+            required
+          />
         {form.attributes.map((attr, index) => (
           <View key={index}>
-            {renderInputRow({
-              label: 'Attribute Name',
-              value: attr.name,
-              onChange: text => handleAttributeChange(index, 'name', text),
-            })}
-            {renderInputRow({
-              label: 'Attribute Value',
-              value: attr.value[0],
-              onChange: text => handleAttributeChange(index, 'value', text),
-            })}
+             <InputRow
+                label="Attribute Name"
+                value={attr.name}
+                onChange={text => handleAttributeChange(index, 'name', text)}
+              />
+                <InputRow
+                label="Attribute Value"
+                value={attr.value[0]!}
+                onChange={text => handleAttributeChange(index, 'value', text)}
+              />
           </View>
         ))}
 
-        <TouchableOpacity style={styles.submitBtn} onPress={handleEcomEvent}>
-          <Text style={styles.submitBtnText}>Log Product Viewed Event</Text>
-        </TouchableOpacity>
+        <Button onPress={handleEcomEvent} label='Log Product Viewed Event' />
       </ScrollView>
     </SafeAreaView>
   );

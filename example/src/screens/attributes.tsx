@@ -4,13 +4,13 @@ import {
   View,
   TextInput,
   Text,
-  TouchableOpacity,
   ScrollView,
   SafeAreaView,
   Alert,
 } from 'react-native';
 import {setUserAttributes, UserAttributes} from 'reteno-react-native-sdk';
 import styles from './styles';
+import { Button } from '../components/Button';
 
 export default function Attributes() {
   const [externalUserId, setExternalUserId] = useState('');
@@ -159,9 +159,7 @@ export default function Attributes() {
           </View>
         ))}
       </ScrollView>
-      <TouchableOpacity style={styles.submitBtn} onPress={submit}>
-        <Text style={styles.submitBtnText}>Set User Attributes</Text>
-      </TouchableOpacity>
+      <Button onPress={submit} label='Set User Attributes' />
     </SafeAreaView>
   );
 }

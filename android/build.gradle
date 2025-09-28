@@ -72,7 +72,7 @@ dependencies {
   //noinspection GradleDynamicVersion
   implementation "com.facebook.react:react-native"
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-  implementation 'com.reteno:fcm:2.8.2'
+  implementation 'com.reteno:fcm:2.8.4'
   implementation "com.google.firebase:firebase-messaging:23.1.0"
   implementation "com.google.firebase:firebase-messaging-ktx:23.1.0"
   coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.2.2'
