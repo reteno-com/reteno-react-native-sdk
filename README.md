@@ -7,11 +7,9 @@ Reteno SDK
 - [iOS](./docs/ios.md)
 - [Android](./docs/android.md)
 
-
 ## Usage
 
 - [API](./docs/api.md)
-
 
 ## License
 
