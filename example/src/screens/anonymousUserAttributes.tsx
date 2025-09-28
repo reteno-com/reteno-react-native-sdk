@@ -4,7 +4,6 @@ import {
   View,
   TextInput,
   Text,
-  TouchableOpacity,
   ScrollView,
   SafeAreaView,
   Alert,
@@ -14,6 +13,7 @@ import {
   AnonymousUserAttributes,
 } from 'reteno-react-native-sdk';
 import styles from './styles';
+import { Button } from '../components/Button';
 
 export default function AnonymousUserAttributesScreen() {
   const [firstName, setFirstName] = useState('');
@@ -127,9 +127,7 @@ export default function AnonymousUserAttributesScreen() {
           </View>
         ))}
       </ScrollView>
-      <TouchableOpacity style={styles.submitBtn} onPress={submit}>
-        <Text style={styles.submitBtnText}>Set Anonymous User Attributes</Text>
-      </TouchableOpacity>
+      <Button onPress={submit} label='Set Anonymous User Attributes' />
     </SafeAreaView>
   );
 }

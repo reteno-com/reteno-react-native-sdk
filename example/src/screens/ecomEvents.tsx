@@ -1,8 +1,9 @@
 import React from 'react';
 import styles from './styles';
-import {SafeAreaView, ScrollView, Text, TouchableOpacity} from 'react-native';
+import {SafeAreaView, ScrollView} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import {ScreenNames} from '../config';
+import { Button } from '../components/Button';
 
 const routes = [
   {
@@ -42,12 +43,7 @@ const EcomEventsScreen = () => {
     <SafeAreaView style={styles.container}>
       <ScrollView>
         {routes.map(item => (
-          <TouchableOpacity
-            key={item.route}
-            style={styles.submitBtn}
-            onPress={() => goToScreen(item.route)}>
-            <Text style={styles.submitBtnText}>{item.title}</Text>
-          </TouchableOpacity>
+          <Button key={item.route} onPress={() => goToScreen(item.route)} label={item.title} />
         ))}
       </ScrollView>
     </SafeAreaView>

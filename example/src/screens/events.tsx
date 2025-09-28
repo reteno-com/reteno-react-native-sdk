@@ -5,12 +5,12 @@ import {
   View,
   TextInput,
   Text,
-  TouchableOpacity,
   ScrollView,
   SafeAreaView,
   Alert,
 } from 'react-native';
 import {logEvent} from 'reteno-react-native-sdk';
+import { Button } from '../components/Button';
 
 export default function Events() {
   const [eventName, setEventName] = useState('test_event_type');
@@ -128,21 +128,13 @@ export default function Events() {
                 />
               </View>
             </View>
-            <TouchableOpacity style={styles.submitBtn} onPress={addParameter}>
-              <Text style={styles.submitBtnText}>Add parameter</Text>
-            </TouchableOpacity>
+            <Button onPress={addParameter} label='Add parameter' />
           </>
         ) : (
-          <TouchableOpacity
-            style={styles.submitBtn}
-            onPress={() => setShowParameterForm(true)}>
-            <Text style={styles.submitBtnText}>New parameter</Text>
-          </TouchableOpacity>
+          <Button onPress={() => setShowParameterForm(true)} label='New parameter' />
         )}
       </ScrollView>
-      <TouchableOpacity style={styles.submitBtn} onPress={submit}>
-        <Text style={styles.submitBtnText}>Send custom event</Text>
-      </TouchableOpacity>
+      <Button onPress={submit} label='Send custom event' />
     </SafeAreaView>
   );
 }
@@ -185,16 +177,6 @@ const styles = StyleSheet.create({
     flex: 1,
     height: '100%',
     width: '100%',
-  },
-  submitBtn: {
-    borderColor: '#EBEBEB',
-    borderWidth: 1,
-    borderRadius: 5,
-    alignItems: 'center',
-    paddingVertical: 20,
-  },
-  submitBtnText: {
-    color: '#000',
   },
   text: {
     color: '#000',
