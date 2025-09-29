@@ -1655,7 +1655,7 @@ PODS:
     - React-perflogger (= 0.78.0)
     - React-utils (= 0.78.0)
   - Reteno (2.5.13)
-  - reteno-react-native-sdk (1.7.2):
+  - reteno-react-native-sdk (1.7.3):
     - RCT-Folly
     - RCTRequired
     - RCTTypeSafety
@@ -2035,7 +2035,7 @@ SPEC CHECKSUMS:
   ReactCodegen: 0f8899ac1bad260bf3b362ee848ef67a70b5a306
   ReactCommon: a30b578194de911fbe1698efb8247bfe4cb6abff
   Reteno: 9f163637bca4fabddf74ce18ad8c206b832c96d1
-  reteno-react-native-sdk: 3f4cf19bcd5a704cc4e1d408bf99a278819a2c2a
+  reteno-react-native-sdk: e9a3815270c66bd83ad71a379dc152b2f6a109e0
   RNFBApp: 3cbad248e866e6c5d753612446ffc48f6ac3be3a
   RNFBMessaging: 7d5016a17a2e62e66b3c92ffdf4851249c06e9c0
   RNScreens: 150e342212af4d9dd7ba8a2d786a32dbe15cca04

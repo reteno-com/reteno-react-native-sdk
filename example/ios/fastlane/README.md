@@ -1,198 +1,112 @@
-# Fastlane iOS Automation Guide
+fastlane documentation
+----
 
-## Installation
+# Installation
 
-Make sure you have the latest version of the Xcode Command Line Tools installed:
+Make sure you have the latest version of the Xcode command line tools installed:
 
 ```sh
 xcode-select --install
 ```
 
-For _fastlane_ installation instructions, see the official guide:  
-👉 [Installing fastlane](https://docs.fastlane.tools/#installing-fastlane)
+For _fastlane_ installation instructions, see [Installing _fastlane_](https://docs.fastlane.tools/#installing-fastlane)
 
----
+# Available Actions
 
-## Environment Setup
+## iOS
 
-### 1. Create `.env` File
-
-Before using _fastlane_, create a `.env` file by copying the structure from the existing `.env.example` file:
-
-```sh
-cp .env.example .env
-```
-
-Fill in all required environment variables according to your project setup.
-
----
-
-## Certificate Management
-
-### 2. Generate Certificates
-
-To generate the necessary development, AdHoc, and App Store certificates, run:
-
-```sh
-[bundle exec] fastlane ios make_certs
-```
-
-> If you have set the `MATCH_TYPE` environment variable, only the specified certificate type will be generated.
-
----
-
-### 3. Certificate Quota Exceeded?
-
-If you receive an error saying the certificate limit has been exceeded:
-
-1. **Contact your Project Manager or responsible team** to revoke unused certificates from the Apple Developer account.
-2. After removal, re-run the certificate creation command:
-
-```sh
-[bundle exec] fastlane ios make_certs
-```
-
-> ⏳ Sometimes, certificate revocation may take **up to 24 hours** to take effect. If you still face issues, try again later.
-
----
-
-## Deployment
-
-### 4. Deploy the App
-
-Once certificates are set up correctly, you can build and distribute the app using:
-
-```sh
-[bundle exec] fastlane ios deploy
-```
-
-This will:
-- Build the iOS app
-- Archive it
-- Upload it to **Crashlytics**
-
----
-
-## Fastlane iOS Actions
-
-Here’s a list of available _fastlane_ lanes for iOS:
-
-### `add_cocoapods_keys`
+### ios add_cocoapods_keys
 
 ```sh
 [bundle exec] fastlane ios add_cocoapods_keys
 ```
 
-Add or remove keys from the repository.  
-Example:  
-`key1:value1 key2:value2 key3:` → Adds `key1` and `key2`, removes `key3`.
+Add keys to the repository. example: 'key1:value1 key2:value2 key3:' will add key1 and key2 and remove key3
 
----
-
-### `sync_cocoapods_keys`
+### ios sync_cocoapods_keys
 
 ```sh
 [bundle exec] fastlane ios sync_cocoapods_keys
 ```
 
-Synchronizes your keychain with private keys.
+Synchronize your keychain with private keys
 
----
-
-### `known_flags`
+### ios known_flags
 
 ```sh
 [bundle exec] fastlane ios known_flags
 ```
 
-Displays known build flags.
 
----
 
-### `sync_certs`
+### ios sync_certs
 
 ```sh
 [bundle exec] fastlane ios sync_certs
 ```
 
-Synchronizes development, AdHoc, and App Store certificates (or the one specified via `MATCH_TYPE`).
+Sync development, adhoc and appstore certificates or the one, provided by MATCH_TYPE environment variable
 
----
-
-### `make_certs`
+### ios make_certs
 
 ```sh
 [bundle exec] fastlane ios make_certs
 ```
 
-Generates certificates (same behavior as above).
+Make development, adhoc and appstore certificates or the one, provided by MATCH_TYPE environment variable
 
----
-
-### `drop_certs`
+### ios drop_certs
 
 ```sh
 [bundle exec] fastlane ios drop_certs
 ```
 
-Deletes certificates (or the one specified via `MATCH_TYPE`).
+Drop development, adhoc and appstore certificates or the one, provided by MATCH_TYPE environment variable
 
----
-
-### `deploy`
+### ios deploy
 
 ```sh
 [bundle exec] fastlane ios deploy
 ```
 
-Builds, archives, and uploads your app to **Crashlytics**.
+Make a build, export it into an archive and upload to the Crashlytics
 
----
-
-### `bump_version`
+### ios bump_version
 
 ```sh
 [bundle exec] fastlane ios bump_version
 ```
 
-Bumps the app version.  
-Available types: `major`, `minor`, `patch` (default: `patch`).
+Bump type to be used to increment version. Available values are: 'major', 'minor', patch. Default is 'patch'
 
----
-
-### `bump_build_number`
+### ios bump_build_number
 
 ```sh
 [bundle exec] fastlane ios bump_build_number
 ```
 
-Increments the build number by 1.
+Bump build number to current + 1
 
----
-
-### `archive`
+### ios archive
 
 ```sh
 [bundle exec] fastlane ios archive
 ```
 
-Generates an archive from the current codebase.
+Make an archive from the current codebase
 
----
-
-### `upload_symbols`
+### ios upload_symbols
 
 ```sh
 [bundle exec] fastlane ios upload_symbols
 ```
 
-Downloads dSYMs from App Store and uploads them to **Crashlytics**.
+Download symbols from the AppStore and upload to the Crashlytics
 
----
+----
 
-## Resources
+This README.md is auto-generated and will be re-generated every time [_fastlane_](https://fastlane.tools) is run.
 
-- [🔗 fastlane.tools](https://fastlane.tools)
-- [📘 fastlane Documentation](https://docs.fastlane.tools)
+More information about _fastlane_ can be found on [fastlane.tools](https://fastlane.tools).
 
-> _Note: This README is auto-generated and may be overwritten when running `fastlane`._
+The documentation of _fastlane_ can be found on [docs.fastlane.tools](https://docs.fastlane.tools).

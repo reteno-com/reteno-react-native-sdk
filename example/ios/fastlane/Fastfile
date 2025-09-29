@@ -250,7 +250,11 @@ platform :ios do
   end
 
   def get_full_version
-    "#{get_version_number_from_xcodeproj}-#{build_number_get_from_xcconfig}"
+    version = get_version_number(
+      xcodeproj: ENV["XC_PROJECT"],
+      target: ENV["XC_TARGET"]
+    )
+    "#{version}-#{build_number_get_from_xcconfig}"
   end
 
   def version_bump_commit_message(full_version, include_ci_skip = true) 
