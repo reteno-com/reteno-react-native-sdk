@@ -5,37 +5,128 @@
     
     
       
-      <testcase classname="fastlane.lanes" name="0: default_platform" time="0.000233">
+      <testcase classname="fastlane.lanes" name="00: default_platform" time="0.000169">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="1: ci_setup" time="0.000482">
+      <testcase classname="fastlane.lanes" name="01: ci_setup" time="0.000422">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="2: app_store_connect_api_key_set_from_remote" time="2.500097">
+      <testcase classname="fastlane.lanes" name="02: app_store_connect_api_key_set_from_remote" time="4.759776">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="3: match" time="3.116778">
+      <testcase classname="fastlane.lanes" name="03: cocoapods" time="9.538194">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="4: match" time="2.619631">
+      <testcase classname="fastlane.lanes" name="04: Switch to ios bump_build_number lane" time="0.000178">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="5: match" time="2.334159">
+      <testcase classname="fastlane.lanes" name="05: build_number_get_from_xcconfig" time="0.000349">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="6: ci_teardown" time="0.000264">
+      <testcase classname="fastlane.lanes" name="06: build_number_set_to_xcconfig" time="0.000267">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="07: git_commit" time="0.520976">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="08: Switch to ios add_version_badge lane" time="8.7e-05">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="09: Switch to ios archive lane" time="6.0e-05">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="10: Switch to ios sync_certs lane" time="6.1e-05">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="11: match" time="2.194696">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="12: match" time="1.986571">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="13: match" time="2.184028">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="14: build_app" time="158.721772">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="15: Switch to ios cleanup_version_badge_artifacts lane" time="0.000101">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="16: git diff --name-only | grep AppIcon.appiconset" time="0.031165">
+        
+          <failure message="/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/actions/actions_helper.rb:67:in `execute_action&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/fast_file.rb:224:in `sh&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/fast_file.rb:216:in `sh&apos;&#10;Fastfile:229:in `block (2 levels) in parsing_binding&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/lane.rb:41:in `call&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/runner.rb:204:in `try_switch_to_lane&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/runner.rb:146:in `trigger_action_by_name&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/fast_file.rb:159:in `method_missing&apos;&#10;Fastfile:90:in `block (2 levels) in parsing_binding&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/lane.rb:41:in `call&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/runner.rb:49:in `block in execute&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/runner.rb:45:in `chdir&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/runner.rb:45:in `execute&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/lane_manager.rb:46:in `cruise_lane&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/command_line_handler.rb:34:in `handle&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/commands_generator.rb:110:in `block (2 levels) in run&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/commander-4.6.0/lib/commander/command.rb:187:in `call&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/commander-4.6.0/lib/commander/command.rb:157:in `run&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/commander-4.6.0/lib/commander/runner.rb:444:in `run_active_command&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane_core/lib/fastlane_core/ui/fastlane_runner.rb:124:in `run!&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/commander-4.6.0/lib/commander/delegates.rb:18:in `run!&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/commands_generator.rb:363:in `run&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/commands_generator.rb:43:in `start&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/cli_tools_distributor.rb:123:in `take_off&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/bin/fastlane:23:in `&lt;top (required)&gt;&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/bin/fastlane:25:in `load&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/bin/fastlane:25:in `&lt;main&gt;&apos;&#10;&#10;Exit status of command &apos;git diff --name-only | grep AppIcon.appiconset&apos; was 1 instead of 0.&#10;" />
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="17: Switch to ios distribute lane" time="0.000118">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="18: Switch to ios distribute_to_appstore lane" time="6.9e-05">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="19: testflight" time="218.308818">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="20: get_version_number_from_xcodeproj" time="0.019598">
+        
+          <failure message="/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/actions/actions_helper.rb:67:in `execute_action&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/runner.rb:255:in `block in execute_action&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/runner.rb:229:in `chdir&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/runner.rb:229:in `execute_action&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/runner.rb:157:in `trigger_action_by_name&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/fast_file.rb:159:in `method_missing&apos;&#10;Fastfile:253:in `get_full_version&apos;&#10;Fastfile:95:in `block (2 levels) in parsing_binding&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/lane.rb:41:in `call&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/runner.rb:49:in `block in execute&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/runner.rb:45:in `chdir&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/runner.rb:45:in `execute&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/lane_manager.rb:46:in `cruise_lane&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/command_line_handler.rb:34:in `handle&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/commands_generator.rb:110:in `block (2 levels) in run&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/commander-4.6.0/lib/commander/command.rb:187:in `call&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/commander-4.6.0/lib/commander/command.rb:157:in `run&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/commander-4.6.0/lib/commander/runner.rb:444:in `run_active_command&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane_core/lib/fastlane_core/ui/fastlane_runner.rb:124:in `run!&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/commander-4.6.0/lib/commander/delegates.rb:18:in `run!&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/commands_generator.rb:363:in `run&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/commands_generator.rb:43:in `start&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/cli_tools_distributor.rb:123:in `take_off&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/bin/fastlane:23:in `&lt;top (required)&gt;&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/bin/fastlane:25:in `load&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/bin/fastlane:25:in `&lt;main&gt;&apos;&#10;&#10;undefined method `resolved_build_setting&apos; for nil" />
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="21: ci_teardown" time="0.000395">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="22: Switch to ios cleanup_version_badge_artifacts lane" time="0.00015">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="23: git diff --name-only | grep AppIcon.appiconset" time="0.042075">
+        
+          <failure message="/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/actions/actions_helper.rb:67:in `execute_action&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/fast_file.rb:224:in `sh&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/fast_file.rb:216:in `sh&apos;&#10;Fastfile:229:in `block (2 levels) in parsing_binding&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/lane.rb:41:in `call&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/runner.rb:204:in `try_switch_to_lane&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/runner.rb:146:in `trigger_action_by_name&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/fast_file.rb:159:in `method_missing&apos;&#10;Fastfile:18:in `block in parsing_binding&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/runner.rb:63:in `block in execute&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/runner.rb:59:in `chdir&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/runner.rb:59:in `rescue in execute&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/runner.rb:44:in `execute&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/lane_manager.rb:46:in `cruise_lane&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/command_line_handler.rb:34:in `handle&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/commands_generator.rb:110:in `block (2 levels) in run&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/commander-4.6.0/lib/commander/command.rb:187:in `call&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/commander-4.6.0/lib/commander/command.rb:157:in `run&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/commander-4.6.0/lib/commander/runner.rb:444:in `run_active_command&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane_core/lib/fastlane_core/ui/fastlane_runner.rb:124:in `run!&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/commander-4.6.0/lib/commander/delegates.rb:18:in `run!&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/commands_generator.rb:363:in `run&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/commands_generator.rb:43:in `start&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/fastlane/lib/fastlane/cli_tools_distributor.rb:123:in `take_off&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/lib/ruby/gems/3.3.0/gems/fastlane-2.228.0/bin/fastlane:23:in `&lt;top (required)&gt;&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/bin/fastlane:25:in `load&apos;&#10;/Users/sergejkaragezan/.rbenv/versions/3.3.0/bin/fastlane:25:in `&lt;main&gt;&apos;&#10;&#10;Exit status of command &apos;git diff --name-only | grep AppIcon.appiconset&apos; was 1 instead of 0.&#10;" />
         
       </testcase>
     
