@@ -5,19 +5,43 @@ import Reteno
 @objc(RetenoSdk)
 open class RetenoSdk: RCTEventEmitter {
 
-    private static var autoOpenLinks: Bool = true
+    private static let autoOpenLinksKey = "RetenoAutoOpenLinks"
+
+    private static var autoOpenLinks: Bool {
+        get {
+            if UserDefaults.standard.object(forKey: autoOpenLinksKey) == nil {
+                return true // default value
+            }
+            return UserDefaults.standard.bool(forKey: autoOpenLinksKey)
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: autoOpenLinksKey)
+        }
+    }
 
     override init() {
         super.init()
-        EventEmitter.sharedInstance.registerEventEmitter(externalEventEmitter: self);
-        Reteno.userNotificationService.didReceiveNotificationUserInfo = {userInfo in
+        EventEmitter.sharedInstance.registerEventEmitter(externalEventEmitter: self)
+
+        // Set link handler immediately to intercept ALL links (push + in-app)
+        Reteno.addLinkHandler { linkInfo in
+            EventEmitter.sharedInstance.dispatch(
+                name: "reteno-in-app-custom-data-received",
+                body: ["customData": linkInfo.customData, "url": linkInfo.url?.absoluteString as Any]
+            )
+            if RetenoSdk.autoOpenLinks, let url = linkInfo.url {
+                UIApplication.shared.open(url)
+            }
+        }
+
+        Reteno.userNotificationService.didReceiveNotificationUserInfo = { userInfo in
             EventEmitter.sharedInstance.dispatch(name: "reteno-push-received", body: userInfo)
         }
-        
-        Reteno.userNotificationService.didReceiveNotificationResponseHandler = {response in
-              EventEmitter.sharedInstance.dispatch(name: "reteno-push-clicked", body: response.notification.request.content.userInfo)
+
+        Reteno.userNotificationService.didReceiveNotificationResponseHandler = { response in
+            EventEmitter.sharedInstance.dispatch(name: "reteno-push-clicked", body: response.notification.request.content.userInfo)
         }
-        
+
         Reteno.userNotificationService.notificationActionHandler = { userInfo, action in
             let actionId = action.actionId
             let customData = action.customData
@@ -139,12 +163,6 @@ open class RetenoSdk: RCTEventEmitter {
                 EventEmitter.sharedInstance.dispatch(name: "reteno-on-in-app-display", body: nil)
             case .inAppShouldBeClosed(let action):
                 EventEmitter.sharedInstance.dispatch(name: "reteno-before-in-app-close", body: ["action": action])
-                Reteno.addLinkHandler { linkInfo in
-                    EventEmitter.sharedInstance.dispatch(name: "reteno-in-app-custom-data-received", body: ["customData": linkInfo.customData, "url": linkInfo.url?.absoluteString as Any])
-                    if RetenoSdk.autoOpenLinks, let url = linkInfo.url {
-                        UIApplication.shared.open(url)
-                    }
-                }
             case .inAppIsClosed(let action):
                 EventEmitter.sharedInstance.dispatch(name: "reteno-after-in-app-close", body: ["action": action])
             case .inAppReceivedError(let error):

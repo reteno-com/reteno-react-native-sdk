@@ -22,7 +22,7 @@ public class RetenoCustomReceiverInAppData extends BroadcastReceiver {
 
       handleCustomData(extras, context);
 
-      if (url != null && URLUtil.isValidUrl(url) && RetenoSdkModule.isAutoOpenLinksEnabled()) {
+      if (url != null && URLUtil.isValidUrl(url) && RetenoSdkModule.isAutoOpenLinksEnabled(context)) {
         Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
         if (context instanceof Activity) {
           context.startActivity(browserIntent);

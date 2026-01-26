@@ -40,6 +40,7 @@ import com.reteno.core.features.recommendation.GetRecommendationResponseCallback
 import com.reteno.core.domain.model.ecom.EcomEvent;
 
 import android.util.Log;
+import android.content.SharedPreferences;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -50,12 +51,13 @@ import kotlin.Unit;
 
 public class RetenoSdkModule extends ReactContextBaseJavaModule {
   public static final String NAME = "RetenoSdk";
+  private static final String PREFS_NAME = "RetenoPrefs";
+  private static final String AUTO_OPEN_LINKS_KEY = "autoOpenLinks";
   ReactApplicationContext context;
 
-  private static boolean autoOpenLinks = true;
-
-  public static boolean isAutoOpenLinksEnabled() {
-    return autoOpenLinks;
+  public static boolean isAutoOpenLinksEnabled(Context context) {
+    SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+    return prefs.getBoolean(AUTO_OPEN_LINKS_KEY, true); // default true
   }
 
   public RetenoSdkModule(ReactApplicationContext reactContext) {
@@ -629,7 +631,8 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void setAutoOpenLinks(boolean enabled, Promise promise) {
-    autoOpenLinks = enabled;
+    SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+    prefs.edit().putBoolean(AUTO_OPEN_LINKS_KEY, enabled).apply();
     promise.resolve(true);
   }
 
