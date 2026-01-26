@@ -192,6 +192,50 @@ const eventEmitter =
     ? DeviceEventEmitter
     : new NativeEventEmitter(RetenoSdk);
 
+/**
+ * Initialize event handler. Call this after setting up all event listeners.
+ * Events that occur before this call will be queued and delivered after initialization.
+ *
+ * @example
+ * ```typescript
+ * // 1. First, set up all your listeners
+ * setOnRetenoPushReceivedListener((event) => {
+ *   console.log('Push received:', event);
+ * });
+ *
+ * // 2. Then initialize to start receiving events
+ * initializeEventHandler();
+ * ```
+ *
+ * @returns Promise that resolves to true when initialization is complete
+ */
+export function initializeEventHandler(): Promise<boolean> {
+  return RetenoSdk.initializeEventHandler();
+}
+
+/**
+ * Control whether SDK automatically opens URLs when user clicks on push notifications or in-app messages.
+ *
+ * @param enabled - true to auto-open URLs (default), false to handle URLs manually via event listeners
+ * @returns Promise that resolves when setting is applied
+ *
+ * @example
+ * ```typescript
+ * // Disable automatic URL opening
+ * setAutoOpenLinks(false);
+ *
+ * // Handle URLs manually
+ * addInAppMessageCustomDataHandler((data) => {
+ *   if (data.url) {
+ *     // Custom URL handling logic
+ *   }
+ * });
+ * ```
+ */
+export function setAutoOpenLinks(enabled: boolean): Promise<boolean> {
+  return RetenoSdk.setAutoOpenLinks(enabled);
+}
+
 export function setOnRetenoPushReceivedListener(
   listener: (event: any) => void
 ) {

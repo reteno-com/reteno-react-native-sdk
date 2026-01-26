@@ -52,6 +52,12 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
   public static final String NAME = "RetenoSdk";
   ReactApplicationContext context;
 
+  private static boolean autoOpenLinks = true;
+
+  public static boolean isAutoOpenLinksEnabled() {
+    return autoOpenLinks;
+  }
+
   public RetenoSdkModule(ReactApplicationContext reactContext) {
     super(reactContext);
     context = reactContext;
@@ -93,23 +99,35 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
   }
 
   public static void onRetenoPushReceived(Context context, Intent intent) {
-    ReactContext reactContext = ((RetenoReactNativeApplication) context.getApplicationContext())
-      .getReactContext();
-
-    if (reactContext != null) {
-      reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-        .emit("reteno-push-received", parseIntent(intent));
+    ReactContext reactContext = null;
+    try {
+      reactContext = ((RetenoReactNativeApplication) context.getApplicationContext())
+        .getReactContext();
+    } catch (Exception e) {
+      Log.w(NAME, "Could not get ReactContext for push received", e);
     }
+
+    RetenoEventQueue.getInstance().dispatch(
+      "reteno-push-received",
+      parseIntent(intent),
+      reactContext
+    );
   }
 
   public static void onRetenoPushClicked(Context context, Intent intent) {
-    ReactContext reactContext = ((RetenoReactNativeApplication) context.getApplicationContext())
-      .getReactContext();
-
-    if (reactContext != null) {
-      reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-        .emit("reteno-push-clicked", parseIntent(intent));
+    ReactContext reactContext = null;
+    try {
+      reactContext = ((RetenoReactNativeApplication) context.getApplicationContext())
+        .getReactContext();
+    } catch (Exception e) {
+      Log.w(NAME, "Could not get ReactContext for push clicked", e);
     }
+
+    RetenoEventQueue.getInstance().dispatch(
+      "reteno-push-clicked",
+      parseIntent(intent),
+      reactContext
+    );
   }
 
   private static WritableMap parseIntent(Intent intent) {
@@ -247,8 +265,7 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
   private void sendEventToJS(String eventName, WritableMap eventData) {
     ReactContext reactContext = ((RetenoReactNativeApplication) this.context.getApplicationContext())
       .getReactContext();
-    reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-      .emit(eventName, eventData);
+    RetenoEventQueue.getInstance().dispatch(eventName, eventData, reactContext);
   }
 
   private InAppLifecycleCallback inAppLifecycleCallback;
@@ -596,6 +613,24 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
     } else {
       promise.reject("CallbackError", "No callback to unsubscribe");
     }
+  }
+
+  @ReactMethod
+  public void initializeEventHandler(Promise promise) {
+    try {
+      ReactContext reactContext = ((RetenoReactNativeApplication) this.context.getApplicationContext())
+        .getReactContext();
+      RetenoEventQueue.getInstance().setInitialized(reactContext);
+      promise.resolve(true);
+    } catch (Exception e) {
+      promise.reject("Reteno Android SDK initializeEventHandler Error", e);
+    }
+  }
+
+  @ReactMethod
+  public void setAutoOpenLinks(boolean enabled, Promise promise) {
+    autoOpenLinks = enabled;
+    promise.resolve(true);
   }
 
   /**
