@@ -63,6 +63,9 @@ RCT_EXTERN_METHOD(setAutoOpenLinks:(BOOL)enabled
                  withResolver:(RCTPromiseResolveBlock)resolve
                  withRejecter:(RCTPromiseRejectBlock)reject)
 
+RCT_EXTERN_METHOD(getAutoOpenLinks:(RCTPromiseResolveBlock)resolve
+                 withRejecter:(RCTPromiseRejectBlock)reject)
+
 RCT_EXTERN_METHOD(logEcomEventProductViewed:(NSDictionary *)payload
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)

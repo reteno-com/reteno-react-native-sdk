@@ -23,16 +23,14 @@ open class RetenoSdk: RCTEventEmitter {
         super.init()
         EventEmitter.sharedInstance.registerEventEmitter(externalEventEmitter: self)
 
-        // Set link handler immediately to intercept ALL links (push + in-app)
-        Reteno.addLinkHandler { linkInfo in
-            EventEmitter.sharedInstance.dispatch(
-                name: "reteno-in-app-custom-data-received",
-                body: ["customData": linkInfo.customData, "url": linkInfo.url?.absoluteString as Any]
-            )
-            if RetenoSdk.autoOpenLinks, let url = linkInfo.url {
-                UIApplication.shared.open(url)
-            }
-        }
+        // Listen for link events from AppDelegate via NotificationCenter
+        // The link handler is set in AppDelegate BEFORE Reteno.start() to handle cold start
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleLinkReceived(_:)),
+            name: NSNotification.Name("RetenoLinkReceived"),
+            object: nil
+        )
 
         Reteno.userNotificationService.didReceiveNotificationUserInfo = { userInfo in
             EventEmitter.sharedInstance.dispatch(name: "reteno-push-received", body: userInfo)
@@ -48,6 +46,18 @@ open class RetenoSdk: RCTEventEmitter {
             let actionLink = action.link
             EventEmitter.sharedInstance.dispatch(name: "reteno-push-button-clicked", body: ["userInfo": userInfo, "actionId": actionId, "customData": customData as Any, "actionLink": actionLink as Any])
         }
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    @objc private func handleLinkReceived(_ notification: Notification) {
+        guard let userInfo = notification.userInfo else { return }
+        EventEmitter.sharedInstance.dispatch(
+            name: "reteno-in-app-custom-data-received",
+            body: userInfo
+        )
     }
     
     /// Base overide for RCTEventEmitter.
@@ -67,6 +77,11 @@ open class RetenoSdk: RCTEventEmitter {
     func setAutoOpenLinks(enabled: Bool, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
         RetenoSdk.autoOpenLinks = enabled
         resolve(true)
+    }
+
+    @objc(getAutoOpenLinks:withRejecter:)
+    func getAutoOpenLinks(resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
+        resolve(RetenoSdk.autoOpenLinks)
     }
 
     @objc(setDeviceToken:withResolver:withRejecter:)

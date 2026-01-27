@@ -636,6 +636,11 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
     promise.resolve(true);
   }
 
+  @ReactMethod
+  public void getAutoOpenLinks(Promise promise) {
+    promise.resolve(isAutoOpenLinksEnabled(context));
+  }
+
   /**
    * Ecommerce Events
  * 1. Product Viewed Event

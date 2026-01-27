@@ -34,6 +34,7 @@ import {
   unsubscribeAllMessagesCountChanged,
   setOnRetenoPushButtonClickedListener,
   setAutoOpenLinks,
+  getAutoOpenLinks,
 } from 'reteno-react-native-sdk';
 import { Button } from '../components/Button';
 import styles from './styles';
@@ -209,6 +210,11 @@ export default function Main({navigation}: Props) {
         );
       });
   };
+
+  useEffect(() => {
+    // Sync UI state with native storage
+    getAutoOpenLinks().then(setAutoOpenLinksEnabled);
+  }, []);
 
   useEffect(() => {
     getInitialNotification().then(data => {

@@ -236,6 +236,21 @@ export function setAutoOpenLinks(enabled: boolean): Promise<boolean> {
   return RetenoSdk.setAutoOpenLinks(enabled);
 }
 
+/**
+ * Get the current auto-open links setting.
+ *
+ * @returns Promise that resolves to the current setting (true = auto-open enabled, false = disabled)
+ *
+ * @example
+ * ```typescript
+ * const isEnabled = await getAutoOpenLinks();
+ * console.log('Auto open links:', isEnabled);
+ * ```
+ */
+export function getAutoOpenLinks(): Promise<boolean> {
+  return RetenoSdk.getAutoOpenLinks();
+}
+
 export function setOnRetenoPushReceivedListener(
   listener: (event: any) => void
 ) {
