@@ -22,7 +22,7 @@ public class RetenoCustomReceiverInAppData extends BroadcastReceiver {
 
       handleCustomData(extras, context);
 
-      if (url != null && URLUtil.isValidUrl(url)) {
+      if (url != null && URLUtil.isValidUrl(url) && RetenoSdkModule.isAutoOpenLinksEnabled(context)) {
         Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
         if (context instanceof Activity) {
           context.startActivity(browserIntent);
@@ -66,9 +66,18 @@ public class RetenoCustomReceiverInAppData extends BroadcastReceiver {
       eventData.putMap("customData", customDataMap);
     }
 
-    ReactContext reactContext = ((RetenoReactNativeApplication) context.getApplicationContext())
-      .getReactContext();
-    reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-      .emit("reteno-in-app-custom-data-received", eventData);
+    ReactContext reactContext = null;
+    try {
+      reactContext = ((RetenoReactNativeApplication) context.getApplicationContext())
+        .getReactContext();
+    } catch (Exception e) {
+      // Log but continue - event will be queued
+    }
+
+    RetenoEventQueue.getInstance().dispatch(
+      "reteno-in-app-custom-data-received",
+      eventData,
+      reactContext
+    );
   }
 }

@@ -4,24 +4,60 @@ import Reteno
 
 @objc(RetenoSdk)
 open class RetenoSdk: RCTEventEmitter {
-    
+
+    private static let autoOpenLinksKey = "RetenoAutoOpenLinks"
+
+    private static var autoOpenLinks: Bool {
+        get {
+            if UserDefaults.standard.object(forKey: autoOpenLinksKey) == nil {
+                return true // default value
+            }
+            return UserDefaults.standard.bool(forKey: autoOpenLinksKey)
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: autoOpenLinksKey)
+        }
+    }
+
     override init() {
         super.init()
-        EventEmitter.sharedInstance.registerEventEmitter(externalEventEmitter: self);
-        Reteno.userNotificationService.didReceiveNotificationUserInfo = {userInfo in
+        EventEmitter.sharedInstance.registerEventEmitter(externalEventEmitter: self)
+
+        // Listen for link events from AppDelegate via NotificationCenter
+        // The link handler is set in AppDelegate BEFORE Reteno.start() to handle cold start
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleLinkReceived(_:)),
+            name: NSNotification.Name("RetenoLinkReceived"),
+            object: nil
+        )
+
+        Reteno.userNotificationService.didReceiveNotificationUserInfo = { userInfo in
             EventEmitter.sharedInstance.dispatch(name: "reteno-push-received", body: userInfo)
         }
-        
-        Reteno.userNotificationService.didReceiveNotificationResponseHandler = {response in
-              EventEmitter.sharedInstance.dispatch(name: "reteno-push-clicked", body: response.notification.request.content.userInfo)
+
+        Reteno.userNotificationService.didReceiveNotificationResponseHandler = { response in
+            EventEmitter.sharedInstance.dispatch(name: "reteno-push-clicked", body: response.notification.request.content.userInfo)
         }
-        
+
         Reteno.userNotificationService.notificationActionHandler = { userInfo, action in
             let actionId = action.actionId
             let customData = action.customData
             let actionLink = action.link
             EventEmitter.sharedInstance.dispatch(name: "reteno-push-button-clicked", body: ["userInfo": userInfo, "actionId": actionId, "customData": customData as Any, "actionLink": actionLink as Any])
         }
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    @objc private func handleLinkReceived(_ notification: Notification) {
+        guard let userInfo = notification.userInfo else { return }
+        EventEmitter.sharedInstance.dispatch(
+            name: "reteno-in-app-custom-data-received",
+            body: userInfo
+        )
     }
     
     /// Base overide for RCTEventEmitter.
@@ -30,8 +66,24 @@ open class RetenoSdk: RCTEventEmitter {
     @objc open override func supportedEvents() -> [String] {
         return EventEmitter.sharedInstance.allEvents;
     }
-    
-    
+
+    @objc(initializeEventHandler:withRejecter:)
+    func initializeEventHandler(resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
+        EventEmitter.sharedInstance.setInitialized()
+        resolve(true)
+    }
+
+    @objc(setAutoOpenLinks:withResolver:withRejecter:)
+    func setAutoOpenLinks(enabled: Bool, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
+        RetenoSdk.autoOpenLinks = enabled
+        resolve(true)
+    }
+
+    @objc(getAutoOpenLinks:withRejecter:)
+    func getAutoOpenLinks(resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
+        resolve(RetenoSdk.autoOpenLinks)
+    }
+
     @objc(setDeviceToken:withResolver:withRejecter:)
     func setDeviceToken(deviceToken: String, resolve:RCTPromiseResolveBlock,reject:RCTPromiseRejectBlock) -> Void {
         Reteno.userNotificationService.processRemoteNotificationsToken(deviceToken);
@@ -121,21 +173,15 @@ open class RetenoSdk: RCTEventEmitter {
         Reteno.addInAppStatusHandler { inAppMessageStatus in
             switch inAppMessageStatus {
             case .inAppShouldBeDisplayed:
-                self.sendEvent(withName: "reteno-before-in-app-display", body: nil)
+                EventEmitter.sharedInstance.dispatch(name: "reteno-before-in-app-display", body: nil)
             case .inAppIsDisplayed:
-                self.sendEvent(withName: "reteno-on-in-app-display", body: nil)
+                EventEmitter.sharedInstance.dispatch(name: "reteno-on-in-app-display", body: nil)
             case .inAppShouldBeClosed(let action):
-                self.sendEvent(withName: "reteno-before-in-app-close", body: ["action": action])
-                Reteno.addLinkHandler { linkInfo in
-                    self.sendEvent(withName: "reteno-in-app-custom-data-received", body: ["customData": linkInfo.customData])
-                    if let url = linkInfo.url {
-                                        UIApplication.shared.open(url)
-                                    }
-                }
+                EventEmitter.sharedInstance.dispatch(name: "reteno-before-in-app-close", body: ["action": action])
             case .inAppIsClosed(let action):
-                self.sendEvent(withName: "reteno-after-in-app-close", body: ["action": action])
+                EventEmitter.sharedInstance.dispatch(name: "reteno-after-in-app-close", body: ["action": action])
             case .inAppReceivedError(let error):
-                self.sendEvent(withName: "reteno-on-in-app-error", body: ["error": error])
+                EventEmitter.sharedInstance.dispatch(name: "reteno-on-in-app-error", body: ["error": error])
             }
         }
     }
@@ -256,11 +302,11 @@ open class RetenoSdk: RCTEventEmitter {
     }
     
     @objc(onUnreadMessagesCountChanged)
-        func onUnreadMessagesCountChanged() {
-            Reteno.inbox().onUnreadMessagesCountChanged = { count in
-                self.sendEvent(withName: "reteno-unread-messages-count", body: ["count": count])
-            }
+    func onUnreadMessagesCountChanged() {
+        Reteno.inbox().onUnreadMessagesCountChanged = { count in
+            EventEmitter.sharedInstance.dispatch(name: "reteno-unread-messages-count", body: ["count": count])
         }
+    }
     
     @objc(markAsOpened:withResolver:withRejecter:)
         func markAsOpened(messageIds: [String], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {

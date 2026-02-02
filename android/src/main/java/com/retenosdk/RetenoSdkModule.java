@@ -40,6 +40,7 @@ import com.reteno.core.features.recommendation.GetRecommendationResponseCallback
 import com.reteno.core.domain.model.ecom.EcomEvent;
 
 import android.util.Log;
+import android.content.SharedPreferences;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -50,7 +51,14 @@ import kotlin.Unit;
 
 public class RetenoSdkModule extends ReactContextBaseJavaModule {
   public static final String NAME = "RetenoSdk";
+  private static final String PREFS_NAME = "RetenoPrefs";
+  private static final String AUTO_OPEN_LINKS_KEY = "autoOpenLinks";
   ReactApplicationContext context;
+
+  public static boolean isAutoOpenLinksEnabled(Context context) {
+    SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+    return prefs.getBoolean(AUTO_OPEN_LINKS_KEY, true); // default true
+  }
 
   public RetenoSdkModule(ReactApplicationContext reactContext) {
     super(reactContext);
@@ -93,23 +101,35 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
   }
 
   public static void onRetenoPushReceived(Context context, Intent intent) {
-    ReactContext reactContext = ((RetenoReactNativeApplication) context.getApplicationContext())
-      .getReactContext();
-
-    if (reactContext != null) {
-      reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-        .emit("reteno-push-received", parseIntent(intent));
+    ReactContext reactContext = null;
+    try {
+      reactContext = ((RetenoReactNativeApplication) context.getApplicationContext())
+        .getReactContext();
+    } catch (Exception e) {
+      Log.w(NAME, "Could not get ReactContext for push received", e);
     }
+
+    RetenoEventQueue.getInstance().dispatch(
+      "reteno-push-received",
+      parseIntent(intent),
+      reactContext
+    );
   }
 
   public static void onRetenoPushClicked(Context context, Intent intent) {
-    ReactContext reactContext = ((RetenoReactNativeApplication) context.getApplicationContext())
-      .getReactContext();
-
-    if (reactContext != null) {
-      reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-        .emit("reteno-push-clicked", parseIntent(intent));
+    ReactContext reactContext = null;
+    try {
+      reactContext = ((RetenoReactNativeApplication) context.getApplicationContext())
+        .getReactContext();
+    } catch (Exception e) {
+      Log.w(NAME, "Could not get ReactContext for push clicked", e);
     }
+
+    RetenoEventQueue.getInstance().dispatch(
+      "reteno-push-clicked",
+      parseIntent(intent),
+      reactContext
+    );
   }
 
   private static WritableMap parseIntent(Intent intent) {
@@ -247,8 +267,7 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
   private void sendEventToJS(String eventName, WritableMap eventData) {
     ReactContext reactContext = ((RetenoReactNativeApplication) this.context.getApplicationContext())
       .getReactContext();
-    reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-      .emit(eventName, eventData);
+    RetenoEventQueue.getInstance().dispatch(eventName, eventData, reactContext);
   }
 
   private InAppLifecycleCallback inAppLifecycleCallback;
@@ -596,6 +615,30 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
     } else {
       promise.reject("CallbackError", "No callback to unsubscribe");
     }
+  }
+
+  @ReactMethod
+  public void initializeEventHandler(Promise promise) {
+    try {
+      ReactContext reactContext = ((RetenoReactNativeApplication) this.context.getApplicationContext())
+        .getReactContext();
+      RetenoEventQueue.getInstance().setInitialized(reactContext);
+      promise.resolve(true);
+    } catch (Exception e) {
+      promise.reject("Reteno Android SDK initializeEventHandler Error", e);
+    }
+  }
+
+  @ReactMethod
+  public void setAutoOpenLinks(boolean enabled, Promise promise) {
+    SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+    prefs.edit().putBoolean(AUTO_OPEN_LINKS_KEY, enabled).apply();
+    promise.resolve(true);
+  }
+
+  @ReactMethod
+  public void getAutoOpenLinks(Promise promise) {
+    promise.resolve(isAutoOpenLinksEnabled(context));
   }
 
   /**

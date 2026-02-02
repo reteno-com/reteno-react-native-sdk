@@ -33,6 +33,8 @@ import {
   unsubscribeMessagesCountChanged,
   unsubscribeAllMessagesCountChanged,
   setOnRetenoPushButtonClickedListener,
+  setAutoOpenLinks,
+  getAutoOpenLinks,
 } from 'reteno-react-native-sdk';
 import { Button } from '../components/Button';
 import styles from './styles';
@@ -41,6 +43,7 @@ type Props = NativeStackScreenProps<RootStackParamList, ScreenNames.home>;
 
 export default function Main({navigation}: Props) {
   const [messagesId, setMessagesId] = useState<string>('');
+  const [autoOpenLinksEnabled, setAutoOpenLinksEnabled] = useState<boolean>(true);
 
   const form = useMemo(
     () => [
@@ -64,6 +67,18 @@ export default function Main({navigation}: Props) {
     pauseInAppMessages(isPaused)
       .then(() => {
         Alert.alert('Success', 'Pause state changed');
+      })
+      .catch(error => {
+        Alert.alert('Error', error);
+      });
+  };
+
+  const handleToggleAutoOpenLinks = () => {
+    const newValue = !autoOpenLinksEnabled;
+    setAutoOpenLinks(newValue)
+      .then(() => {
+        setAutoOpenLinksEnabled(newValue);
+        Alert.alert('Success', `Auto open links: ${newValue ? 'enabled' : 'disabled'}`);
       })
       .catch(error => {
         Alert.alert('Error', error);
@@ -197,6 +212,11 @@ export default function Main({navigation}: Props) {
   };
 
   useEffect(() => {
+    // Sync UI state with native storage
+    getAutoOpenLinks().then(setAutoOpenLinksEnabled);
+  }, []);
+
+  useEffect(() => {
     getInitialNotification().then(data => {
       Alert.alert('getInitialNotification', data ? JSON.stringify(data) : data);
     });
@@ -314,6 +334,7 @@ export default function Main({navigation}: Props) {
         <Button  onPress={forcePushData} label='Force push data' />
         <Button onPress={() => handleInAppMessagesStatus(true)} label='Pause in app messages' />
         <Button onPress={() => handleInAppMessagesStatus(false)} label='Unpause in app messages' />
+        <Button onPress={handleToggleAutoOpenLinks} label={`Auto open links: ${autoOpenLinksEnabled ? 'ON' : 'OFF'} (tap to toggle)`} />
         <Button onPress={setInAppLifecycleCallback} label='Subscribe to in app messages events' />
         <Button  onPress={removeInAppLifecycleCallback} label='Unsubscribe from in app messages events (Android)' />
         <Button  onPress={handleGetRecommendations} label='Get Recommendations' />
