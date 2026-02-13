@@ -23,14 +23,26 @@ open class RetenoSdk: RCTEventEmitter {
         super.init()
         EventEmitter.sharedInstance.registerEventEmitter(externalEventEmitter: self)
 
-        // Listen for link events from AppDelegate via NotificationCenter
-        // The link handler is set in AppDelegate BEFORE Reteno.start() to handle cold start
+        // Listen for link events from AppDelegate via NotificationCenter (cold start support)
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(handleLinkReceived(_:)),
             name: NSNotification.Name("RetenoLinkReceived"),
             object: nil
         )
+
+        // Fallback: set link handler for clients who don't add it in AppDelegate
+        // If AppDelegate already set a handler, this overrides it — which is fine,
+        // because cold start links were already handled by AppDelegate's handler
+        Reteno.addLinkHandler { linkInfo in
+            EventEmitter.sharedInstance.dispatch(
+                name: "reteno-in-app-custom-data-received",
+                body: ["customData": linkInfo.customData, "url": linkInfo.url?.absoluteString as Any]
+            )
+            if RetenoSdk.autoOpenLinks, let url = linkInfo.url {
+                UIApplication.shared.open(url)
+            }
+        }
 
         Reteno.userNotificationService.didReceiveNotificationUserInfo = { userInfo in
             EventEmitter.sharedInstance.dispatch(name: "reteno-push-received", body: userInfo)

@@ -8,11 +8,14 @@ import Firebase
 @main
 class AppDelegate: RCTAppDelegate, MessagingDelegate {
 
+  // Optional: Add link handler BEFORE Reteno.start() to control browser opening on cold start.
+  // Without this code, setAutoOpenLinks(false) will only work when the app is already running (warm start).
+
   private static let autoOpenLinksKey = "RetenoAutoOpenLinks"
 
   private static var autoOpenLinks: Bool {
     if UserDefaults.standard.object(forKey: autoOpenLinksKey) == nil {
-      return true // default
+      return true
     }
     return UserDefaults.standard.bool(forKey: autoOpenLinksKey)
   }
@@ -21,9 +24,7 @@ class AppDelegate: RCTAppDelegate, MessagingDelegate {
       didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
         FirebaseApp.configure()
 
-        // IMPORTANT: Set link handler BEFORE Reteno.start() to intercept links on cold start
         Reteno.addLinkHandler { linkInfo in
-          // Dispatch event to React Native via NotificationCenter (will be queued until RN is ready)
           NotificationCenter.default.post(
             name: NSNotification.Name("RetenoLinkReceived"),
             object: nil,
@@ -33,13 +34,11 @@ class AppDelegate: RCTAppDelegate, MessagingDelegate {
             ]
           )
 
-          // Open URL only if autoOpenLinks is enabled
           if AppDelegate.autoOpenLinks, let url = linkInfo.url {
             UIApplication.shared.open(url)
           }
         }
 
-        // Initialize Reteno SDK AFTER setting the link handler
     Reteno.start(apiKey: "630A66AF-C1D3-4F2A-ACC1-0D51C38D2B05", isDebugMode: true)
 
     // Register for push notifications
