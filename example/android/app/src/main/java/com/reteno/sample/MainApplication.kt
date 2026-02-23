@@ -4,10 +4,9 @@ import android.app.Application
 import com.facebook.react.PackageList
 import com.facebook.react.ReactApplication
 import com.facebook.react.ReactHost
+import com.facebook.react.ReactNativeApplicationEntryPoint.loadReactNative
 import com.facebook.react.ReactNativeHost
-import com.facebook.react.ReactPackage
 import com.facebook.react.bridge.ReactContext
-import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.load
 import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 import com.facebook.react.defaults.DefaultReactNativeHost
 import com.facebook.react.soloader.OpenSourceMergedSoMapping
@@ -22,9 +21,10 @@ class MainApplication : Application(), ReactApplication, RetenoReactNativeApplic
   private lateinit var retenoInstance: Reteno
 
 
-  override val reactNativeHost: ReactNativeHost =
-      object : DefaultReactNativeHost(this) {
-        override fun getPackages(): List<ReactPackage> =
+override val reactHost: ReactHost by lazy {
+    getDefaultReactHost(
+      context = applicationContext,
+      packageList =
             PackageList(this).packages.apply {
               // Packages that cannot be autolinked yet can be added manually here, for example:
               // add(MyReactNativePackage())
@@ -36,7 +36,8 @@ class MainApplication : Application(), ReactApplication, RetenoReactNativeApplic
 
         override val isNewArchEnabled: Boolean = BuildConfig.IS_NEW_ARCHITECTURE_ENABLED
         override val isHermesEnabled: Boolean = BuildConfig.IS_HERMES_ENABLED
-      }
+    )
+  }
 
   override fun getRetenoInstance(): Reteno {
     return Reteno.instance
@@ -56,7 +57,7 @@ class MainApplication : Application(), ReactApplication, RetenoReactNativeApplic
     SoLoader.init(this, OpenSourceMergedSoMapping)
     if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
       // If you opted-in for the New Architecture, we load the native entry point for this app.
-      load()
+     loadReactNative(this)
     }
   }
 }
