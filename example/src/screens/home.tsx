@@ -40,6 +40,8 @@ import { Button } from '../components/Button';
 import styles from './styles';
 
 type Props = NativeStackScreenProps<RootStackParamList, ScreenNames.home>;
+const stringifyEvent = (event: unknown): string =>
+  event == null ? '' : JSON.stringify(event);
 
 export default function Main({navigation}: Props) {
   const [messagesId, setMessagesId] = useState<string>('');
@@ -144,19 +146,16 @@ export default function Main({navigation}: Props) {
     [navigation],
   );
 
-  const onRetenoPushReceived = useCallback(event => {
-    Alert.alert('onRetenoPushReceived', event ? JSON.stringify(event) : event);
+  const onRetenoPushReceived = useCallback((event: unknown) => {
+    Alert.alert('onRetenoPushReceived', stringifyEvent(event));
   }, []);
 
-  const onRetenoPushClicked = useCallback(event => {
-    Alert.alert('onRetenoPushClicked', event ? JSON.stringify(event) : event);
+  const onRetenoPushClicked = useCallback((event: unknown) => {
+    Alert.alert('onRetenoPushClicked', stringifyEvent(event));
   }, []);
 
-  const onRetenoPushButtonClicked = useCallback(event => {
-    Alert.alert(
-      'onRetenoPushButtonClicked',
-      event ? JSON.stringify(event) : event,
-    );
+  const onRetenoPushButtonClicked = useCallback((event: unknown) => {
+    Alert.alert('onRetenoPushButtonClicked', stringifyEvent(event));
   }, []);
 
   const handleGetRecommendations = () => {

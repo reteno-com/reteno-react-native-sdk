@@ -6,7 +6,6 @@ import {
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import {
-  logEcomEventProductViewed,
   logScreenView,
   registerForRemoteNotifications,
   updatePushPermissionStatusAndroid,
@@ -29,7 +28,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function Navigation() {
   const navigationRef = useNavigationContainerRef();
-  const routeNameRef = React.useRef<string | undefined>();
+  const routeNameRef = React.useRef<string | undefined>(undefined);
 
   React.useEffect(() => {
     registerForRemoteNotifications();
