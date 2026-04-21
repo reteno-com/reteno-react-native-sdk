@@ -4,6 +4,8 @@ import {
   ScrollView,
   SafeAreaView,
   Alert,
+  Text,
+  View,
 } from 'react-native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {ScreenNames, RootStackParamList} from '../config';
@@ -35,17 +37,37 @@ import {
   setOnRetenoPushButtonClickedListener,
   setAutoOpenLinks,
   getAutoOpenLinks,
+  initializeEventHandler,
 } from 'reteno-react-native-sdk';
 import { Button } from '../components/Button';
 import styles from './styles';
 
 type Props = NativeStackScreenProps<RootStackParamList, ScreenNames.home>;
-const stringifyEvent = (event: unknown): string =>
-  event == null ? '' : JSON.stringify(event);
+
+type SubscriptionEvent = {
+  id: number;
+  name: string;
+  payload: string;
+  level: 'info' | 'error';
+};
 
 export default function Main({navigation}: Props) {
   const [messagesId, setMessagesId] = useState<string>('');
   const [autoOpenLinksEnabled, setAutoOpenLinksEnabled] = useState<boolean>(true);
+  const [subscriptionEvents, setSubscriptionEvents] = useState<SubscriptionEvent[]>([]);
+
+  const addSubscriptionEvent = useCallback(
+    (name: string, payload: unknown, level: SubscriptionEvent['level'] = 'info') => {
+      const event: SubscriptionEvent = {
+        id: Date.now() + Math.random(),
+        name,
+        payload: payload ? JSON.stringify(payload) : String(payload ?? ''),
+        level,
+      };
+      setSubscriptionEvents(prev => [event, ...prev].slice(0, 20));
+    },
+    [],
+  );
 
   const form = useMemo(
     () => [
@@ -146,17 +168,26 @@ export default function Main({navigation}: Props) {
     [navigation],
   );
 
-  const onRetenoPushReceived = useCallback((event: unknown) => {
-    Alert.alert('onRetenoPushReceived', stringifyEvent(event));
-  }, []);
+  const onRetenoPushReceived = useCallback(
+    (event: unknown) => {
+      addSubscriptionEvent('onRetenoPushReceived', event);
+    },
+    [addSubscriptionEvent],
+  );
 
-  const onRetenoPushClicked = useCallback((event: unknown) => {
-    Alert.alert('onRetenoPushClicked', stringifyEvent(event));
-  }, []);
+  const onRetenoPushClicked = useCallback(
+    (event: unknown) => {
+      addSubscriptionEvent('onRetenoPushClicked', event);
+    },
+    [addSubscriptionEvent],
+  );
 
-  const onRetenoPushButtonClicked = useCallback((event: unknown) => {
-    Alert.alert('onRetenoPushButtonClicked', stringifyEvent(event));
-  }, []);
+  const onRetenoPushButtonClicked = useCallback(
+    (event: unknown) => {
+      addSubscriptionEvent('onRetenoPushButtonClicked', event);
+    },
+    [addSubscriptionEvent],
+  );
 
   const handleGetRecommendations = () => {
     const recommendationsPayload = {
@@ -217,7 +248,7 @@ export default function Main({navigation}: Props) {
 
   useEffect(() => {
     getInitialNotification().then(data => {
-      Alert.alert('getInitialNotification', data ? JSON.stringify(data) : data);
+      addSubscriptionEvent('getInitialNotification', data);
     });
     const pushListener = setOnRetenoPushReceivedListener(onRetenoPushReceived);
     const pushClickListener =
@@ -225,20 +256,18 @@ export default function Main({navigation}: Props) {
     const pushButtonClickListener = setOnRetenoPushButtonClickedListener(
       onRetenoPushButtonClicked,
     );
+    initializeEventHandler();
 
     return () => {
       pushListener.remove();
       pushClickListener.remove();
       if (pushButtonClickListener) pushButtonClickListener.remove();
     };
-  }, [onRetenoPushReceived, onRetenoPushClicked, onRetenoPushButtonClicked]);
+  }, [onRetenoPushReceived, onRetenoPushClicked, onRetenoPushButtonClicked, addSubscriptionEvent]);
 
   useEffect(() => {
     const unreadMessagesCountListener = unreadMessagesCountHandler(data => {
-      Alert.alert(
-        'unreadMessagesCountHandler',
-        data ? JSON.stringify(data) : data,
-      );
+      addSubscriptionEvent('unreadMessagesCountHandler', data);
 
       getAppInboxMessages({}).then(response => {
         const newMessagesIds: string[] = response?.messages
@@ -256,15 +285,11 @@ export default function Main({navigation}: Props) {
     return () => {
       unreadMessagesCountListener.remove();
     };
-  }, []);
+  }, [addSubscriptionEvent]);
 
   useEffect(() => {
     const unreadMessagesCountErrorListener = unreadMessagesCountErrorHandler(
-      error =>
-        Alert.alert(
-          'unreadMessagesCountErrorHandler',
-          error ? JSON.stringify(error) : error,
-        ),
+      error => addSubscriptionEvent('unreadMessagesCountErrorHandler', error, 'error'),
     );
 
     return () => {
@@ -272,42 +297,29 @@ export default function Main({navigation}: Props) {
         unreadMessagesCountErrorListener.remove();
       }
     };
-  }, []);
+  }, [addSubscriptionEvent]);
 
   useEffect(() => {
     setInAppLifecycleCallback();
 
     const beforeInAppDisplayListener = beforeInAppDisplayHandler(data =>
-      Alert.alert(
-        'beforeInAppDisplayHandler',
-        data ? JSON.stringify(data) : data,
-      ),
+      addSubscriptionEvent('beforeInAppDisplayHandler', data),
     );
     const onInAppDisplayListener = onInAppDisplayHandler(data =>
-      Alert.alert('onInAppDisplayHandler', data ? JSON.stringify(data) : data),
+      addSubscriptionEvent('onInAppDisplayHandler', data),
     );
     const beforeInAppCloseListener = beforeInAppCloseHandler(data =>
-      Alert.alert(
-        'beforeInAppCloseHandler',
-        data ? JSON.stringify(data) : data,
-      ),
+      addSubscriptionEvent('beforeInAppCloseHandler', data),
     );
     const afterInAppCloseListener = afterInAppCloseHandler(data =>
-      Alert.alert('afterInAppCloseHandler', data ? JSON.stringify(data) : data),
+      addSubscriptionEvent('afterInAppCloseHandler', data),
     );
     const onInAppErrorListener = onInAppErrorHandler(data =>
-      Alert.alert(
-        'beforeInAppDisplayHandler',
-        data ? JSON.stringify(data) : data,
-      ),
+      addSubscriptionEvent('onInAppErrorHandler', data, 'error'),
     );
 
     const addInAppMessageCustomDataListener = addInAppMessageCustomDataHandler(
-      data =>
-        Alert.alert(
-          'addInAppMessageCustomDataHandler',
-          data ? JSON.stringify(data) : data,
-        ),
+      data => addSubscriptionEvent('addInAppMessageCustomDataHandler', data),
     );
 
     return () => {
@@ -321,11 +333,30 @@ export default function Main({navigation}: Props) {
 
       addInAppMessageCustomDataListener.remove();
     };
-  }, []);
+  }, [addSubscriptionEvent]);
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
+        <View style={styles.eventsContainer}>
+          <Text style={styles.eventsTitle}>Subscription Events</Text>
+          {subscriptionEvents.length === 0 ? (
+            <Text style={styles.eventsEmpty}>No events yet</Text>
+          ) : (
+            subscriptionEvents.map(event => (
+              <View key={event.id} style={styles.eventItem}>
+                <Text style={event.level === 'error' ? styles.eventNameError : styles.eventName}>
+                  {event.name}
+                </Text>
+                <Text style={styles.eventPayload}>{event.payload || 'empty payload'}</Text>
+              </View>
+            ))
+          )}
+          <Button
+            onPress={() => setSubscriptionEvents([])}
+            label='Clear subscription events'
+          />
+        </View>
         {form.map(item => (
           <Button key={item.route} onPress={() => goTo(item.route)} label={item.label} />
         ))}

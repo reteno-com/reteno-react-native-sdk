@@ -95,6 +95,14 @@ Bump build number to current + 1
 
 Make an archive from the current codebase
 
+### ios upload_testflight
+
+```sh
+[bundle exec] fastlane ios upload_testflight
+```
+
+Archive and upload to TestFlight without any extras
+
 ### ios upload_symbols
 
 ```sh

@@ -7,10 +7,15 @@ import {
   Text,
   ScrollView,
   SafeAreaView,
-  Alert,
 } from 'react-native';
 import {logEvent} from 'reteno-react-native-sdk';
 import { Button } from '../components/Button';
+
+type EventMessage = {
+  id: number;
+  type: 'success' | 'error';
+  text: string;
+};
 
 export default function Events() {
   const [eventName, setEventName] = useState('test_event_type');
@@ -20,6 +25,7 @@ export default function Events() {
     [],
   );
   const [showParameterForm, setShowParameterForm] = useState(false);
+  const [messages, setMessages] = useState<EventMessage[]>([]);
 
   const form = useMemo(
     () => [
@@ -45,22 +51,49 @@ export default function Events() {
     }
   }, [parameterName, parameterValue, parameters]);
 
+  const addMessage = useCallback((type: EventMessage['type'], text: string) => {
+    setMessages(prev => [{id: Date.now() + Math.random(), type, text}, ...prev].slice(0, 5));
+  }, []);
+
   const submit = useCallback(() => {
     if (eventName) {
       logEvent(eventName, new Date().toISOString(), parameters, false)
         .then(() => {
-          Alert.alert('Success', 'Event sent');
+          addMessage('success', 'Success: Event sent');
         })
         .catch((error: any) => {
-          Alert.alert('Error', error);
+          const errorMessage =
+            typeof error === 'string'
+              ? error
+              : error?.message
+                ? error.message
+                : JSON.stringify(error);
+          addMessage('error', `Error: ${errorMessage}`);
         });
     } else {
-      Alert.alert('Error', 'eventName is required for logEvent method');
+      addMessage('error', 'Error: eventName is required for logEvent method');
     }
-  }, [eventName, parameters]);
+  }, [addMessage, eventName, parameters]);
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
+        <View style={styles.messagesContainer}>
+          <Text style={styles.messagesTitle}>Messages</Text>
+          {messages.length === 0 ? (
+            <Text style={styles.messageEmpty}>No messages yet</Text>
+          ) : (
+            messages.map(message => (
+              <Text
+                key={message.id}
+                style={[
+                  styles.messageText,
+                  message.type === 'success' ? styles.messageSuccess : styles.messageError,
+                ]}>
+                {message.text}
+              </Text>
+            ))
+          )}
+        </View>
         {form.map(item => (
           <View style={styles.row} key={item.label}>
             <View style={styles.rowText}>
@@ -144,6 +177,33 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     flex: 1,
     justifyContent: 'center',
+  },
+  messagesContainer: {
+    marginHorizontal: 20,
+    marginTop: 20,
+    marginBottom: 10,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#D9D9D9',
+    borderRadius: 8,
+    backgroundColor: '#FAFAFA',
+  },
+  messagesTitle: {
+    color: '#000',
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  messageEmpty: {
+    color: '#6B7280',
+  },
+  messageText: {
+    marginBottom: 6,
+  },
+  messageSuccess: {
+    color: '#0A7A33',
+  },
+  messageError: {
+    color: '#B42318',
   },
   keyboardAvoidingView: {
     flex: 1,
