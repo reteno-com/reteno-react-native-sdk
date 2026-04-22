@@ -8,7 +8,7 @@ import {
   SafeAreaView,
   Alert,
 } from 'react-native';
-import {setUserAttributes, UserAttributes} from 'reteno-react-native-sdk';
+import { setUserAttributes, setMultiAccountUserAttributes, UserAttributes } from 'reteno-react-native-sdk';
 import styles from './styles';
 import { Button } from '../components/Button';
 
@@ -160,6 +160,23 @@ export default function Attributes() {
         ))}
       </ScrollView>
       <Button onPress={submit} label='Set User Attributes' />
+      <Button
+        onPress={() => {
+          setMultiAccountUserAttributes({
+            externalUserId: 'test-multi-account-user',
+            user: {
+              userAttributes: {
+                firstName: 'MultiAccount',
+                lastName: 'TestUser',
+                email: 'multi@test.com',
+              },
+            },
+          })
+            .then(() => Alert.alert('Success', 'Multi-account user attributes set'))
+            .catch(error => Alert.alert('Error', String(error)));
+        }}
+        label='Set Multi-Account User Attributes'
+      />
     </SafeAreaView>
   );
 }

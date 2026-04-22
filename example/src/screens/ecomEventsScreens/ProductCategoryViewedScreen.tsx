@@ -28,12 +28,22 @@ const ProductCategoryViewedScreen = () => {
   ) => {
     setFormValue(prev => {
       const updatedAttributes = [...prev.attributes];
-      if (updatedAttributes[index]) {
-        if (field === 'value') {
-          updatedAttributes[index].value = [value];
-        } else {
-          updatedAttributes[index].name = value;
-        }
+      const currentAttribute = updatedAttributes[index];
+
+      if (!currentAttribute) {
+        return prev;
+      }
+
+      if (field === 'value') {
+        updatedAttributes[index] = {
+          ...currentAttribute,
+          value: [value],
+        };
+      } else {
+        updatedAttributes[index] = {
+          ...currentAttribute,
+          name: value,
+        };
       }
       return {
         ...prev,
@@ -88,7 +98,7 @@ const ProductCategoryViewedScreen = () => {
               />
                 <InputRow
                 label="Attribute Value"
-                value={attr.value[0]!}
+                value={attr.value[0] ?? ''}
                 onChange={text => handleAttributeChange(index, 'value', text)}
               />
           </View>

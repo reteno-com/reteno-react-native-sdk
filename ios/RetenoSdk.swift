@@ -104,7 +104,7 @@ open class RetenoSdk: RCTEventEmitter {
     @objc(setUserAttributes:withResolver:withRejecter:)
     func setUserAttributes(payload: NSDictionary, resolve:RCTPromiseResolveBlock,reject:RCTPromiseRejectBlock) -> Void {
         let externalUserId = payload["externalUserId"] as? String;
-        
+
         do {
             let requestPayload = try RetenoUserAttributes.buildSetUserAttributesPayload(payload: payload);
             Reteno.updateUserAttributes(
@@ -115,10 +115,35 @@ open class RetenoSdk: RCTEventEmitter {
                 groupNamesExclude: requestPayload.groupNamesExclude
             );
             let res:[String:Bool] = ["success":true];
-            
+
             resolve(res);
         } catch {
             reject("100", "Reteno iOS SDK Error", error);
+        }
+    }
+
+    @objc(setMultiAccountUserAttributes:withResolver:withRejecter:)
+    func setMultiAccountUserAttributes(payload: NSDictionary, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
+        let externalUserId = payload["externalUserId"] as? String
+
+        guard let externalUserId = externalUserId, !externalUserId.isEmpty else {
+            reject("100", "Missing argument: externalUserId", nil)
+            return
+        }
+
+        do {
+            let requestPayload = try RetenoUserAttributes.buildSetUserAttributesPayload(payload: payload)
+            Reteno.updateMultiAccountUserAttributes(
+                externalUserId: externalUserId,
+                userAttributes: requestPayload.userAttributes,
+                subscriptionKeys: requestPayload.subscriptionKeys,
+                groupNamesInclude: requestPayload.groupNamesInclude,
+                groupNamesExclude: requestPayload.groupNamesExclude,
+                accountSuffix: externalUserId
+            )
+            resolve(["success": true])
+        } catch {
+            reject("100", "Reteno iOS SDK Error", error)
         }
     }
     
@@ -176,8 +201,23 @@ open class RetenoSdk: RCTEventEmitter {
     
     @objc(pauseInAppMessages:withResolver:withRejecter:)
     func pauseInAppMessages(isPaused: Bool, resolve:RCTPromiseResolveBlock,reject:RCTPromiseRejectBlock) -> Void {
-        Reteno.pauseInAppMessages(isPaused: isPaused);
-        resolve(true);
+        Reteno.pauseInAppMessages(isPaused: isPaused)
+        resolve(true)
+    }
+
+    @objc(setInAppMessagesPauseBehaviour:withResolver:withRejecter:)
+    func setInAppMessagesPauseBehaviour(behaviour: String, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
+        let normalized = behaviour.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+        switch normalized {
+        case "SKIP_IN_APPS":
+            Reteno.setInAppMessagesPauseBehaviour(pauseBehaviour: .skipInApps)
+            resolve(true)
+        case "POSTPONE_IN_APPS":
+            Reteno.setInAppMessagesPauseBehaviour(pauseBehaviour: .postponeInApps)
+            resolve(true)
+        default:
+            reject("100", "Invalid argument: behaviour must be 'SKIP_IN_APPS' or 'POSTPONE_IN_APPS'", nil)
+        }
     }
     
     @objc(setInAppLifecycleCallback)
@@ -189,13 +229,30 @@ open class RetenoSdk: RCTEventEmitter {
             case .inAppIsDisplayed:
                 EventEmitter.sharedInstance.dispatch(name: "reteno-on-in-app-display", body: nil)
             case .inAppShouldBeClosed(let action):
-                EventEmitter.sharedInstance.dispatch(name: "reteno-before-in-app-close", body: ["action": action])
+                EventEmitter.sharedInstance.dispatch(name: "reteno-before-in-app-close", body: [
+                    "closeAction": RetenoSdk.closeActionName(action),
+                    "isCloseButtonClicked": action.isCloseButtonClicked,
+                    "isButtonClicked": action.isButtonClicked,
+                    "isOpenUrlClicked": action.isOpenUrlClicked
+                ])
             case .inAppIsClosed(let action):
-                EventEmitter.sharedInstance.dispatch(name: "reteno-after-in-app-close", body: ["action": action])
+                EventEmitter.sharedInstance.dispatch(name: "reteno-after-in-app-close", body: [
+                    "closeAction": RetenoSdk.closeActionName(action),
+                    "isCloseButtonClicked": action.isCloseButtonClicked,
+                    "isButtonClicked": action.isButtonClicked,
+                    "isOpenUrlClicked": action.isOpenUrlClicked
+                ])
             case .inAppReceivedError(let error):
-                EventEmitter.sharedInstance.dispatch(name: "reteno-on-in-app-error", body: ["error": error])
+                EventEmitter.sharedInstance.dispatch(name: "reteno-on-in-app-error", body: ["errorMessage": error])
             }
         }
+    }
+
+    private static func closeActionName(_ action: InAppMessageAction) -> String {
+        if action.isCloseButtonClicked { return "CLOSE_BUTTON" }
+        if action.isButtonClicked { return "BUTTON" }
+        if action.isOpenUrlClicked { return "OPEN_URL" }
+        return "UNKNOWN"
     }
 
     @objc(getRecommendations:withResolver:withRejecter:)
@@ -313,11 +370,24 @@ open class RetenoSdk: RCTEventEmitter {
         }
     }
     
-    @objc(onUnreadMessagesCountChanged)
-    func onUnreadMessagesCountChanged() {
+    @objc(onUnreadMessagesCountChanged:withRejecter:)
+    func onUnreadMessagesCountChanged(resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         Reteno.inbox().onUnreadMessagesCountChanged = { count in
             EventEmitter.sharedInstance.dispatch(name: "reteno-unread-messages-count", body: ["count": count])
         }
+        resolve(nil)
+    }
+
+    @objc(unsubscribeMessagesCountChanged:withRejecter:)
+    func unsubscribeMessagesCountChanged(resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+        Reteno.inbox().onUnreadMessagesCountChanged = nil
+        resolve(nil)
+    }
+
+    @objc(unsubscribeAllMessagesCountChanged:withRejecter:)
+    func unsubscribeAllMessagesCountChanged(resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+        Reteno.inbox().onUnreadMessagesCountChanged = nil
+        resolve(nil)
     }
     
     @objc(markAsOpened:withResolver:withRejecter:)

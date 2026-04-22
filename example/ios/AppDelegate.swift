@@ -4,9 +4,13 @@ import React_RCTAppDelegate
 import ReactAppDependencyProvider
 import Reteno
 import Firebase
+import FirebaseMessaging
 
 @main
-class AppDelegate: RCTAppDelegate, MessagingDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate {
+  var window: UIWindow?
+  var reactNativeDelegate: ReactNativeDelegate?
+  var reactNativeFactory: RCTReactNativeFactory?
 
   // Optional: Add link handler BEFORE Reteno.start() to control browser opening on cold start.
   // Without this code, setAutoOpenLinks(false) will only work when the app is already running (warm start).
@@ -20,46 +24,55 @@ class AppDelegate: RCTAppDelegate, MessagingDelegate {
     return UserDefaults.standard.bool(forKey: autoOpenLinksKey)
   }
 
-  override func application(_ application: UIApplication,
-      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
-        FirebaseApp.configure()
+  func application(
+    _ application: UIApplication,
+    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
+  ) -> Bool {
+    FirebaseApp.configure()
+    Messaging.messaging().delegate = self
 
-        Reteno.addLinkHandler { linkInfo in
-          NotificationCenter.default.post(
-            name: NSNotification.Name("RetenoLinkReceived"),
-            object: nil,
-            userInfo: [
-              "customData": linkInfo.customData,
-              "url": linkInfo.url?.absoluteString as Any
-            ]
-          )
+    Reteno.addLinkHandler { linkInfo in
+      NotificationCenter.default.post(
+        name: NSNotification.Name("RetenoLinkReceived"),
+        object: nil,
+        userInfo: [
+          "customData": linkInfo.customData as Any,
+          "url": linkInfo.url?.absoluteString as Any
+        ]
+      )
 
-          if AppDelegate.autoOpenLinks, let url = linkInfo.url {
-            UIApplication.shared.open(url)
-          }
-        }
+      if AppDelegate.autoOpenLinks, let url = linkInfo.url {
+        UIApplication.shared.open(url)
+      }
+    }
 
     Reteno.start(apiKey: "630A66AF-C1D3-4F2A-ACC1-0D51C38D2B05", isDebugMode: true)
 
     // Register for push notifications
     Reteno.userNotificationService.registerForRemoteNotifications(
-        with: [.sound, .alert, .badge],
-        application: application
+      with: [.sound, .alert, .badge],
+      application: application
     )
 
-    self.moduleName = "RetenoSdkExample"
-    self.dependencyProvider = RCTAppDependencyProvider()
-    self.initialProps = [:]
+    let delegate = ReactNativeDelegate()
+    delegate.dependencyProvider = RCTAppDependencyProvider()
+    let buildVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? ""
+    delegate.initialProps = ["appVersion": buildVersion]
+    let factory = RCTReactNativeFactory(delegate: delegate)
 
-    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
-  }
+    self.reactNativeDelegate = delegate
+    self.reactNativeFactory = factory
 
-  override func bundleURL() -> URL? {
-    #if DEBUG
-    return RCTBundleURLProvider.sharedSettings().jsBundleURL(forBundleRoot: "index")
-    #else
-    return Bundle.main.url(forResource: "main", withExtension: "jsbundle")
-    #endif
+    self.window = UIWindow(frame: UIScreen.main.bounds)
+
+    factory.startReactNative(
+      withModuleName: "RetenoSdkExample",
+      in: self.window,
+      initialProperties: delegate.initialProps,
+      launchOptions: launchOptions
+    )
+
+    return true
   }
 
   // Handle push notification token registration
@@ -69,8 +82,24 @@ class AppDelegate: RCTAppDelegate, MessagingDelegate {
   //   }
 
   func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
-        guard let fcmToken = fcmToken else { return }
+    guard let fcmToken = fcmToken else { return }
 
-        Reteno.userNotificationService.processRemoteNotificationsToken(fcmToken)
-    }
+    Reteno.userNotificationService.processRemoteNotificationsToken(fcmToken)
+  }
+}
+
+class ReactNativeDelegate: RCTDefaultReactNativeFactoryDelegate {
+  var initialProps: [AnyHashable: Any] = [:]
+
+  override func sourceURL(for bridge: RCTBridge) -> URL? {
+    self.bundleURL()
+  }
+
+  override func bundleURL() -> URL? {
+    #if DEBUG
+    RCTBundleURLProvider.sharedSettings().jsBundleURL(forBundleRoot: "index")
+    #else
+    Bundle.main.url(forResource: "main", withExtension: "jsbundle")
+    #endif
+  }
 }

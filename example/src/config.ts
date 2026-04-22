@@ -10,6 +10,10 @@ export enum ScreenNames {
   CartUpdateScreenEventScreen = 'CartUpdateScreenEventScreen',
   OrderCreatedScreen = 'OrderCreatedScreen',
   SearchRequestEventScreen = 'SearchRequestEventScreen',
+  pushNotifications = 'PushNotifications',
+  inAppMessages = 'InAppMessages',
+  appInbox = 'AppInbox',
+  recommendations = 'Recommendations',
 }
 
 
@@ -25,4 +29,8 @@ export type RootStackParamList = {
   [ScreenNames.CartUpdateScreenEventScreen]: undefined;
   [ScreenNames.OrderCreatedScreen]: undefined;
   [ScreenNames.SearchRequestEventScreen]: undefined;
+  [ScreenNames.pushNotifications]: undefined;
+  [ScreenNames.inAppMessages]: undefined;
+  [ScreenNames.appInbox]: undefined;
+  [ScreenNames.recommendations]: undefined;
 };

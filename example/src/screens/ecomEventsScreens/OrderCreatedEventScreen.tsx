@@ -82,7 +82,7 @@ const OrderCreatedScreen = () => {
 
   const handleOrderItemChange = (key: keyof EcomOrderItem, value: string) => {
     setFormValue(prev => {
-      const updatedOrderItems = [...prev.order.orderItems];
+      const updatedOrderItems = [...(prev.order.orderItems ?? [])];
       if (updatedOrderItems[0]) {
         updatedOrderItems[0] = {
           ...updatedOrderItems[0],
@@ -105,11 +105,22 @@ const OrderCreatedScreen = () => {
     value: string,
   ) => {
     setFormValue(prev => {
-      const attributes = [...prev.order.attributes];
-      if (attributes[index]) {
+      const attributes = [...(prev.order.attributes ?? [])];
+      const currentAttribute = attributes[index];
+
+      if (!currentAttribute) {
+        return prev;
+      }
+
+      if (field === 'name') {
         attributes[index] = {
-          ...attributes[index],
-          [field]: value,
+          ...currentAttribute,
+          name: value,
+        };
+      } else {
+        attributes[index] = {
+          ...currentAttribute,
+          value,
         };
       }
       return {
@@ -136,8 +147,11 @@ const OrderCreatedScreen = () => {
     return true;
   };
 
-  const parseOrderStatus = (statusString: string): OrderStatus | null => {
-    if (!statusString.trim()) return null;
+  const parseOrderStatus = (
+    statusValue: string | number | OrderStatus
+  ): OrderStatus | null => {
+    const statusString = String(statusValue ?? '').trim();
+    if (!statusString) return null;
 
     switch (statusString.toLowerCase()) {
       case 'initialized':
@@ -160,17 +174,19 @@ const OrderCreatedScreen = () => {
 
   const formatOrderData = (): EcomOrder => {
     const {order} = form;
+    const safeOrderItems = order.orderItems ?? [];
+    const safeAttributes = order.attributes ?? [];
 
-    const hasValidOrderItems = order?.orderItems?.some(item =>
+    const hasValidOrderItems = safeOrderItems.some(item =>
       item.externalItemId.trim(),
     );
-    const hasValidAttributes = order?.attributes?.some(attr =>
+    const hasValidAttributes = safeAttributes.some(attr =>
       attr.name.trim(),
     );
 
     const orderItems: EcomOrderItem[] | null = hasValidOrderItems
-      ? order
-          .orderItems!.filter(item => item.externalItemId.trim())
+      ? safeOrderItems
+          .filter(item => item.externalItemId.trim())
           .map(item => ({
             externalItemId: item.externalItemId,
             name: item.name,
@@ -184,19 +200,19 @@ const OrderCreatedScreen = () => {
       : null;
 
     const attributes: EcomSimpleAttribute[] | null = hasValidAttributes
-      ? order?.attributes
-          ?.filter(attr => attr.name.trim())
-          ?.map(attr => ({
+      ? safeAttributes
+          .filter(attr => attr.name.trim())
+          .map(attr => ({
             name: attr.name,
             value: attr.value,
-          })) || null
+          }))
       : null;
 
     return {
       externalOrderId: order.externalOrderId,
       externalCustomerId: order.externalCustomerId || null,
       totalCost: order.totalCost ? Number(order.totalCost) : 0,
-      status: parseOrderStatus(order.status) || 1,
+      status: parseOrderStatus(order.status) ?? OrderStatus.InProgress,
       cartId: order.cartId || null,
       email: order.email || null,
       phone: order.phone || null,

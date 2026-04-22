@@ -1,8 +1,8 @@
 diff --git a/node_modules/react-native/React/CoreModules/React-CoreModules.podspec b/node_modules/react-native/React/CoreModules/React-CoreModules.podspec
-index d41b66c..76d1aff 100644
+index e9e0955..982d94f 100644
 --- a/node_modules/react-native/React/CoreModules/React-CoreModules.podspec
 +++ b/node_modules/react-native/React/CoreModules/React-CoreModules.podspec
-@@ -49,7 +49,7 @@ Pod::Spec.new do |s|
+@@ -37,7 +37,7 @@ Pod::Spec.new do |s|
    s.ios.exclude_files      = "PlatformStubs/**/*"
    exclude_files            = ["RCTStatusBarManager.mm"]
    s.macos.exclude_files    = exclude_files

@@ -1,8 +1,8 @@
 import React from 'react';
 import styles from './styles';
 import {SafeAreaView, ScrollView} from 'react-native';
-import {useNavigation} from '@react-navigation/native';
-import {ScreenNames} from '../config';
+import {NavigationProp, useNavigation} from '@react-navigation/native';
+import {RootStackParamList, ScreenNames} from '../config';
 import { Button } from '../components/Button';
 
 const routes = [
@@ -33,9 +33,9 @@ const routes = [
 ];
 
 const EcomEventsScreen = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
-  const goToScreen = (screenName: string) => {
+  const goToScreen = (screenName: keyof RootStackParamList) => {
     navigation.navigate(screenName);
   };
 

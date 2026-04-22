@@ -73,7 +73,7 @@ const CartUpdateScreen = () => {
       return false;
     }
 
-    if (isNaN(parseInt(cartItem.quantity))) {
+    if (isNaN(parseInt(cartItem.quantity, 10))) {
       Alert.alert(
         'Помилка валідації',
         'Поле "Quantity" повинно бути цілим числом',

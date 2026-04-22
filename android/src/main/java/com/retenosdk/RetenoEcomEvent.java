@@ -31,6 +31,21 @@ import javax.annotation.Nullable;
 public class RetenoEcomEvent {
 
   @Nullable
+  private static String getNullableString(ReadableMap payload, String key) {
+    if (payload == null || !payload.hasKey(key) || payload.isNull(key)) return null;
+    return payload.getString(key);
+  }
+
+  @Nullable
+  private static Double getNullableDouble(ReadableMap payload, String key) {
+    if (payload == null || !payload.hasKey(key) || payload.isNull(key)) return null;
+    if (payload.getType(key) == ReadableType.Number) {
+      return payload.getDouble(key);
+    }
+    return null;
+  }
+
+  @Nullable
   static Attributes buildAttributesFromPayload(ReadableMap payload) {
     if (payload == null) return null;
     String name = RetenoUtil.getStringOrNull(payload.getString("name"));
@@ -167,7 +182,7 @@ public class RetenoEcomEvent {
       }
     }
 
-    String currencyCode = payload.getString("currencyCode");
+    String currencyCode = getNullableString(payload, "currencyCode");
 
     return new CartUpdated(
       cartId,
@@ -183,9 +198,9 @@ public class RetenoEcomEvent {
     if (productId == null) return null;
     int quantity = payload.getInt("quantity");
     double price = payload.getDouble("price");
-    Double discount = payload.getDouble("discount");
-    String name = payload.getString("name");
-    String category = payload.getString("category");
+    Double discount = getNullableDouble(payload, "discount");
+    String name = getNullableString(payload, "name");
+    String category = getNullableString(payload, "category");
 
     ReadableArray attributesArray = payload.getArray("attributes");
     ArrayList<Attributes> attributesList = null;

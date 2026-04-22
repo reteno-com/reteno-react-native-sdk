@@ -57,6 +57,11 @@ export type SetUserAttributesPayload = {
   user: User;
 };
 
+export type SetMultiAccountUserAttributesPayload = {
+  externalUserId: string;
+  user: User;
+};
+
 export type CustomEventParameter = {
   name: string;
   value?: string;
@@ -78,7 +83,10 @@ export type InAppDisplayData = {
 export type InAppCloseData = {
   id?: string;
   source?: 'DISPLAY_RULES' | 'PUSH_NOTIFICATION';
-  closeAction?: 'OPEN_URL' | 'BUTTON' | 'CLOSE_BUTTON';
+  closeAction?: 'OPEN_URL' | 'BUTTON' | 'CLOSE_BUTTON' | 'UNKNOWN';
+  isCloseButtonClicked?: boolean;
+  isButtonClicked?: boolean;
+  isOpenUrlClicked?: boolean;
 };
 
 export type InAppErrorData = {
@@ -86,6 +94,13 @@ export type InAppErrorData = {
   source?: 'DISPLAY_RULES' | 'PUSH_NOTIFICATION';
   errorMessage?: string;
 };
+
+export type InAppPauseBehaviour = 'SKIP_IN_APPS' | 'POSTPONE_IN_APPS';
+
+export type NotificationPermissionStatus =
+  | 'ALLOWED'
+  | 'DENIED'
+  | 'PERMANENTLY_DENIED';
 
 export type InAppCustomData = {
   customData?: Record<string, any>;
@@ -390,6 +405,35 @@ export function pauseInAppMessages(isPaused: boolean): Promise<void> {
 }
 
 /**
+ * Set the behaviour when InApp messages pause is disabled.
+ *
+ * @param behaviour - 'SKIP_IN_APPS' to skip all messages that occurred during pause,
+ *                    'POSTPONE_IN_APPS' to show the first postponed message when pause is lifted
+ * @returns Promise that resolves when the behaviour is set
+ */
+export function setInAppMessagesPauseBehaviour(
+  behaviour: InAppPauseBehaviour
+): Promise<void> {
+  return RetenoSdk.setInAppMessagesPauseBehaviour(behaviour);
+}
+
+/**
+ * Set user attributes for multi-account mode.
+ * Uses the externalUserId as the account suffix to create a separate device identity.
+ *
+ * @param payload - Contains externalUserId and user attributes
+ * @returns Promise that resolves when attributes are set
+ */
+export function setMultiAccountUserAttributes(
+  payload: SetMultiAccountUserAttributesPayload
+): Promise<void> {
+  if (!payload.externalUserId) {
+    throw new Error('Missing argument: "externalUserId"');
+  }
+  return RetenoSdk.setMultiAccountUserAttributes(payload);
+}
+
+/**
  *
  * Reteno caches all events (events, device data, user information, user behavior, screen tracking, push statuses, etc) locally into database
  * Call this function to send all accumulated events
@@ -432,26 +476,16 @@ export function getAppInboxMessages(payload: GetAppInboxMessages): Promise<{
   return RetenoSdk.getAppInboxMessages(payload);
 }
 
-export function onUnreadMessagesCountChanged() {
-  RetenoSdk.onUnreadMessagesCountChanged();
+export function onUnreadMessagesCountChanged(): Promise<void> {
+  return RetenoSdk.onUnreadMessagesCountChanged();
 }
 
-/**
- * Android Only
- */
-export function unsubscribeMessagesCountChanged() {
-  if (Platform.OS === 'android') {
-    RetenoSdk.unsubscribeMessagesCountChanged();
-  }
+export function unsubscribeMessagesCountChanged(): Promise<void> {
+  return RetenoSdk.unsubscribeMessagesCountChanged();
 }
 
-/**
- * Android Only
- */
-export function unsubscribeAllMessagesCountChanged() {
-  if (Platform.OS === 'android') {
-    RetenoSdk.unsubscribeAllMessagesCountChanged();
-  }
+export function unsubscribeAllMessagesCountChanged(): Promise<void> {
+  return RetenoSdk.unsubscribeAllMessagesCountChanged();
 }
 
 export function unreadMessagesCountHandler(
@@ -728,4 +762,81 @@ export function logEcomEventSearchRequest(
   payload: EcomEventSearchRequestPayload
 ): Promise<void> {
   return RetenoSdk.logEcomEventSearchRequest(payload);
+}
+
+/**
+ * Android Only
+ * Listen for push notification dismissed (swiped away) events.
+ */
+export function setOnRetenoPushDismissedListener(
+  listener: (event: any) => void
+): ReturnType<typeof eventEmitter.addListener> | undefined {
+  if (Platform.OS === 'android') {
+    return eventEmitter.addListener('reteno-push-dismissed', listener);
+  }
+  return undefined;
+}
+
+/**
+ * Android Only
+ * Listen for custom push data events (silent/data-only push messages).
+ */
+export function setOnRetenoCustomPushDataListener(
+  listener: (event: any) => void
+): ReturnType<typeof eventEmitter.addListener> | undefined {
+  if (Platform.OS === 'android') {
+    return eventEmitter.addListener('reteno-custom-push-received', listener);
+  }
+  return undefined;
+}
+
+/**
+ * Android Only
+ * Request notification permission. Returns true if granted, false otherwise.
+ * Uses the new RetenoNotifications API introduced in SDK 2.9.0.
+ */
+export function requestNotificationPermission(): Promise<boolean> {
+  if (Platform.OS === 'android') {
+    return RetenoSdk.requestNotificationPermission();
+  }
+  return Promise.resolve(false);
+}
+
+/**
+ * Android Only
+ * Get current notification permission status.
+ * Returns 'ALLOWED', 'DENIED', or 'PERMANENTLY_DENIED'.
+ * Uses the new RetenoNotifications API introduced in SDK 2.9.0.
+ */
+export function getNotificationPermissionStatus(): Promise<NotificationPermissionStatus> {
+  if (Platform.OS === 'android') {
+    return RetenoSdk.getNotificationPermissionStatus();
+  }
+  return Promise.resolve('ALLOWED' as NotificationPermissionStatus);
+}
+
+/**
+ * Android Only
+ * Pause or resume push-triggered in-app messages specifically.
+ * Introduced in Android SDK 2.9.0.
+ */
+export function pausePushInAppMessages(isPaused: boolean): Promise<void> {
+  if (Platform.OS === 'android') {
+    return RetenoSdk.pausePushInAppMessages(isPaused);
+  }
+  return Promise.resolve(undefined);
+}
+
+/**
+ * Android Only
+ * Set the behaviour for push-triggered in-app messages when paused.
+ * Introduced in Android SDK 2.9.0.
+ */
+export function setPushInAppMessagesPauseBehaviour(
+  behaviour: InAppPauseBehaviour
+): Promise<void> {
+  if (Platform.OS === 'android') {
+    return RetenoSdk.setPushInAppMessagesPauseBehaviour(behaviour);
+  }
+  return Promise.resolve(undefined);
 }

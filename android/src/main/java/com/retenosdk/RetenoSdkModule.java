@@ -38,6 +38,13 @@ import com.reteno.core.view.iam.callback.InAppErrorData;
 import com.reteno.core.view.iam.callback.InAppLifecycleCallback;
 import com.reteno.core.features.recommendation.GetRecommendationResponseCallback;
 import com.reteno.core.domain.model.ecom.EcomEvent;
+import com.reteno.core.features.iam.InAppPauseBehaviour;
+import com.reteno.push.RetenoNotifications;
+import com.reteno.push.permission.NotificationStatus;
+import com.reteno.push.events.InAppCustomData;
+import com.reteno.core.util.Procedure;
+
+import kotlin.Unit;
 
 import android.util.Log;
 import android.content.SharedPreferences;
@@ -46,8 +53,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.time.ZonedDateTime;
 import java.util.Map;
-
-import kotlin.Unit;
+import java.util.concurrent.CompletableFuture;
 
 public class RetenoSdkModule extends ReactContextBaseJavaModule {
   public static final String NAME = "RetenoSdk";
@@ -69,6 +75,18 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
   @NonNull
   public String getName() {
     return NAME;
+  }
+
+  @Override
+  public void onCatalystInstanceDestroy() {
+    cleanupRetenoNotificationsListeners();
+    super.onCatalystInstanceDestroy();
+  }
+
+  @Override
+  public void invalidate() {
+    cleanupRetenoNotificationsListeners();
+    super.invalidate();
   }
 
   @ReactMethod
@@ -132,14 +150,12 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
     );
   }
 
-  private static WritableMap parseIntent(Intent intent) {
+  private static WritableMap parseBundle(Bundle bundle) {
     WritableMap params = Arguments.createMap();
-    Bundle extras = intent.getExtras();
-
-    if (extras != null) {
+    if (bundle != null) {
       try {
-        for (String key : extras.keySet()) {
-          Object value = extras.get(key);
+        for (String key : bundle.keySet()) {
+          Object value = bundle.get(key);
           if (value instanceof HashMap) {
             @SuppressWarnings("unchecked")
             WritableMap map = convertHashMap((HashMap<String, Object>) value);
@@ -149,11 +165,14 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
           }
         }
       } catch (Exception e) {
-        Log.e("parseIntent", "Error converting Bundle to WritableMap: " + e.getMessage(), e);
+        Log.e("parseBundle", "Error converting Bundle to WritableMap: " + e.getMessage(), e);
       }
     }
-
     return params;
+  }
+
+  private static WritableMap parseIntent(Intent intent) {
+    return parseBundle(intent.getExtras());
   }
 
   private static WritableMap convertHashMap(HashMap<String, Object> map) {
@@ -254,6 +273,71 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
+  public void setInAppMessagesPauseBehaviour(String behaviour, Promise promise) {
+    if (behaviour == null || behaviour.trim().isEmpty()) {
+      promise.reject("InvalidArgument", "Missing argument: behaviour ('SKIP_IN_APPS' or 'POSTPONE_IN_APPS')");
+      return;
+    }
+
+    String normalized = behaviour.trim().toUpperCase();
+    InAppPauseBehaviour parsedBehaviour;
+
+    if ("SKIP_IN_APPS".equals(normalized)) {
+      parsedBehaviour = InAppPauseBehaviour.SKIP_IN_APPS;
+    } else if ("POSTPONE_IN_APPS".equals(normalized)) {
+      parsedBehaviour = InAppPauseBehaviour.POSTPONE_IN_APPS;
+    } else {
+      promise.reject("InvalidArgument", "Invalid argument: behaviour must be 'SKIP_IN_APPS' or 'POSTPONE_IN_APPS'");
+      return;
+    }
+
+    try {
+      Activity currentActivity = getCurrentActivity();
+      if (currentActivity == null) {
+        promise.reject("ActivityUnavailable", "Current activity is not available");
+        return;
+      }
+      ((RetenoApplication) currentActivity.getApplication())
+        .getRetenoInstance()
+        .setInAppMessagesPauseBehaviour(parsedBehaviour);
+      promise.resolve(true);
+    } catch (Exception e) {
+      promise.reject("Reteno Android SDK setInAppMessagesPauseBehaviour Error", e);
+    }
+  }
+
+  @ReactMethod
+  public void setMultiAccountUserAttributes(ReadableMap payload, Promise promise) {
+    String externalUserId = (payload.hasKey("externalUserId") && !payload.isNull("externalUserId"))
+      ? payload.getString("externalUserId")
+      : null;
+    if (externalUserId == null || externalUserId.isEmpty()) {
+      promise.reject("Parsing error", "externalUserId cannot be null");
+      return;
+    }
+
+    User user = RetenoUserAttributes.buildUserFromPayload(payload);
+
+    try {
+      Activity currentActivity = getCurrentActivity();
+      if (currentActivity == null) {
+        promise.reject("ActivityUnavailable", "Current activity is not available");
+        return;
+      }
+      ((RetenoApplication) currentActivity.getApplication())
+        .getRetenoInstance()
+        .setMultiAccountUserAttributes(externalUserId, user);
+    } catch (Exception e) {
+      promise.reject("Reteno Android SDK Error", e);
+      return;
+    }
+
+    WritableMap res = new WritableNativeMap();
+    res.putBoolean("success", true);
+    promise.resolve(res);
+  }
+
+  @ReactMethod
   public void updatePushPermissionStatusAndroid(Promise promise) {
     try {
       ((RetenoApplication) this.context.getCurrentActivity().getApplication())
@@ -268,6 +352,89 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
     ReactContext reactContext = ((RetenoReactNativeApplication) this.context.getApplicationContext())
       .getReactContext();
     RetenoEventQueue.getInstance().dispatch(eventName, eventData, reactContext);
+  }
+
+  private Procedure<Bundle> pushDismissedListener;
+  private Procedure<Bundle> customPushListener;
+  private Procedure<InAppCustomData> inAppCustomDataRetenoListener;
+  private boolean notificationsListenersSetup = false;
+
+  private void setupRetenoNotificationsListeners() {
+    if (notificationsListenersSetup) {
+      return;
+    }
+    notificationsListenersSetup = true;
+    try {
+      pushDismissedListener = bundle -> {
+        sendEventToJS("reteno-push-dismissed", parseBundle(bundle));
+      };
+      RetenoNotifications.INSTANCE.getClose().addListener(pushDismissedListener);
+    } catch (Exception e) {
+      Log.w(NAME, "Could not register push dismissed listener", e);
+    }
+
+    try {
+      customPushListener = bundle -> {
+        sendEventToJS("reteno-custom-push-received", parseBundle(bundle));
+      };
+      RetenoNotifications.INSTANCE.getCustom().addListener(customPushListener);
+    } catch (Exception e) {
+      Log.w(NAME, "Could not register custom push listener", e);
+    }
+
+    try {
+      inAppCustomDataRetenoListener = inAppCustomData -> {
+        WritableMap eventData = Arguments.createMap();
+        eventData.putString("url", inAppCustomData.getUrl());
+        eventData.putString("inapp_source", inAppCustomData.getSource());
+        eventData.putString("inapp_id", inAppCustomData.getInAppId());
+        WritableMap customDataMap = Arguments.createMap();
+        if (inAppCustomData.getData() != null) {
+          for (Map.Entry<String, String> entry : inAppCustomData.getData().entrySet()) {
+            customDataMap.putString(entry.getKey(), entry.getValue());
+          }
+        }
+        eventData.putMap("customData", customDataMap);
+        sendEventToJS("reteno-in-app-custom-data-received", eventData);
+      };
+      RetenoNotifications.INSTANCE.getInAppCustomDataReceived().addListener(inAppCustomDataRetenoListener);
+    } catch (Exception e) {
+      Log.w(NAME, "Could not register in-app custom data listener", e);
+    }
+  }
+
+  private void cleanupRetenoNotificationsListeners() {
+    if (!notificationsListenersSetup) {
+      return;
+    }
+    notificationsListenersSetup = false;
+
+    try {
+      if (pushDismissedListener != null) {
+        RetenoNotifications.INSTANCE.getClose().removeListener(pushDismissedListener);
+        pushDismissedListener = null;
+      }
+    } catch (Exception e) {
+      Log.w(NAME, "Could not unregister push dismissed listener", e);
+    }
+
+    try {
+      if (customPushListener != null) {
+        RetenoNotifications.INSTANCE.getCustom().removeListener(customPushListener);
+        customPushListener = null;
+      }
+    } catch (Exception e) {
+      Log.w(NAME, "Could not unregister custom push listener", e);
+    }
+
+    try {
+      if (inAppCustomDataRetenoListener != null) {
+        RetenoNotifications.INSTANCE.getInAppCustomDataReceived().removeListener(inAppCustomDataRetenoListener);
+        inAppCustomDataRetenoListener = null;
+      }
+    } catch (Exception e) {
+      Log.w(NAME, "Could not unregister in-app custom data listener", e);
+    }
   }
 
   private InAppLifecycleCallback inAppLifecycleCallback;
@@ -569,9 +736,14 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void unsubscribeAllMessagesCountChanged(Promise promise) {
-    ((RetenoApplication) this.context.getCurrentActivity().getApplication())
-      .getRetenoInstance().getAppInbox().unsubscribeAllMessagesCountChanged();
-    promise.resolve(null);
+    try {
+      ((RetenoApplication) this.context.getCurrentActivity().getApplication())
+        .getRetenoInstance().getAppInbox().unsubscribeAllMessagesCountChanged();
+      messagesCountChangedCallback = null;
+      promise.resolve(null);
+    } catch (Exception e) {
+      promise.reject("UnsubscribeError", e);
+    }
   }
 
   private RetenoResultCallback<Integer> messagesCountChangedCallback;
@@ -607,13 +779,18 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void unsubscribeMessagesCountChanged(Promise promise) {
-    if (messagesCountChangedCallback != null) {
-      ((RetenoApplication) this.context.getCurrentActivity().getApplication())
-        .getRetenoInstance().getAppInbox().unsubscribeMessagesCountChanged(messagesCountChangedCallback);
-      messagesCountChangedCallback = null;
+    try {
+      if (messagesCountChangedCallback != null) {
+        ((RetenoApplication) this.context.getCurrentActivity().getApplication())
+          .getRetenoInstance().getAppInbox().unsubscribeMessagesCountChanged(messagesCountChangedCallback);
+        messagesCountChangedCallback = null;
+      } else {
+        ((RetenoApplication) this.context.getCurrentActivity().getApplication())
+          .getRetenoInstance().getAppInbox().unsubscribeAllMessagesCountChanged();
+      }
       promise.resolve(null);
-    } else {
-      promise.reject("CallbackError", "No callback to unsubscribe");
+    } catch (Exception e) {
+      promise.reject("UnsubscribeError", e);
     }
   }
 
@@ -623,6 +800,7 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
       ReactContext reactContext = ((RetenoReactNativeApplication) this.context.getApplicationContext())
         .getReactContext();
       RetenoEventQueue.getInstance().setInitialized(reactContext);
+      setupRetenoNotificationsListeners();
       promise.resolve(true);
     } catch (Exception e) {
       promise.reject("Reteno Android SDK initializeEventHandler Error", e);
@@ -824,4 +1002,83 @@ public void logEcomEventSearchRequest(ReadableMap payload, Promise promise) {
   res.putBoolean("success", true);
   promise.resolve(res);
 }
+
+  @ReactMethod
+  public void requestNotificationPermission(Promise promise) {
+    try {
+      CompletableFuture<Boolean> future = RetenoNotifications.INSTANCE.requestNotificationPermissionFuture();
+      future.thenAccept(granted -> promise.resolve(granted))
+            .exceptionally(throwable -> {
+              promise.reject("requestNotificationPermission Error", throwable.getMessage());
+              return null;
+            });
+    } catch (Exception e) {
+      promise.reject("Reteno Android SDK requestNotificationPermission Error", e);
+    }
+  }
+
+  @ReactMethod
+  public void getNotificationPermissionStatus(Promise promise) {
+    try {
+      CompletableFuture<NotificationStatus> future = RetenoNotifications.INSTANCE.getNotificationPermissionStatusFuture();
+      future.thenAccept(status -> promise.resolve(status.name()))
+            .exceptionally(throwable -> {
+              promise.reject("getNotificationPermissionStatus Error", throwable.getMessage());
+              return null;
+            });
+    } catch (Exception e) {
+      promise.reject("Reteno Android SDK getNotificationPermissionStatus Error", e);
+    }
+  }
+
+  @ReactMethod
+  public void pausePushInAppMessages(Boolean isPaused, Promise promise) {
+    try {
+      Activity currentActivity = getCurrentActivity();
+      if (currentActivity == null) {
+        promise.reject("ActivityUnavailable", "Current activity is not available");
+        return;
+      }
+      ((RetenoApplication) currentActivity.getApplication())
+        .getRetenoInstance()
+        .pausePushInAppMessages(isPaused);
+      promise.resolve(true);
+    } catch (Exception e) {
+      promise.reject("Reteno Android SDK pausePushInAppMessages Error", e);
+    }
+  }
+
+  @ReactMethod
+  public void setPushInAppMessagesPauseBehaviour(String behaviour, Promise promise) {
+    if (behaviour == null || behaviour.trim().isEmpty()) {
+      promise.reject("InvalidArgument", "Missing argument: behaviour ('SKIP_IN_APPS' or 'POSTPONE_IN_APPS')");
+      return;
+    }
+
+    String normalized = behaviour.trim().toUpperCase();
+    InAppPauseBehaviour parsedBehaviour;
+
+    if ("SKIP_IN_APPS".equals(normalized)) {
+      parsedBehaviour = InAppPauseBehaviour.SKIP_IN_APPS;
+    } else if ("POSTPONE_IN_APPS".equals(normalized)) {
+      parsedBehaviour = InAppPauseBehaviour.POSTPONE_IN_APPS;
+    } else {
+      promise.reject("InvalidArgument", "Invalid argument: behaviour must be 'SKIP_IN_APPS' or 'POSTPONE_IN_APPS'");
+      return;
+    }
+
+    try {
+      Activity currentActivity = getCurrentActivity();
+      if (currentActivity == null) {
+        promise.reject("ActivityUnavailable", "Current activity is not available");
+        return;
+      }
+      ((RetenoApplication) currentActivity.getApplication())
+        .getRetenoInstance()
+        .setPushInAppMessagesPauseBehaviour(parsedBehaviour);
+      promise.resolve(true);
+    } catch (Exception e) {
+      promise.reject("Reteno Android SDK setPushInAppMessagesPauseBehaviour Error", e);
+    }
+  }
 }

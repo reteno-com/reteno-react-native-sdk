@@ -2,6 +2,7 @@ package com.reteno.sample
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
+import android.os.Bundle
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
 import com.facebook.react.defaults.DefaultReactActivityDelegate
 
@@ -18,5 +19,11 @@ class MainActivity : ReactActivity() {
    * which allows you to enable New Architecture with a single boolean flags [fabricEnabled]
    */
   override fun createReactActivityDelegate(): ReactActivityDelegate =
-      DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled)
+      object : DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled) {
+        override fun getLaunchOptions(): Bundle {
+          return Bundle().apply {
+            putString("appVersion", BuildConfig.VERSION_NAME)
+          }
+        }
+      }
 }

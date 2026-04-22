@@ -1,12 +1,16 @@
 import * as React from 'react';
-import { KeyboardAvoidingView, StyleSheet, Platform } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  StyleSheet,
+  Platform,
+  Text,
+} from 'react-native';
 import {
   NavigationContainer,
   useNavigationContainerRef,
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import {
-  logEcomEventProductViewed,
   logScreenView,
   registerForRemoteNotifications,
   updatePushPermissionStatusAndroid,
@@ -18,6 +22,10 @@ import AnonymousUserAttributes from './screens/anonymousUserAttributes';
 import { ScreenNames, RootStackParamList } from './config';
 import { PermissionsAndroid } from 'react-native';
 import EcomEventsScreen from './screens/ecomEvents';
+import PushNotificationsScreen from './screens/pushNotifications';
+import InAppMessagesScreen from './screens/inAppMessages';
+import AppInboxScreen from './screens/appInbox';
+import RecommendationsScreen from './screens/recommendations';
 import ViewedEventScreen from './screens/ecomEventsScreens/viewedEventScreen';
 import ProductCategoryViewedScreen from './screens/ecomEventsScreens/ProductCategoryViewedScreen';
 import ProductAddedToWishlistEventScreen from './screens/ecomEventsScreens/ProductAddedToWishlistEventScreen';
@@ -27,9 +35,13 @@ import SearchRequestEventScreen from './screens/ecomEventsScreens/SearchRequestE
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-function Navigation() {
+type NavigationProps = {
+  appVersion?: string;
+};
+
+function Navigation({ appVersion }: NavigationProps) {
   const navigationRef = useNavigationContainerRef();
-  const routeNameRef = React.useRef<string | undefined>();
+  const routeNameRef = React.useRef<string | undefined>(undefined);
 
   React.useEffect(() => {
     registerForRemoteNotifications();
@@ -70,7 +82,13 @@ function Navigation() {
           routeNameRef.current = currentRouteName;
         }}
       >
-        <Stack.Navigator initialRouteName={ScreenNames.home}>
+        <Stack.Navigator
+          initialRouteName={ScreenNames.home}
+          screenOptions={{
+            headerRight: () =>
+              appVersion ? <Text style={styles.versionText}>{String(appVersion)}</Text> : null,
+          }}
+        >
           <Stack.Screen name={ScreenNames.home} component={HomeScreen} />
           <Stack.Screen
             name={ScreenNames.ecomEvents}
@@ -109,12 +127,35 @@ function Navigation() {
             name={ScreenNames.anonymousUserAttributes}
             component={AnonymousUserAttributes}
           />
+          <Stack.Screen
+            name={ScreenNames.pushNotifications}
+            component={PushNotificationsScreen}
+          />
+          <Stack.Screen
+            name={ScreenNames.inAppMessages}
+            component={InAppMessagesScreen}
+          />
+          <Stack.Screen
+            name={ScreenNames.appInbox}
+            component={AppInboxScreen}
+          />
+          <Stack.Screen
+            name={ScreenNames.recommendations}
+            component={RecommendationsScreen}
+          />
         </Stack.Navigator>
       </NavigationContainer>
     </KeyboardAvoidingView>
   );
 }
 
-const styles = StyleSheet.create({ container: { flex: 1 } });
+const styles = StyleSheet.create({
+  container: { flex: 1 },
+  versionText: {
+    fontSize: 12,
+    color: '#6B7280',
+    fontWeight: '600',
+  },
+});
 
 export default Navigation;
