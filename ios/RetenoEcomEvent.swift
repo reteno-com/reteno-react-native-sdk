@@ -179,25 +179,21 @@ class RetenoEcomEvent: NSObject {
     
     private static func buildOrderFromPayload(_ payload: [String: Any]?) -> Ecommerce.Order? {
 
-              enum LocalStatus: Int {
-                case initialized = 1
-                case inprogress = 2
-                case delivered = 3
-                case cancelled = 4
-                
-                var toOrderStatus: Ecommerce.Order.Status {
-                    switch self {
-                    case .initialized:
-                        return Ecommerce.Order.Status(rawValue: "INITIALIZED")!
-                    case .inprogress:
-                        return Ecommerce.Order.Status(rawValue: "INPROGRESS")!
-                    case .delivered:
-                        return Ecommerce.Order.Status(rawValue: "DELIVERED")!
-                    case .cancelled:
-                        return Ecommerce.Order.Status(rawValue: "CANCELLED")!
-                    }
+        enum LocalStatus: Int {
+            case initialized = 0
+            case inprogress = 1
+            case delivered = 2
+            case cancelled = 3
+
+            var toOrderStatus: Ecommerce.Order.Status {
+                switch self {
+                case .initialized: return .INITIALIZED
+                case .inprogress:  return .IN_PROGRESS
+                case .delivered:   return .DELIVERED
+                case .cancelled:   return .CANCELLED
                 }
             }
+        }
 
 
         guard let payload = payload else { return nil }
@@ -205,15 +201,10 @@ class RetenoEcomEvent: NSObject {
         
         let externalCustomerId = payload["externalCustomerId"] as? String
         guard let totalCost = payload["totalCost"] as? Float else { return nil }
-        
-        // guard let statusRaw = payload["status"] as? String,
-        //       let status = StatusStatus(rawValue: statusRaw) else { return nil }
-           guard let statusRaw = payload["status"] as? Int,
-                 let localStatus = LocalStatus(rawValue: statusRaw) else { return nil }
-    
-                 let orderStatus = localStatus.toOrderStatus
+        guard let statusRaw = payload["status"] as? Int,
+              let localStatus = LocalStatus(rawValue: statusRaw) else { return nil }
+        let orderStatus = localStatus.toOrderStatus
 
-       
         let cartId = payload["cartId"] as? String
         let email = payload["email"] as? String
         let phone = payload["phone"] as? String

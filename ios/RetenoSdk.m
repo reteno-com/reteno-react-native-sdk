@@ -28,6 +28,14 @@ RCT_EXTERN_METHOD(pauseInAppMessages:(BOOL)isPaused
                   withResolver:(RCTPromiseResolveBlock)resolve
                   withRejecter:(RCTPromiseRejectBlock)reject)
 
+RCT_EXTERN_METHOD(setInAppMessagesPauseBehaviour:(NSString*)behaviour
+                  withResolver:(RCTPromiseResolveBlock)resolve
+                  withRejecter:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(setMultiAccountUserAttributes:(NSDictionary*)payload
+                  withResolver:(RCTPromiseResolveBlock)resolve
+                  withRejecter:(RCTPromiseRejectBlock)reject)
+
 RCT_EXTERN_METHOD(setInAppLifecycleCallback)
 
 RCT_EXTERN_METHOD(getRecommendations:(NSDictionary*)payload
@@ -42,7 +50,14 @@ RCT_EXTERN_METHOD(getAppInboxMessages:(NSDictionary*)payload
                  withResolver:(RCTPromiseResolveBlock)resolve
                  withRejecter:(RCTPromiseRejectBlock)reject)
 
-RCT_EXTERN_METHOD(onUnreadMessagesCountChanged)
+RCT_EXTERN_METHOD(onUnreadMessagesCountChanged:(RCTPromiseResolveBlock)resolve
+                 withRejecter:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(unsubscribeMessagesCountChanged:(RCTPromiseResolveBlock)resolve
+                 withRejecter:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(unsubscribeAllMessagesCountChanged:(RCTPromiseResolveBlock)resolve
+                 withRejecter:(RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(markAsOpened:(NSArray<NSString *> *)messageIds
                  withResolver:(RCTPromiseResolveBlock)resolve
