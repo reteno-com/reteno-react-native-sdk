@@ -1,4 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:tools="http://schemas.android.com/tools"
   package="com.retenosdk">
   <application>
     <receiver
@@ -20,14 +21,16 @@
     </receiver>
     <meta-data
       android:name="com.reteno.Receiver.PushReceived"
-      android:value="com.retenosdk.RetenoPushReceiver" />
+      android:value="com.retenosdk.RetenoPushReceiver"
+      tools:replace="android:value" />
     <receiver
       android:name="com.retenosdk.RetenoClickReceiver"
       android:enabled="true"
       android:exported="true"/>
     <meta-data
       android:name="com.reteno.Receiver.NotificationClicked"
-      android:value="com.retenosdk.RetenoClickReceiver" />
+      android:value="com.retenosdk.RetenoClickReceiver"
+      tools:replace="android:value" />
   </application>
 </manifest>
 
