@@ -657,7 +657,7 @@
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 509;
+				CURRENT_PROJECT_VERSION = 514;
 				DEFINES_MODULE = NO;
 				DEVELOPMENT_TEAM = X9JJR3XKX7;
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = X9JJR3XKX7;
@@ -696,7 +696,7 @@
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 509;
+				CURRENT_PROJECT_VERSION = 514;
 				DEFINES_MODULE = NO;
 				DEVELOPMENT_TEAM = X9JJR3XKX7;
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = X9JJR3XKX7;

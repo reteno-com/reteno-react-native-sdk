@@ -1,166 +1,13 @@
-import React, {useCallback, useMemo, useEffect, useState} from 'react';
-
-import {
-  ScrollView,
-  SafeAreaView,
-  Alert,
-  Text,
-  View,
-} from 'react-native';
-import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import {ScreenNames, RootStackParamList} from '../config';
-import {
-  forcePushData,
-  setOnRetenoPushReceivedListener,
-  getInitialNotification,
-  pauseInAppMessages,
-  setInAppLifecycleCallback,
-  beforeInAppDisplayHandler,
-  onInAppDisplayHandler,
-  beforeInAppCloseHandler,
-  afterInAppCloseHandler,
-  onInAppErrorHandler,
-  removeInAppLifecycleCallback,
-  addInAppMessageCustomDataHandler,
-  getRecommendations,
-  logRecommendationEvent,
-  setOnRetenoPushClickedListener,
-  getAppInboxMessages,
-  onUnreadMessagesCountChanged,
-  markAsOpened,
-  markAllAsOpened,
-  unreadMessagesCountHandler,
-  getAppInboxMessagesCount,
-  unreadMessagesCountErrorHandler,
-  unsubscribeMessagesCountChanged,
-  unsubscribeAllMessagesCountChanged,
-  setOnRetenoPushButtonClickedListener,
-  setAutoOpenLinks,
-  getAutoOpenLinks,
-  initializeEventHandler,
-} from 'reteno-react-native-sdk';
+import React, { useCallback, useMemo } from 'react';
+import { ScrollView, SafeAreaView } from 'react-native';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { ScreenNames, RootStackParamList } from '../config';
 import { Button } from '../components/Button';
 import styles from './styles';
 
 type Props = NativeStackScreenProps<RootStackParamList, ScreenNames.home>;
 
-type SubscriptionEvent = {
-  id: number;
-  name: string;
-  payload: string;
-  level: 'info' | 'error';
-};
-
-export default function Main({navigation}: Props) {
-  const [messagesId, setMessagesId] = useState<string>('');
-  const [autoOpenLinksEnabled, setAutoOpenLinksEnabled] = useState<boolean>(true);
-  const [subscriptionEvents, setSubscriptionEvents] = useState<SubscriptionEvent[]>([]);
-
-  const addSubscriptionEvent = useCallback(
-    (name: string, payload: unknown, level: SubscriptionEvent['level'] = 'info') => {
-      const event: SubscriptionEvent = {
-        id: Date.now() + Math.random(),
-        name,
-        payload: payload ? JSON.stringify(payload) : String(payload ?? ''),
-        level,
-      };
-      setSubscriptionEvents(prev => [event, ...prev].slice(0, 20));
-    },
-    [],
-  );
-
-  const form = useMemo(
-    () => [
-      {
-        label: 'Attributes',
-        route: ScreenNames.attributes,
-      },
-      {
-        label: 'Anonymous Attributes',
-        route: ScreenNames.anonymousUserAttributes,
-      },
-      {
-        label: 'Events',
-        route: ScreenNames.events,
-      },
-    ],
-    [],
-  );
-
-  const handleInAppMessagesStatus = (isPaused: boolean) => {
-    pauseInAppMessages(isPaused)
-      .then(() => {
-        Alert.alert('Success', 'Pause state changed');
-      })
-      .catch(error => {
-        Alert.alert('Error', error);
-      });
-  };
-
-  const handleToggleAutoOpenLinks = () => {
-    const newValue = !autoOpenLinksEnabled;
-    setAutoOpenLinks(newValue)
-      .then(() => {
-        setAutoOpenLinksEnabled(newValue);
-        Alert.alert('Success', `Auto open links: ${newValue ? 'enabled' : 'disabled'}`);
-      })
-      .catch(error => {
-        Alert.alert('Error', error);
-      });
-  };
-
-  const handleGetAppInboxMessagesCount = () => {
-    getAppInboxMessagesCount()
-      .then(response => {
-        Alert.alert(
-          'Success',
-          response !== null ? JSON.stringify(response) : response,
-        );
-      })
-      .catch(error => {
-        Alert.alert('Error', error);
-      });
-  };
-
-  const handleDownloadMessages = () => {
-    getAppInboxMessages({})
-      .then(response => {
-        Alert.alert(
-          'Success download messages',
-          response ? JSON.stringify(response) : response,
-        );
-      })
-      .catch(error => {
-        Alert.alert('Error', error);
-      });
-  };
-
-  const handleMarkAsOpened = () => {
-    markAsOpened([messagesId])
-      .then(response => {
-        Alert.alert(
-          'Success mark as opened',
-          response ? JSON.stringify(response) : response,
-        );
-      })
-      .catch(error => {
-        Alert.alert('Error', error);
-      });
-  };
-
-  const handleMarkAllAsOpened = () => {
-    markAllAsOpened()
-      .then(response => {
-        Alert.alert(
-          'Success mark all as opened',
-          response ? JSON.stringify(response) : response,
-        );
-      })
-      .catch(error => {
-        Alert.alert('Error', error);
-      });
-  };
-
+export default function Main({ navigation }: Props) {
   const goTo = useCallback(
     (routeName: ScreenNames) => {
       navigation.navigate(routeName);
@@ -168,214 +15,26 @@ export default function Main({navigation}: Props) {
     [navigation],
   );
 
-  const onRetenoPushReceived = useCallback(
-    (event: unknown) => {
-      addSubscriptionEvent('onRetenoPushReceived', event);
-    },
-    [addSubscriptionEvent],
+  const menuItems = useMemo(
+    () => [
+      { label: 'Attributes', route: ScreenNames.attributes },
+      { label: 'Anonymous Attributes', route: ScreenNames.anonymousUserAttributes },
+      { label: 'Events', route: ScreenNames.events },
+      { label: 'Ecom Events', route: ScreenNames.ecomEvents },
+      { label: 'Push Notifications', route: ScreenNames.pushNotifications },
+      { label: 'In-App Messages', route: ScreenNames.inAppMessages },
+      { label: 'App Inbox', route: ScreenNames.appInbox },
+      { label: 'Recommendations', route: ScreenNames.recommendations },
+    ],
+    [],
   );
-
-  const onRetenoPushClicked = useCallback(
-    (event: unknown) => {
-      addSubscriptionEvent('onRetenoPushClicked', event);
-    },
-    [addSubscriptionEvent],
-  );
-
-  const onRetenoPushButtonClicked = useCallback(
-    (event: unknown) => {
-      addSubscriptionEvent('onRetenoPushButtonClicked', event);
-    },
-    [addSubscriptionEvent],
-  );
-
-  const handleGetRecommendations = () => {
-    const recommendationsPayload = {
-      recomVariantId: 'r1107v1482',
-      productIds: ['240-LV09', '24-WG080'],
-      categoryId: '',
-      filters: [],
-      fields: ['productId', 'name', 'descr', 'imageUrl', 'price'],
-    };
-
-    getRecommendations(recommendationsPayload)
-      .then(response => {
-        Alert.alert(
-          'Recommendations received:',
-          response ? JSON.stringify(response) : response,
-        );
-      })
-      .catch(error => {
-        Alert.alert(
-          'Error fetching recommendations:',
-          error ? JSON.stringify(error) : error,
-        );
-      });
-  };
-
-  const handleLogRecommendationEvent = () => {
-    const recommendationEventPayload = {
-      recomVariantId: 'r1107v1482',
-      impressions: [
-        {
-          productId: '240-LV09',
-        },
-      ],
-      clicks: [
-        {
-          productId: '24-WG080',
-        },
-      ],
-      forcePush: true,
-    };
-
-    logRecommendationEvent(recommendationEventPayload)
-      .then(() => {
-        Alert.alert('Recommendation event logged successfully');
-      })
-      .catch(error => {
-        Alert.alert(
-          'Error logging recommendation event:',
-          error ? JSON.stringify(error) : error,
-        );
-      });
-  };
-
-  useEffect(() => {
-    // Sync UI state with native storage
-    getAutoOpenLinks().then(setAutoOpenLinksEnabled);
-  }, []);
-
-  useEffect(() => {
-    getInitialNotification().then(data => {
-      addSubscriptionEvent('getInitialNotification', data);
-    });
-    const pushListener = setOnRetenoPushReceivedListener(onRetenoPushReceived);
-    const pushClickListener =
-      setOnRetenoPushClickedListener(onRetenoPushClicked);
-    const pushButtonClickListener = setOnRetenoPushButtonClickedListener(
-      onRetenoPushButtonClicked,
-    );
-    initializeEventHandler();
-
-    return () => {
-      pushListener.remove();
-      pushClickListener.remove();
-      if (pushButtonClickListener) pushButtonClickListener.remove();
-    };
-  }, [onRetenoPushReceived, onRetenoPushClicked, onRetenoPushButtonClicked, addSubscriptionEvent]);
-
-  useEffect(() => {
-    const unreadMessagesCountListener = unreadMessagesCountHandler(data => {
-      addSubscriptionEvent('unreadMessagesCountHandler', data);
-
-      getAppInboxMessages({}).then(response => {
-        const newMessagesIds: string[] = response?.messages
-          ?.filter(el => el?.isNew)
-          ?.sort(
-            (a, b) =>
-              new Date(b.createdDate).getTime() -
-              new Date(a.createdDate).getTime(),
-          )
-          ?.map(el => el?.id);
-        setMessagesId(newMessagesIds?.[0] ?? '');
-      });
-    });
-
-    return () => {
-      unreadMessagesCountListener.remove();
-    };
-  }, [addSubscriptionEvent]);
-
-  useEffect(() => {
-    const unreadMessagesCountErrorListener = unreadMessagesCountErrorHandler(
-      error => addSubscriptionEvent('unreadMessagesCountErrorHandler', error, 'error'),
-    );
-
-    return () => {
-      if (unreadMessagesCountErrorListener) {
-        unreadMessagesCountErrorListener.remove();
-      }
-    };
-  }, [addSubscriptionEvent]);
-
-  useEffect(() => {
-    setInAppLifecycleCallback();
-
-    const beforeInAppDisplayListener = beforeInAppDisplayHandler(data =>
-      addSubscriptionEvent('beforeInAppDisplayHandler', data),
-    );
-    const onInAppDisplayListener = onInAppDisplayHandler(data =>
-      addSubscriptionEvent('onInAppDisplayHandler', data),
-    );
-    const beforeInAppCloseListener = beforeInAppCloseHandler(data =>
-      addSubscriptionEvent('beforeInAppCloseHandler', data),
-    );
-    const afterInAppCloseListener = afterInAppCloseHandler(data =>
-      addSubscriptionEvent('afterInAppCloseHandler', data),
-    );
-    const onInAppErrorListener = onInAppErrorHandler(data =>
-      addSubscriptionEvent('onInAppErrorHandler', data, 'error'),
-    );
-
-    const addInAppMessageCustomDataListener = addInAppMessageCustomDataHandler(
-      data => addSubscriptionEvent('addInAppMessageCustomDataHandler', data),
-    );
-
-    return () => {
-      beforeInAppDisplayListener.remove();
-      onInAppDisplayListener.remove();
-      beforeInAppCloseListener.remove();
-      afterInAppCloseListener.remove();
-      onInAppErrorListener.remove();
-
-      removeInAppLifecycleCallback();
-
-      addInAppMessageCustomDataListener.remove();
-    };
-  }, [addSubscriptionEvent]);
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
-        <View style={styles.eventsContainer}>
-          <Text style={styles.eventsTitle}>Subscription Events</Text>
-          {subscriptionEvents.length === 0 ? (
-            <Text style={styles.eventsEmpty}>No events yet</Text>
-          ) : (
-            subscriptionEvents.map(event => (
-              <View key={event.id} style={styles.eventItem}>
-                <Text style={event.level === 'error' ? styles.eventNameError : styles.eventName}>
-                  {event.name}
-                </Text>
-                <Text style={styles.eventPayload}>{event.payload || 'empty payload'}</Text>
-              </View>
-            ))
-          )}
-          <Button
-            onPress={() => setSubscriptionEvents([])}
-            label='Clear subscription events'
-          />
-        </View>
-        {form.map(item => (
+        {menuItems.map(item => (
           <Button key={item.route} onPress={() => goTo(item.route)} label={item.label} />
         ))}
-        <Button onPress={() => goTo(ScreenNames.ecomEvents)} label='ecom events' />
-        <Button  onPress={forcePushData} label='Force push data' />
-        <Button onPress={() => handleInAppMessagesStatus(true)} label='Pause in app messages' />
-        <Button onPress={() => handleInAppMessagesStatus(false)} label='Unpause in app messages' />
-        <Button onPress={handleToggleAutoOpenLinks} label={`Auto open links: ${autoOpenLinksEnabled ? 'ON' : 'OFF'} (tap to toggle)`} />
-        <Button onPress={setInAppLifecycleCallback} label='Subscribe to in app messages events' />
-        <Button  onPress={removeInAppLifecycleCallback} label='Unsubscribe from in app messages events (Android)' />
-        <Button  onPress={handleGetRecommendations} label='Get Recommendations' />
-        <Button onPress={handleLogRecommendationEvent} label='Log Recommendations' />
-        <Button onPress={onUnreadMessagesCountChanged} label='Subscribe on unread messages count event (Inbox)' />
-        <Button onPress={unsubscribeMessagesCountChanged}  label='Unsubscribe from unread messages count event (Inbox) (Android)'/>
-        <Button onPress={unsubscribeAllMessagesCountChanged} label='Unsubscribe from all unread messages count event (Inbox) (Android)' />
-        <Button onPress={handleGetAppInboxMessagesCount} label='Get App Inbox Messages Count' />
-        <Button onPress={handleDownloadMessages} label='Download messages (Inbox)' />
-        <Button onPress={handleMarkAsOpened} label='Mark as opened (Inbox)' />
-        <Button onPress={handleMarkAllAsOpened} label='Mark all as opened (Inbox)' />
       </ScrollView>
     </SafeAreaView>
   );

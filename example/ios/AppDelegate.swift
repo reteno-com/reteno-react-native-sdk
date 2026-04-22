@@ -56,7 +56,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate {
 
     let delegate = ReactNativeDelegate()
     delegate.dependencyProvider = RCTAppDependencyProvider()
-    delegate.initialProps = [:]
+    let buildVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? ""
+    delegate.initialProps = ["appVersion": buildVersion]
     let factory = RCTReactNativeFactory(delegate: delegate)
 
     self.reactNativeDelegate = delegate
