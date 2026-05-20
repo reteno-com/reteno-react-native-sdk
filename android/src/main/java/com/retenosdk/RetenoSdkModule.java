@@ -16,11 +16,13 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReadableArray;
+import com.facebook.react.bridge.ReadableType;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
-import com.reteno.core.RetenoApplication;
+import com.reteno.core.Reteno;
+import com.reteno.core.RetenoConfig;
 import com.reteno.core.data.remote.model.recommendation.get.Recoms;
 import com.reteno.core.domain.callback.appinbox.RetenoResultCallback;
 import com.reteno.core.domain.model.appinbox.AppInboxMessages;
@@ -31,6 +33,7 @@ import com.reteno.core.domain.model.recommendation.get.RecomRequest;
 import com.reteno.core.domain.model.recommendation.post.RecomEvent;
 import com.reteno.core.domain.model.recommendation.post.RecomEventType;
 import com.reteno.core.domain.model.recommendation.post.RecomEvents;
+import com.reteno.core.domain.model.event.LifecycleTrackingOptions;
 import com.reteno.core.features.appinbox.AppInboxStatus;
 import com.reteno.core.view.iam.callback.InAppData;
 import com.reteno.core.view.iam.callback.InAppCloseData;
@@ -59,6 +62,8 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
   public static final String NAME = "RetenoSdk";
   private static final String PREFS_NAME = "RetenoPrefs";
   private static final String AUTO_OPEN_LINKS_KEY = "autoOpenLinks";
+  private static volatile boolean sdkInitialized = false;
+  private static volatile ReactApplicationContext sharedReactContext;
   ReactApplicationContext context;
 
   public static boolean isAutoOpenLinksEnabled(Context context) {
@@ -66,9 +71,14 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
     return prefs.getBoolean(AUTO_OPEN_LINKS_KEY, true); // default true
   }
 
+  public static ReactApplicationContext getSharedReactContext() {
+    return sharedReactContext;
+  }
+
   public RetenoSdkModule(ReactApplicationContext reactContext) {
     super(reactContext);
     context = reactContext;
+    sharedReactContext = reactContext;
   }
 
   @Override
@@ -94,6 +104,129 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
+  public synchronized void initialize(ReadableMap payload, Promise promise) {
+    if (sdkInitialized) {
+      promise.resolve(true);
+      return;
+    }
+
+    String apiKey = (payload != null && payload.hasKey("apiKey") && !payload.isNull("apiKey"))
+      ? payload.getString("apiKey")
+      : null;
+
+    if (apiKey == null || apiKey.trim().isEmpty()) {
+      promise.reject("100", "Missing argument: apiKey");
+      return;
+    }
+
+    try {
+      boolean debugMode = payload != null && payload.hasKey("isDebugMode")
+        && !payload.isNull("isDebugMode") && payload.getBoolean("isDebugMode");
+      boolean pauseInAppMessages = payload != null && payload.hasKey("pauseInAppMessages")
+        && !payload.isNull("pauseInAppMessages") && payload.getBoolean("pauseInAppMessages");
+
+      RetenoConfig.Builder builder = new RetenoConfig.Builder()
+        .accessKey(apiKey.trim())
+        .setDebug(debugMode);
+
+      if (pauseInAppMessages) {
+        builder.pauseInAppMessages(true);
+      }
+
+      com.facebook.react.bridge.Dynamic lifecycleDynamic = null;
+      if (payload != null && payload.hasKey("lifecycleTrackingOptions")) {
+        lifecycleDynamic = payload.getDynamic("lifecycleTrackingOptions");
+      }
+      LifecycleTrackingOptions lifecycleOptions = parseLifecycleTrackingOption(lifecycleDynamic);
+      if (payload != null && payload.hasKey("lifecycleTrackingOptions") && lifecycleOptions == null) {
+        promise.reject(
+          "InvalidArgument",
+          "Invalid argument: lifecycleTrackingOptions. Expected 'ALL', 'NONE', or lifecycle options object."
+        );
+        return;
+      }
+      if (lifecycleOptions != null) {
+        builder.lifecycleTrackingOptions(lifecycleOptions);
+      }
+
+      if (payload != null && payload.hasKey("sessionDurationSeconds") && !payload.isNull("sessionDurationSeconds")) {
+        double sessionDurationSeconds = payload.getDouble("sessionDurationSeconds");
+        if (sessionDurationSeconds > 0D) {
+          builder.sessionDuration((long) (sessionDurationSeconds * 1000L));
+        }
+      }
+
+      Reteno.initWithConfig(builder.build());
+      sdkInitialized = true;
+      promise.resolve(true);
+    } catch (Exception e) {
+      promise.reject("Reteno Android SDK initialize Error", e);
+    }
+  }
+
+  private LifecycleTrackingOptions parseLifecycleTrackingOption(@Nullable com.facebook.react.bridge.Dynamic value) {
+    if (value == null || value.isNull()) {
+      return null;
+    }
+
+    ReadableType type = value.getType();
+    if (type == ReadableType.String) {
+      String raw = value.asString();
+      if (raw == null) {
+        return null;
+      }
+      String normalized = raw.trim().toUpperCase();
+      if ("ALL".equals(normalized)) {
+        return new LifecycleTrackingOptions(true, true, true, true, true);
+      }
+      if ("NONE".equals(normalized)) {
+        return new LifecycleTrackingOptions(false, false, false, false, false);
+      }
+      return null;
+    }
+
+    if (type != ReadableType.Map) {
+      return null;
+    }
+
+    ReadableMap map = value.asMap();
+
+    boolean appLifecycleEnabled = map.hasKey("appLifecycleEnabled")
+      ? map.getBoolean("appLifecycleEnabled")
+      : true;
+    boolean foregroundLifecycleEnabled = map.hasKey("foregroundLifecycleEnabled")
+      ? map.getBoolean("foregroundLifecycleEnabled")
+      : false;
+    boolean pushSubscriptionEnabled = map.hasKey("pushSubscriptionEnabled")
+      ? map.getBoolean("pushSubscriptionEnabled")
+      : true;
+
+    boolean legacySessionEventsEnabled = map.hasKey("sessionEventsEnabled")
+      ? map.getBoolean("sessionEventsEnabled")
+      : true;
+    boolean sessionStartEventsEnabled = map.hasKey("sessionStartEventsEnabled")
+      ? map.getBoolean("sessionStartEventsEnabled")
+      : legacySessionEventsEnabled;
+
+    boolean sessionEndEventsEnabled;
+    if (map.hasKey("sessionEndEventsEnabled")) {
+      sessionEndEventsEnabled = map.getBoolean("sessionEndEventsEnabled");
+    } else if (map.hasKey("sessionEventsEnabled")) {
+      sessionEndEventsEnabled = legacySessionEventsEnabled;
+    } else {
+      sessionEndEventsEnabled = false;
+    }
+
+    return new LifecycleTrackingOptions(
+      appLifecycleEnabled,
+      foregroundLifecycleEnabled,
+      pushSubscriptionEnabled,
+      sessionStartEventsEnabled,
+      sessionEndEventsEnabled
+    );
+  }
+
+  @ReactMethod
   public void setUserAttributes(ReadableMap payload, Promise promise) {
     String externalUserId = payload.getString("externalUserId");
     User user = RetenoUserAttributes.buildUserFromPayload(payload);
@@ -103,8 +236,7 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
     }
 
     try {
-      ((RetenoApplication) this.context.getCurrentActivity().getApplication())
-        .getRetenoInstance()
+      getRetenoInstance()
         .setUserAttributes(externalUserId, user);
     } catch (Exception e) {
       promise.reject("Reteno Android SDK Error", e);
@@ -119,34 +251,18 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
   }
 
   public static void onRetenoPushReceived(Context context, Intent intent) {
-    ReactContext reactContext = null;
-    try {
-      reactContext = ((RetenoReactNativeApplication) context.getApplicationContext())
-        .getReactContext();
-    } catch (Exception e) {
-      Log.w(NAME, "Could not get ReactContext for push received", e);
-    }
-
     RetenoEventQueue.getInstance().dispatch(
       "reteno-push-received",
       parseIntent(intent),
-      reactContext
+      sharedReactContext
     );
   }
 
   public static void onRetenoPushClicked(Context context, Intent intent) {
-    ReactContext reactContext = null;
-    try {
-      reactContext = ((RetenoReactNativeApplication) context.getApplicationContext())
-        .getReactContext();
-    } catch (Exception e) {
-      Log.w(NAME, "Could not get ReactContext for push clicked", e);
-    }
-
     RetenoEventQueue.getInstance().dispatch(
       "reteno-push-clicked",
       parseIntent(intent),
-      reactContext
+      sharedReactContext
     );
   }
 
@@ -215,8 +331,7 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
   @ReactMethod
   public void logEvent(ReadableMap payload, Promise promise) {
     try {
-      ((RetenoApplication) this.context.getCurrentActivity().getApplication())
-        .getRetenoInstance()
+      getRetenoInstance()
         .logEvent(RetenoEvent.buildEventFromPayload(payload));
     } catch (Exception e) {
       promise.reject("Reteno Android SDK Error", e);
@@ -234,8 +349,7 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
     UserAttributesAnonymous anonymousUser = RetenoUserAttributes.buildAnonymousUserFromPayload(payload);
 
     try {
-      ((RetenoApplication) this.context.getCurrentActivity().getApplication())
-        .getRetenoInstance()
+      getRetenoInstance()
         .setAnonymousUserAttributes(anonymousUser);
     } catch (Exception e) {
       promise.reject("Reteno Android SDK Error", e);
@@ -252,8 +366,7 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
   @ReactMethod
   public void forcePushData(Promise promise) {
     try {
-      ((RetenoApplication) this.context.getCurrentActivity().getApplication())
-        .getRetenoInstance().forcePushData();
+      getRetenoInstance().forcePushData();
         promise.resolve(true);
     } catch (Exception e) {
       promise.reject("Reteno Android SDK forcePushData Error", e);
@@ -263,8 +376,7 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
   @ReactMethod
   public void pauseInAppMessages(Boolean isPaused, Promise promise) {
     try {
-      ((RetenoApplication) this.context.getCurrentActivity().getApplication())
-        .getRetenoInstance()
+      getRetenoInstance()
         .pauseInAppMessages(isPaused);
       promise.resolve(true);
     } catch (Exception e) {
@@ -297,8 +409,7 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
         promise.reject("ActivityUnavailable", "Current activity is not available");
         return;
       }
-      ((RetenoApplication) currentActivity.getApplication())
-        .getRetenoInstance()
+      getRetenoInstance()
         .setInAppMessagesPauseBehaviour(parsedBehaviour);
       promise.resolve(true);
     } catch (Exception e) {
@@ -324,8 +435,7 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
         promise.reject("ActivityUnavailable", "Current activity is not available");
         return;
       }
-      ((RetenoApplication) currentActivity.getApplication())
-        .getRetenoInstance()
+      getRetenoInstance()
         .setMultiAccountUserAttributes(externalUserId, user);
     } catch (Exception e) {
       promise.reject("Reteno Android SDK Error", e);
@@ -340,8 +450,7 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
   @ReactMethod
   public void updatePushPermissionStatusAndroid(Promise promise) {
     try {
-      ((RetenoApplication) this.context.getCurrentActivity().getApplication())
-        .getRetenoInstance().updatePushPermissionStatus();
+      getRetenoInstance().updatePushPermissionStatus();
       promise.resolve(true);
     } catch (Exception e) {
       promise.reject("Reteno Android SDK forcePushData Error", e);
@@ -349,9 +458,7 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
   }
 
   private void sendEventToJS(String eventName, WritableMap eventData) {
-    ReactContext reactContext = ((RetenoReactNativeApplication) this.context.getApplicationContext())
-      .getReactContext();
-    RetenoEventQueue.getInstance().dispatch(eventName, eventData, reactContext);
+    RetenoEventQueue.getInstance().dispatch(eventName, eventData, sharedReactContext);
   }
 
   private Procedure<Bundle> pushDismissedListener;
@@ -486,8 +593,7 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
           sendEventToJS("reteno-on-in-app-error", eventData);
         }
       };
-      ((RetenoApplication) this.context.getCurrentActivity().getApplication())
-        .getRetenoInstance().setInAppLifecycleCallback(inAppLifecycleCallback);
+      getRetenoInstance().setInAppLifecycleCallback(inAppLifecycleCallback);
       promise.resolve(true);
     } catch (Exception e) {
       promise.reject("Reteno Android SDK setInAppLifecycleCallback Error", e);
@@ -498,7 +604,7 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
   public void removeInAppLifecycleCallback(Promise promise) {
     try {
       if (inAppLifecycleCallback != null) {
-        ((RetenoApplication) this.context.getCurrentActivity().getApplication()).getRetenoInstance().setInAppLifecycleCallback(null);
+        getRetenoInstance().setInAppLifecycleCallback(null);
         inAppLifecycleCallback = null;
       }
       promise.resolve(true);
@@ -537,8 +643,7 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
 
     RecomRequest request = new RecomRequest(productIds, categoryId, fields, null);
 
-    ((RetenoApplication) this.context.getCurrentActivity().getApplication())
-      .getRetenoInstance().getRecommendation().fetchRecommendation(recomVariantId, request, RetenoRecommendationsResponse.class, new GetRecommendationResponseCallback<RetenoRecommendationsResponse>() {
+    getRetenoInstance().getRecommendation().fetchRecommendation(recomVariantId, request, RetenoRecommendationsResponse.class, new GetRecommendationResponseCallback<RetenoRecommendationsResponse>() {
         @Override
         public void onSuccess(@NonNull Recoms<RetenoRecommendationsResponse> response) {
           List<WritableMap> recoms = new ArrayList<>();
@@ -606,8 +711,7 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
 
       RecomEvents recomEvents = new RecomEvents(recomVariantId, events);
 
-      ((RetenoApplication) this.context.getCurrentActivity().getApplication())
-        .getRetenoInstance().getRecommendation().logRecommendations(recomEvents);
+      getRetenoInstance().getRecommendation().logRecommendations(recomEvents);
 
       promise.resolve(true);
     } catch (IllegalArgumentException e) {
@@ -641,8 +745,7 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
     }
 
     try {
-      ((RetenoApplication) this.context.getCurrentActivity().getApplication())
-        .getRetenoInstance()
+      getRetenoInstance()
         .getAppInbox()
         .getAppInboxMessages(page, pageSize, status, new RetenoResultCallback<AppInboxMessages>() {
           @Override
@@ -680,8 +783,7 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
   @ReactMethod
   public void getAppInboxMessagesCount(Promise promise) {
     try {
-      ((RetenoApplication) this.context.getCurrentActivity().getApplication())
-        .getRetenoInstance()
+      getRetenoInstance()
         .getAppInbox()
         .getAppInboxMessagesCount(new RetenoResultCallback<Integer>() {
           @Override
@@ -702,8 +804,7 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
   @ReactMethod
   public void markAsOpened(String messageId, Promise promise) {
     try {
-      ((RetenoApplication) this.context.getCurrentActivity().getApplication())
-        .getRetenoInstance()
+      getRetenoInstance()
         .getAppInbox()
         .markAsOpened(messageId);
       promise.resolve(true);
@@ -715,8 +816,7 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
   @ReactMethod
   public void markAllAsOpened(Promise promise) {
     try {
-      ((RetenoApplication) this.context.getCurrentActivity().getApplication())
-        .getRetenoInstance()
+      getRetenoInstance()
         .getAppInbox()
         .markAllMessagesAsOpened(new RetenoResultCallback<Unit>() {
           @Override
@@ -737,8 +837,7 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
   @ReactMethod
   public void unsubscribeAllMessagesCountChanged(Promise promise) {
     try {
-      ((RetenoApplication) this.context.getCurrentActivity().getApplication())
-        .getRetenoInstance().getAppInbox().unsubscribeAllMessagesCountChanged();
+      getRetenoInstance().getAppInbox().unsubscribeAllMessagesCountChanged();
       messagesCountChangedCallback = null;
       promise.resolve(null);
     } catch (Exception e) {
@@ -769,8 +868,7 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
     };
 
     try {
-      ((RetenoApplication) this.context.getCurrentActivity().getApplication())
-        .getRetenoInstance().getAppInbox().subscribeOnMessagesCountChanged(messagesCountChangedCallback);
+      getRetenoInstance().getAppInbox().subscribeOnMessagesCountChanged(messagesCountChangedCallback);
       promise.resolve(null);
     } catch (Exception e) {
       promise.reject("SubscriptionError", e);
@@ -781,12 +879,10 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
   public void unsubscribeMessagesCountChanged(Promise promise) {
     try {
       if (messagesCountChangedCallback != null) {
-        ((RetenoApplication) this.context.getCurrentActivity().getApplication())
-          .getRetenoInstance().getAppInbox().unsubscribeMessagesCountChanged(messagesCountChangedCallback);
+        getRetenoInstance().getAppInbox().unsubscribeMessagesCountChanged(messagesCountChangedCallback);
         messagesCountChangedCallback = null;
       } else {
-        ((RetenoApplication) this.context.getCurrentActivity().getApplication())
-          .getRetenoInstance().getAppInbox().unsubscribeAllMessagesCountChanged();
+        getRetenoInstance().getAppInbox().unsubscribeAllMessagesCountChanged();
       }
       promise.resolve(null);
     } catch (Exception e) {
@@ -797,14 +893,22 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
   @ReactMethod
   public void initializeEventHandler(Promise promise) {
     try {
-      ReactContext reactContext = ((RetenoReactNativeApplication) this.context.getApplicationContext())
-        .getReactContext();
-      RetenoEventQueue.getInstance().setInitialized(reactContext);
+      RetenoEventQueue.getInstance().setInitialized(sharedReactContext);
       setupRetenoNotificationsListeners();
       promise.resolve(true);
     } catch (Exception e) {
       promise.reject("Reteno Android SDK initializeEventHandler Error", e);
     }
+  }
+
+  private Reteno getRetenoInstance() {
+    Reteno reteno = Reteno.getInstance();
+    if (reteno == null) {
+      throw new IllegalStateException(
+        "Reteno SDK is not initialized. Call initialize(apiKey) before using SDK methods."
+      );
+    }
+    return reteno;
   }
 
   @ReactMethod
@@ -831,8 +935,7 @@ public void logEcomEventProductViewed(ReadableMap payload, Promise promise) {
       promise.reject("Payload Error", "Payload cannot be null");
       return;
     }
-    ((RetenoApplication) this.context.getCurrentActivity().getApplication())
-      .getRetenoInstance()
+    getRetenoInstance()
       .logEcommerceEvent(event);
   } catch (Exception e) {
     promise.reject("Reteno Android SDK Error", e);
@@ -851,8 +954,7 @@ public void logEcomEventProductCategoryViewed(ReadableMap payload, Promise promi
       promise.reject("Payload Error", "Payload cannot be null");
       return;
     }
-    ((RetenoApplication) this.context.getCurrentActivity().getApplication())
-      .getRetenoInstance()
+    getRetenoInstance()
       .logEcommerceEvent(event);
   } catch (Exception e) {
     promise.reject("Reteno Android SDK Error", e);
@@ -871,8 +973,7 @@ public void logEcomEventProductAddedToWishlist(ReadableMap payload, Promise prom
       promise.reject("Payload Error", "Payload cannot be null");
       return;
     }
-    ((RetenoApplication) this.context.getCurrentActivity().getApplication())
-      .getRetenoInstance()
+    getRetenoInstance()
       .logEcommerceEvent(event);
   } catch (Exception e) {
     promise.reject("Reteno Android SDK Error", e);
@@ -891,8 +992,7 @@ public void logEcomEventCartUpdated(ReadableMap payload, Promise promise) {
       promise.reject("Payload Error", "Payload cannot be null");
       return;
     }
-    ((RetenoApplication) this.context.getCurrentActivity().getApplication())
-      .getRetenoInstance()
+    getRetenoInstance()
       .logEcommerceEvent(event);
   } catch (Exception e) {
     promise.reject("Reteno Android SDK Error", e);
@@ -911,8 +1011,7 @@ public void logEcomEventOrderCreated(ReadableMap payload, Promise promise) {
       promise.reject("Payload Error", "Payload cannot be null");
       return;
     }
-    ((RetenoApplication) this.context.getCurrentActivity().getApplication())
-      .getRetenoInstance()
+    getRetenoInstance()
       .logEcommerceEvent(event);
   } catch (Exception e) {
     promise.reject("Reteno Android SDK Error", e);
@@ -931,8 +1030,7 @@ public void logEcomEventOrderUpdated(ReadableMap payload, Promise promise) {
       promise.reject("Payload Error", "Payload cannot be null");
       return;
     }
-    ((RetenoApplication) this.context.getCurrentActivity().getApplication())
-      .getRetenoInstance()
+    getRetenoInstance()
       .logEcommerceEvent(event);
   } catch (Exception e) {
     promise.reject("Reteno Android SDK Error", e);
@@ -951,8 +1049,7 @@ public void logEcomEventOrderDelivered(ReadableMap payload, Promise promise) {
       promise.reject("Payload Error", "Payload cannot be null");
       return;
     }
-    ((RetenoApplication) this.context.getCurrentActivity().getApplication())
-      .getRetenoInstance()
+    getRetenoInstance()
       .logEcommerceEvent(event);
   } catch (Exception e) {
     promise.reject("Reteno Android SDK Error", e);
@@ -971,8 +1068,7 @@ public void logEcomEventOrderCancelled(ReadableMap payload, Promise promise) {
       promise.reject("Payload Error", "Payload cannot be null");
       return;
     }
-    ((RetenoApplication) this.context.getCurrentActivity().getApplication())
-      .getRetenoInstance()
+    getRetenoInstance()
       .logEcommerceEvent(event);
   } catch (Exception e) {
     promise.reject("Reteno Android SDK Error", e);
@@ -991,8 +1087,7 @@ public void logEcomEventSearchRequest(ReadableMap payload, Promise promise) {
       promise.reject("Payload Error", "Payload cannot be null");
       return;
     }
-    ((RetenoApplication) this.context.getCurrentActivity().getApplication())
-      .getRetenoInstance()
+    getRetenoInstance()
       .logEcommerceEvent(event);
   } catch (Exception e) {
     promise.reject("Reteno Android SDK Error", e);
@@ -1039,8 +1134,7 @@ public void logEcomEventSearchRequest(ReadableMap payload, Promise promise) {
         promise.reject("ActivityUnavailable", "Current activity is not available");
         return;
       }
-      ((RetenoApplication) currentActivity.getApplication())
-        .getRetenoInstance()
+      getRetenoInstance()
         .pausePushInAppMessages(isPaused);
       promise.resolve(true);
     } catch (Exception e) {
@@ -1073,8 +1167,7 @@ public void logEcomEventSearchRequest(ReadableMap payload, Promise promise) {
         promise.reject("ActivityUnavailable", "Current activity is not available");
         return;
       }
-      ((RetenoApplication) currentActivity.getApplication())
-        .getRetenoInstance()
+      getRetenoInstance()
         .setPushInAppMessagesPauseBehaviour(parsedBehaviour);
       promise.resolve(true);
     } catch (Exception e) {

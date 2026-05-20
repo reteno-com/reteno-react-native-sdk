@@ -6,6 +6,7 @@ import Reteno
 open class RetenoSdk: RCTEventEmitter {
 
     private static let autoOpenLinksKey = "RetenoAutoOpenLinks"
+    private static var sdkInitialized = false
 
     private static var autoOpenLinks: Bool {
         get {
@@ -23,17 +24,16 @@ open class RetenoSdk: RCTEventEmitter {
         super.init()
         EventEmitter.sharedInstance.registerEventEmitter(externalEventEmitter: self)
 
-        // Listen for link events from AppDelegate via NotificationCenter (cold start support)
+        // Listen for link events posted via NotificationCenter (supports cold start from AppDelegate)
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(handleLinkReceived(_:)),
             name: NSNotification.Name("RetenoLinkReceived"),
             object: nil
         )
+    }
 
-        // Fallback: set link handler for clients who don't add it in AppDelegate
-        // If AppDelegate already set a handler, this overrides it — which is fine,
-        // because cold start links were already handled by AppDelegate's handler
+    private func setupRetenoCallbacks() {
         Reteno.addLinkHandler { linkInfo in
             EventEmitter.sharedInstance.dispatch(
                 name: "reteno-in-app-custom-data-received",
@@ -83,6 +83,124 @@ open class RetenoSdk: RCTEventEmitter {
     func initializeEventHandler(resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
         EventEmitter.sharedInstance.setInitialized()
         resolve(true)
+    }
+
+    @objc(initialize:withResolver:withRejecter:)
+    func initialize(payload: NSDictionary, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
+        if RetenoSdk.sdkInitialized {
+            resolve(true)
+            return
+        }
+
+        let apiKey = (payload["apiKey"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let apiKey = apiKey, !apiKey.isEmpty else {
+            reject("100", "Missing argument: apiKey", nil)
+            return
+        }
+
+        let pauseInAppMessages = (payload["pauseInAppMessages"] as? Bool) ?? false
+        let isDebugMode = (payload["isDebugMode"] as? Bool) ?? false
+
+        let lifecycleOptionsInput = payload["lifecycleTrackingOptions"]
+        let lifecycleOptions = parseLifecycleTrackingOptions(lifecycleOptionsInput)
+        if lifecycleOptionsInput != nil && lifecycleOptions == nil {
+            reject(
+                "100",
+                "Invalid argument: lifecycleTrackingOptions. Expected 'ALL', 'NONE', or lifecycle options object.",
+                nil
+            )
+            return
+        }
+
+        let lifecycleAppEnabled = lifecycleOptions?.appLifecycleEnabled ?? true
+        let lifecycleForegroundEnabled = lifecycleOptions?.foregroundLifecycleEnabled ?? false
+        let lifecyclePushEnabled = lifecycleOptions?.pushSubscriptionEnabled ?? true
+        let lifecycleSessionStartEnabled = lifecycleOptions?.sessionStartEventsEnabled ?? true
+        let lifecycleSessionEndEnabled = lifecycleOptions?.sessionEndEventsEnabled ?? false
+
+        let sessionDurationSeconds: TimeInterval = {
+            if let seconds = payload["sessionDurationSeconds"] as? Double, seconds > 0 {
+                return seconds
+            }
+            if let seconds = payload["sessionDurationSeconds"] as? Int, seconds > 0 {
+                return Double(seconds)
+            }
+            return RetenoSessionConfiguration.default.sessionDuration
+        }()
+
+        let configuration = RetenoConfiguration(
+            isAutomaticScreenReportingEnabled: false,
+            isAutomaticAppLifecycleReportingEnabled: lifecycleAppEnabled,
+            isApplicationForegroundLifecycleReportingEnabled: lifecycleForegroundEnabled,
+            isAutomaticPushSubsriptionReportingEnabled: lifecyclePushEnabled,
+            sessionConfiguration: RetenoSessionConfiguration(
+                sessionDuration: sessionDurationSeconds,
+                isSessionStartReportingEnabled: lifecycleSessionStartEnabled,
+                isSessionEndReportingEnabled: lifecycleSessionEndEnabled
+            ),
+            isPausedInAppMessages: pauseInAppMessages,
+            inAppMessagesPauseBehaviour: .postponeInApps,
+            isDebugMode: isDebugMode,
+            deviceTokenHandlingMode: .automatic
+        )
+
+        Reteno.start(apiKey: apiKey, configuration: configuration)
+        setupRetenoCallbacks()
+        RetenoSdk.sdkInitialized = true
+        resolve(true)
+    }
+
+    private func parseLifecycleTrackingOptions(_ value: Any?) -> (
+        appLifecycleEnabled: Bool,
+        foregroundLifecycleEnabled: Bool,
+        pushSubscriptionEnabled: Bool,
+        sessionStartEventsEnabled: Bool,
+        sessionEndEventsEnabled: Bool
+    )? {
+        guard let value else { return nil }
+
+        if let optionString = value as? String {
+            let normalized = optionString.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+            if normalized == "ALL" {
+                return (true, true, true, true, true)
+            }
+            if normalized == "NONE" {
+                return (false, false, false, false, false)
+            }
+            return nil
+        }
+
+        let payload: [String: Any]
+        if let dict = value as? [String: Any] {
+            payload = dict
+        } else if let dict = value as? NSDictionary, let casted = dict as? [String: Any] {
+            payload = casted
+        } else {
+            return nil
+        }
+
+        let appLifecycleEnabled = payload["appLifecycleEnabled"] as? Bool ?? true
+        let foregroundLifecycleEnabled = payload["foregroundLifecycleEnabled"] as? Bool ?? false
+        let pushSubscriptionEnabled = payload["pushSubscriptionEnabled"] as? Bool ?? true
+        let legacySessionEventsEnabled = payload["sessionEventsEnabled"] as? Bool ?? true
+        let sessionStartEventsEnabled = payload["sessionStartEventsEnabled"] as? Bool ?? legacySessionEventsEnabled
+
+        let sessionEndEventsEnabled: Bool
+        if let explicit = payload["sessionEndEventsEnabled"] as? Bool {
+            sessionEndEventsEnabled = explicit
+        } else if payload["sessionEventsEnabled"] != nil {
+            sessionEndEventsEnabled = legacySessionEventsEnabled
+        } else {
+            sessionEndEventsEnabled = false
+        }
+
+        return (
+            appLifecycleEnabled,
+            foregroundLifecycleEnabled,
+            pushSubscriptionEnabled,
+            sessionStartEventsEnabled,
+            sessionEndEventsEnabled
+        )
     }
 
     @objc(setAutoOpenLinks:withResolver:withRejecter:)

@@ -97,6 +97,27 @@ export type InAppErrorData = {
 
 export type InAppPauseBehaviour = 'SKIP_IN_APPS' | 'POSTPONE_IN_APPS';
 
+export type LifecycleTrackingOptions =
+  | 'ALL'
+  | 'NONE'
+  | {
+      appLifecycleEnabled?: boolean;
+      foregroundLifecycleEnabled?: boolean;
+      pushSubscriptionEnabled?: boolean;
+      sessionStartEventsEnabled?: boolean;
+      sessionEndEventsEnabled?: boolean;
+      // Backward-compat flag
+      sessionEventsEnabled?: boolean;
+    };
+
+export type InitializeOptions = {
+  apiKey: string;
+  isDebugMode?: boolean;
+  pauseInAppMessages?: boolean;
+  sessionDurationSeconds?: number;
+  lifecycleTrackingOptions?: LifecycleTrackingOptions;
+};
+
 export type NotificationPermissionStatus =
   | 'ALLOWED'
   | 'DENIED'
@@ -169,6 +190,20 @@ const RetenoSdk = NativeModules.RetenoSdk
         },
       }
     );
+
+export function initialize(input: string | InitializeOptions): Promise<boolean> {
+  const payload: InitializeOptions =
+    typeof input === 'string' ? { apiKey: input } : input;
+
+  if (!payload?.apiKey || payload.apiKey.trim().length === 0) {
+    throw new Error('Missing argument: "apiKey"');
+  }
+
+  return RetenoSdk.initialize({
+    ...payload,
+    apiKey: payload.apiKey.trim(),
+  });
+}
 
 export function setDeviceToken(deviceToken: string): Promise<void> {
   return RetenoSdk.setDeviceToken(deviceToken);

@@ -74,6 +74,10 @@ RCT_EXTERN_METHOD(supportedEvents)
 RCT_EXTERN_METHOD(initializeEventHandler:(RCTPromiseResolveBlock)resolve
                  withRejecter:(RCTPromiseRejectBlock)reject)
 
+RCT_EXTERN_METHOD(initialize:(NSDictionary *)payload
+                 withResolver:(RCTPromiseResolveBlock)resolve
+                 withRejecter:(RCTPromiseRejectBlock)reject)
+
 RCT_EXTERN_METHOD(setAutoOpenLinks:(BOOL)enabled
                  withResolver:(RCTPromiseResolveBlock)resolve
                  withRejecter:(RCTPromiseRejectBlock)reject)
