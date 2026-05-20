@@ -13,9 +13,9 @@ import styles from './styles';
 import { Button } from '../components/Button';
 
 export default function Attributes() {
-  const [externalUserId, setExternalUserId] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('+380');
+  const [externalUserId, setExternalUserId] = useState('demo_user_1234');
+  const [email, setEmail] = useState('demo@example.com');
+  const [phone, setPhone] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [languageCode, setLanguageCode] = useState('');
