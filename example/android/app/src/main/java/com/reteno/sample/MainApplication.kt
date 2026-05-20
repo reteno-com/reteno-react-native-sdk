@@ -35,6 +35,7 @@ class MainApplication : Application(), ReactApplication, RetenoReactNativeApplic
     Reteno.initWithConfig(
       RetenoConfig.Builder()
         .accessKey("630A66AF-C1D3-4F2A-ACC1-0D51C38D2B05")
+        .setDebug(true)
         .build()
     )
     SoLoader.init(this, OpenSourceMergedSoMapping)
