@@ -67,7 +67,6 @@ function Navigation({ appVersion }: NavigationProps) {
       .catch((error) => {
         console.error('Reteno initialize failed', error);
       });
-
     if (Platform.OS === 'android') {
       PermissionsAndroid.request(
         PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS!

@@ -323,6 +323,7 @@ const OrderCreatedScreen = () => {
 
         {orderFields.map(({key, label, required, keyboardType}) => (
           <InputRow
+            key={key}
             label={label}
             value={form.order[key as keyof typeof form.order] as string}
             onChange={text =>
