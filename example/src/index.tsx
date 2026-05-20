@@ -14,6 +14,7 @@ import {
   logScreenView,
   registerForRemoteNotifications,
   updatePushPermissionStatusAndroid,
+  initializeEventHandler,
 } from 'reteno-react-native-sdk';
 import AttributesScreen from './screens/attributes';
 import EventsScreen from './screens/events';
@@ -44,6 +45,7 @@ function Navigation({ appVersion }: NavigationProps) {
   const routeNameRef = React.useRef<string | undefined>(undefined);
 
   React.useEffect(() => {
+    initializeEventHandler();
     registerForRemoteNotifications();
     if (Platform.OS === 'android') {
       PermissionsAndroid.request(

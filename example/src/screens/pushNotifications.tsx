@@ -8,7 +8,6 @@ import {
   setOnRetenoPushDismissedListener,
   setOnRetenoCustomPushDataListener,
   getInitialNotification,
-  initializeEventHandler,
   setAutoOpenLinks,
   getAutoOpenLinks,
   requestNotificationPermission,
@@ -78,8 +77,6 @@ export default function PushNotificationsScreen() {
     const customPushListener = setOnRetenoCustomPushDataListener(event =>
       addSubscriptionEvent('onRetenoCustomPushData', event),
     );
-    initializeEventHandler();
-
     return () => {
       pushListener.remove();
       pushClickListener.remove();
