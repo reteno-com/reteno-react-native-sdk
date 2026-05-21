@@ -5,6 +5,8 @@ import androidx.annotation.Nullable;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 
 import androidx.annotation.NonNull;
 
@@ -156,10 +158,25 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
         }
       }
 
-      Reteno.initWithConfig(builder.build());
       sdkInitialized = true;
-      promise.resolve(true);
+
+      Runnable initTask = () -> {
+        try {
+          Reteno.initWithConfig(builder.build());
+          promise.resolve(true);
+        } catch (Exception e) {
+          sdkInitialized = false;
+          promise.reject("Reteno Android SDK initialize Error", e);
+        }
+      };
+
+      if (Looper.myLooper() == Looper.getMainLooper()) {
+        initTask.run();
+      } else {
+        new Handler(Looper.getMainLooper()).post(initTask);
+      }
     } catch (Exception e) {
+      sdkInitialized = false;
       promise.reject("Reteno Android SDK initialize Error", e);
     }
   }
@@ -404,11 +421,6 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
     }
 
     try {
-      Activity currentActivity = getCurrentActivity();
-      if (currentActivity == null) {
-        promise.reject("ActivityUnavailable", "Current activity is not available");
-        return;
-      }
       getRetenoInstance()
         .setInAppMessagesPauseBehaviour(parsedBehaviour);
       promise.resolve(true);
@@ -430,11 +442,6 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
     User user = RetenoUserAttributes.buildUserFromPayload(payload);
 
     try {
-      Activity currentActivity = getCurrentActivity();
-      if (currentActivity == null) {
-        promise.reject("ActivityUnavailable", "Current activity is not available");
-        return;
-      }
       getRetenoInstance()
         .setMultiAccountUserAttributes(externalUserId, user);
     } catch (Exception e) {
@@ -1129,11 +1136,6 @@ public void logEcomEventSearchRequest(ReadableMap payload, Promise promise) {
   @ReactMethod
   public void pausePushInAppMessages(Boolean isPaused, Promise promise) {
     try {
-      Activity currentActivity = getCurrentActivity();
-      if (currentActivity == null) {
-        promise.reject("ActivityUnavailable", "Current activity is not available");
-        return;
-      }
       getRetenoInstance()
         .pausePushInAppMessages(isPaused);
       promise.resolve(true);
@@ -1162,11 +1164,6 @@ public void logEcomEventSearchRequest(ReadableMap payload, Promise promise) {
     }
 
     try {
-      Activity currentActivity = getCurrentActivity();
-      if (currentActivity == null) {
-        promise.reject("ActivityUnavailable", "Current activity is not available");
-        return;
-      }
       getRetenoInstance()
         .setPushInAppMessagesPauseBehaviour(parsedBehaviour);
       promise.resolve(true);
