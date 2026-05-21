@@ -112,7 +112,6 @@ PODS:
     - React-RCTText (= 0.83.0)
     - React-RCTVibration (= 0.83.0)
   - React-callinvoker (0.83.0)
-  - React-Codegen (0.1.0)
   - React-Core (0.83.0):
     - boost
     - DoubleConversion
@@ -2599,15 +2598,36 @@ PODS:
     - React-perflogger (= 0.83.0)
     - React-utils (= 0.83.0)
     - SocketRocket
-  - Reteno (2.6.2)
-  - reteno-react-native-sdk (1.7.8):
+  - Reteno (2.7.0)
+  - reteno-react-native-sdk (1.8.0):
+    - boost
+    - DoubleConversion
+    - fast_float
+    - fmt
+    - glog
+    - hermes-engine
     - RCT-Folly
+    - RCT-Folly/Fabric
     - RCTRequired
     - RCTTypeSafety
-    - React-Codegen
     - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - Reteno (= 2.6.2)
+    - Reteno (= 2.7.0)
+    - SocketRocket
+    - Yoga
   - RNFBApp (19.3.0):
     - Firebase/CoreOnly (= 10.24.0)
     - React-Core
@@ -2757,7 +2777,7 @@ DEPENDENCIES:
   - ReactAppDependencyProvider (from `build/generated/ios/ReactAppDependencyProvider`)
   - ReactCodegen (from `build/generated/ios/ReactCodegen`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
-  - Reteno
+  - Reteno (= 2.7.0)
   - reteno-react-native-sdk (from `../..`)
   - "RNFBApp (from `../node_modules/@react-native-firebase/app`)"
   - "RNFBMessaging (from `../node_modules/@react-native-firebase/messaging`)"
@@ -2777,7 +2797,6 @@ SPEC REPOS:
     - GoogleUtilities
     - nanopb
     - PromisesObjC
-    - React-Codegen
     - Reteno
     - SocketRocket
 
@@ -2974,7 +2993,6 @@ SPEC CHECKSUMS:
   RCTTypeSafety: 6359ff3fcbe18c52059f4d4ce301e47f9da5f0d5
   React: f6f8fc5c01e77349cdfaf49102bcb928ac31d8ed
   React-callinvoker: 032b6d1d03654b9fb7de9e2b3b978d3cb1a893ad
-  React-Codegen: 4b8b4817cea7a54b83851d4c1f91f79aa73de30a
   React-Core: 418c9278f8a071b44a88a87be9a4943234cc2e77
   React-CoreModules: 925b8cb677649f967f6000f9b1ef74dc4ff60c30
   React-cxxreact: 21f6f0cb2a7d26fbed4d09e04482e5c75662beaf
@@ -3037,14 +3055,14 @@ SPEC CHECKSUMS:
   ReactAppDependencyProvider: ebcf3a78dc1bcdf054c9e8d309244bade6b31568
   ReactCodegen: 0c8601ce03eb3f724f4d251e4aa158555bf20942
   ReactCommon: 913c93ca20654c90cc57a3dd9e291b4ef9956e54
-  Reteno: b8ceaba6a56173563c0566d39a55a767d2cf29bd
-  reteno-react-native-sdk: ae47f83ec33f7c5e528be323216710a52dcfecd8
+  Reteno: bed7f22c757e1f6a41476de23fd8788507d95e45
+  reteno-react-native-sdk: 5e9452d3267785b74bc36e29fdb1120de0a8833b
   RNFBApp: 3cbad248e866e6c5d753612446ffc48f6ac3be3a
   RNFBMessaging: 7d5016a17a2e62e66b3c92ffdf4851249c06e9c0
   RNScreens: e902eba58a27d3ad399a495d578e8aba3ea0f490
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: faec420ba5f8a2bd196f26048a0557882d40e5b9
 
-PODFILE CHECKSUM: a14dab3790603ef3d11057faeaf0e8e99dade98f
+PODFILE CHECKSUM: 0f27f4896e82407dcde5e41d41865e4f474a0f61
 
 COCOAPODS: 1.16.2
