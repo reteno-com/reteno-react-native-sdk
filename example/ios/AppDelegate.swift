@@ -3,6 +3,7 @@ import React
 import React_RCTAppDelegate
 import ReactAppDependencyProvider
 import Firebase
+import reteno_react_native_sdk
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -15,6 +16,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
   ) -> Bool {
     FirebaseApp.configure()
+
+    // Cold-start push → in-app: register Reteno as the notification-center delegate before
+    // didFinishLaunchingWithOptions returns, so iOS delivers the notification response that
+    // launched the app. The RN module's own init() runs too late (lazy instantiation).
+    // JS initialize() then completes startup via Reteno.delayedSetup(), replaying the push.
+    RetenoSdk.delayedStart()
 
     let delegate = ReactNativeDelegate()
     delegate.dependencyProvider = RCTAppDependencyProvider()

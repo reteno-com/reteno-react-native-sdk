@@ -110,12 +110,27 @@ export type LifecycleTrackingOptions =
       sessionEventsEnabled?: boolean;
     };
 
+export type DeviceTokenHandlingMode = 'automatic' | 'manual';
+
 export type InitializeOptions = {
   apiKey: string;
   isDebugMode?: boolean;
   pauseInAppMessages?: boolean;
   sessionDurationSeconds?: number;
   lifecycleTrackingOptions?: LifecycleTrackingOptions;
+  /**
+   * iOS only. Controls how the device push token is obtained and forwarded to Reteno.
+   *
+   * - `'automatic'` (default): Reteno swizzles the AppDelegate to capture the APNs token
+   *   automatically. Use this when the app does NOT use Firebase / @react-native-firebase.
+   *
+   * - `'manual'`: Reteno skips AppDelegate swizzling. Required when the app uses
+   *   `@react-native-firebase/messaging` (avoids `GULAppDelegateProxy` conflicts).
+   *   The SDK automatically detects Firebase at runtime and bridges the FCM token to
+   *   Reteno — no manual `setDeviceToken` call is needed. If Firebase is not present,
+   *   you can still supply the token manually via `setDeviceToken(token)`.
+   */
+  iosDeviceTokenHandlingMode?: DeviceTokenHandlingMode;
 };
 
 export type NotificationPermissionStatus =
@@ -191,7 +206,9 @@ const RetenoSdk = NativeModules.RetenoSdk
       }
     );
 
-export function initialize(input: string | InitializeOptions): Promise<boolean> {
+export function initialize(
+  input: string | InitializeOptions
+): Promise<boolean> {
   const payload: InitializeOptions =
     typeof input === 'string' ? { apiKey: input } : input;
 

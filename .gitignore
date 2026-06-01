@@ -77,4 +77,4 @@ example/ios/fastlane/*.p8
 example/ios/fastlane/report.xml
 
 # Xcode dSYM archive
-RetenoSdkExample.app.dSYM.zip
+example/ios/RetenoSdkExample.app.dSYM.zip

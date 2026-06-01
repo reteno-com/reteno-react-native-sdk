@@ -47,26 +47,33 @@ function Navigation({ appVersion }: NavigationProps) {
   const routeNameRef = React.useRef<string | undefined>(undefined);
 
   React.useEffect(() => {
-    initialize({
-      apiKey: RETENO_API_KEY,
-      isDebugMode: true,
-      pauseInAppMessages: false,
-      sessionDurationSeconds: 900,
-      lifecycleTrackingOptions: {
-        appLifecycleEnabled: true,
-        foregroundLifecycleEnabled: false,
-        pushSubscriptionEnabled: true,
-        sessionStartEventsEnabled: true,
-        sessionEndEventsEnabled: false,
-      },
-    })
-      .then(() => {
+    const initReteno = async () => {
+      try {
+        await initialize({
+          apiKey: RETENO_API_KEY,
+          isDebugMode: true,
+          pauseInAppMessages: false,
+          sessionDurationSeconds: 900,
+          // 'manual' disables Reteno's AppDelegate swizzling; required when using
+          // @react-native-firebase/messaging to avoid GULAppDelegateProxy conflicts.
+          // The SDK automatically forwards the FCM token to Reteno at runtime.
+          iosDeviceTokenHandlingMode: 'manual',
+          lifecycleTrackingOptions: {
+            appLifecycleEnabled: true,
+            foregroundLifecycleEnabled: false,
+            pushSubscriptionEnabled: true,
+            sessionStartEventsEnabled: true,
+            sessionEndEventsEnabled: false,
+          },
+        });
         initializeEventHandler();
-        return registerForRemoteNotifications();
-      })
-      .catch((error) => {
+        await registerForRemoteNotifications();
+      } catch (error) {
         console.error('Reteno initialize failed', error);
-      });
+      }
+    };
+    initReteno();
+
     if (Platform.OS === 'android') {
       PermissionsAndroid.request(
         PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS!
