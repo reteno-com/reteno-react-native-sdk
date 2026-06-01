@@ -14,11 +14,6 @@
       android:theme="@style/AppTheme"
       android:usesCleartextTraffic="${usesCleartextTraffic}"
       >
-      <service android:name=".CustomMessagingService" android:exported="false">
-        <intent-filter>
-          <action android:name="com.google.firebase.MESSAGING_EVENT"/>
-        </intent-filter>
-      </service>
       <activity
         android:name=".MainActivity"
         android:label="@string/app_name"

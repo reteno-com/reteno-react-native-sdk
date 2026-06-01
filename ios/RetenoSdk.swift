@@ -7,6 +7,15 @@ open class RetenoSdk: RCTEventEmitter {
 
     private static let autoOpenLinksKey = "RetenoAutoOpenLinks"
 
+    private static var sdkInitialized = false
+    private static var fcmBridgeInstalled = false
+    private static var fcmTokenObserver: NSObjectProtocol?
+
+    /// Set to `true` once `delayedStart()` has registered Reteno as the notification-center delegate
+    /// from the AppDelegate. When set, JS `initialize()` finishes startup via `Reteno.delayedSetup(...)`
+    /// — which replays the push that cold-launched the app — instead of `Reteno.start(...)`.
+    private static var delayedStartCalled = false
+
     private static var autoOpenLinks: Bool {
         get {
             if UserDefaults.standard.object(forKey: autoOpenLinksKey) == nil {
@@ -23,17 +32,41 @@ open class RetenoSdk: RCTEventEmitter {
         super.init()
         EventEmitter.sharedInstance.registerEventEmitter(externalEventEmitter: self)
 
-        // Listen for link events from AppDelegate via NotificationCenter (cold start support)
+        // Listen for link events posted via NotificationCenter
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(handleLinkReceived(_:)),
             name: NSNotification.Name("RetenoLinkReceived"),
             object: nil
         )
+    }
 
-        // Fallback: set link handler for clients who don't add it in AppDelegate
-        // If AppDelegate already set a handler, this overrides it — which is fine,
-        // because cold start links were already handled by AppDelegate's handler
+    /// Registers Reteno as the `UNUserNotificationCenter` delegate early and starts collecting the
+    /// push response that cold-launched the app. Requires NO apiKey/config and is safe to call
+    /// repeatedly.
+    ///
+    /// Call this from `application(_:didFinishLaunchingWithOptions:)`, BEFORE starting React Native,
+    /// to support push-triggered in-app messages on a cold start:
+    /// ```swift
+    /// func application(_ application: UIApplication, didFinishLaunchingWithOptions ...) -> Bool {
+    ///     FirebaseApp.configure()
+    ///     RetenoSdk.delayedStart()
+    ///     ...
+    /// }
+    /// ```
+    /// iOS requires the notification-center delegate to be set before `didFinishLaunchingWithOptions`
+    /// returns; otherwise the response that cold-launched the app is never delivered and the linked
+    /// in-app never shows. The RN module's own `init()` runs too late (lazy instantiation), and
+    /// `Reteno.start()` registers the delegate only inside an async callback. `Reteno.delayedStart()`
+    /// sets it synchronously; JS `initialize()` then completes startup via `Reteno.delayedSetup(...)`,
+    /// which replays the collected push and presents its in-app.
+    @objc public static func delayedStart() {
+        guard !sdkInitialized, !delayedStartCalled else { return }
+        Reteno.delayedStart()
+        delayedStartCalled = true
+    }
+
+    private func setupRetenoCallbacks() {
         Reteno.addLinkHandler { linkInfo in
             EventEmitter.sharedInstance.dispatch(
                 name: "reteno-in-app-custom-data-received",
@@ -72,9 +105,6 @@ open class RetenoSdk: RCTEventEmitter {
         )
     }
     
-    /// Base overide for RCTEventEmitter.
-    ///
-    /// - Returns: all supported events
     @objc open override func supportedEvents() -> [String] {
         return EventEmitter.sharedInstance.allEvents;
     }
@@ -83,6 +113,139 @@ open class RetenoSdk: RCTEventEmitter {
     func initializeEventHandler(resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
         EventEmitter.sharedInstance.setInitialized()
         resolve(true)
+    }
+
+    @objc(initialize:withResolver:withRejecter:)
+    func initialize(payload: NSDictionary, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
+        if RetenoSdk.sdkInitialized {
+            resolve(true)
+            return
+        }
+
+        let apiKey = (payload["apiKey"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let apiKey = apiKey, !apiKey.isEmpty else {
+            reject("100", "Missing argument: apiKey", nil)
+            return
+        }
+
+        let pauseInAppMessages = (payload["pauseInAppMessages"] as? Bool) ?? false
+        let isDebugMode = (payload["isDebugMode"] as? Bool) ?? false
+
+        let lifecycleOptionsInput = payload["lifecycleTrackingOptions"]
+        let lifecycleOptions = parseLifecycleTrackingOptions(lifecycleOptionsInput)
+        if lifecycleOptionsInput != nil && lifecycleOptions == nil {
+            reject(
+                "100",
+                "Invalid argument: lifecycleTrackingOptions. Expected 'ALL', 'NONE', or lifecycle options object.",
+                nil
+            )
+            return
+        }
+
+        let lifecycleAppEnabled = lifecycleOptions?.appLifecycleEnabled ?? true
+        let lifecycleForegroundEnabled = lifecycleOptions?.foregroundLifecycleEnabled ?? false
+        let lifecyclePushEnabled = lifecycleOptions?.pushSubscriptionEnabled ?? true
+        let lifecycleSessionStartEnabled = lifecycleOptions?.sessionStartEventsEnabled ?? true
+        let lifecycleSessionEndEnabled = lifecycleOptions?.sessionEndEventsEnabled ?? false
+
+        let sessionDurationSeconds: TimeInterval = {
+            if let seconds = payload["sessionDurationSeconds"] as? Double, seconds > 0 {
+                return seconds
+            }
+            if let seconds = payload["sessionDurationSeconds"] as? Int, seconds > 0 {
+                return Double(seconds)
+            }
+            return RetenoSessionConfiguration.default.sessionDuration
+        }()
+
+        let deviceTokenMode: DeviceTokenHandlingMode = {
+            let raw = (payload["iosDeviceTokenHandlingMode"] as? String)?.lowercased()
+            return raw == "manual" ? .manual : .automatic
+        }()
+
+        let configuration = RetenoConfiguration(
+            isAutomaticScreenReportingEnabled: false,
+            isAutomaticAppLifecycleReportingEnabled: lifecycleAppEnabled,
+            isApplicationForegroundLifecycleReportingEnabled: lifecycleForegroundEnabled,
+            isAutomaticPushSubsriptionReportingEnabled: lifecyclePushEnabled,
+            sessionConfiguration: RetenoSessionConfiguration(
+                sessionDuration: sessionDurationSeconds,
+                isSessionStartReportingEnabled: lifecycleSessionStartEnabled,
+                isSessionEndReportingEnabled: lifecycleSessionEndEnabled
+            ),
+            isPausedInAppMessages: pauseInAppMessages,
+            inAppMessagesPauseBehaviour: .postponeInApps,
+            isDebugMode: isDebugMode,
+            deviceTokenHandlingMode: deviceTokenMode
+        )
+
+        // When the AppDelegate called RetenoSdk.delayedStart(), finish the two-phase init so the
+        // push collected during cold start is replayed and its in-app is presented. Otherwise
+        // (no AppDelegate hook) start normally — everything works except cold-start push → in-app.
+        if RetenoSdk.delayedStartCalled {
+            Reteno.delayedSetup(apiKey: apiKey, configuration: configuration)
+        } else {
+            Reteno.start(apiKey: apiKey, configuration: configuration)
+        }
+        setupRetenoCallbacks()
+        if deviceTokenMode == .manual {
+            RetenoSdk.installFCMBridgeIfAvailable()
+        }
+        RetenoSdk.sdkInitialized = true
+        resolve(true)
+    }
+
+    private func parseLifecycleTrackingOptions(_ value: Any?) -> (
+        appLifecycleEnabled: Bool,
+        foregroundLifecycleEnabled: Bool,
+        pushSubscriptionEnabled: Bool,
+        sessionStartEventsEnabled: Bool,
+        sessionEndEventsEnabled: Bool
+    )? {
+        guard let value else { return nil }
+
+        if let optionString = value as? String {
+            let normalized = optionString.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+            if normalized == "ALL" {
+                return (true, true, true, true, true)
+            }
+            if normalized == "NONE" {
+                return (false, false, false, false, false)
+            }
+            return nil
+        }
+
+        let payload: [String: Any]
+        if let dict = value as? [String: Any] {
+            payload = dict
+        } else if let dict = value as? NSDictionary, let casted = dict as? [String: Any] {
+            payload = casted
+        } else {
+            return nil
+        }
+
+        let appLifecycleEnabled = payload["appLifecycleEnabled"] as? Bool ?? true
+        let foregroundLifecycleEnabled = payload["foregroundLifecycleEnabled"] as? Bool ?? false
+        let pushSubscriptionEnabled = payload["pushSubscriptionEnabled"] as? Bool ?? true
+        let legacySessionEventsEnabled = payload["sessionEventsEnabled"] as? Bool ?? true
+        let sessionStartEventsEnabled = payload["sessionStartEventsEnabled"] as? Bool ?? legacySessionEventsEnabled
+
+        let sessionEndEventsEnabled: Bool
+        if let explicit = payload["sessionEndEventsEnabled"] as? Bool {
+            sessionEndEventsEnabled = explicit
+        } else if payload["sessionEventsEnabled"] != nil {
+            sessionEndEventsEnabled = legacySessionEventsEnabled
+        } else {
+            sessionEndEventsEnabled = false
+        }
+
+        return (
+            appLifecycleEnabled,
+            foregroundLifecycleEnabled,
+            pushSubscriptionEnabled,
+            sessionStartEventsEnabled,
+            sessionEndEventsEnabled
+        )
     }
 
     @objc(setAutoOpenLinks:withResolver:withRejecter:)
@@ -98,7 +261,8 @@ open class RetenoSdk: RCTEventEmitter {
 
     @objc(setDeviceToken:withResolver:withRejecter:)
     func setDeviceToken(deviceToken: String, resolve:RCTPromiseResolveBlock,reject:RCTPromiseRejectBlock) -> Void {
-        Reteno.userNotificationService.processRemoteNotificationsToken(deviceToken);
+        Reteno.userNotificationService.processRemoteNotificationsToken(deviceToken)
+        resolve(true)
     }
     
     @objc(setUserAttributes:withResolver:withRejecter:)
@@ -182,9 +346,40 @@ open class RetenoSdk: RCTEventEmitter {
     
     @objc(registerForRemoteNotifications)
     func registerForRemoteNotifications() -> Void {
-        // Register for receiving push notifications
-        // registerForRemoteNotifications will show the native iOS notification permission prompt
-        Reteno.userNotificationService.registerForRemoteNotifications(with: [.sound, .alert, .badge], application: UIApplication.shared);
+        // Shows the native iOS notification permission prompt (.sound, .alert, .badge).
+        Reteno.userNotificationService.registerForRemoteNotifications(with: [.sound, .alert, .badge], application: UIApplication.shared)
+    }
+
+    // Installs an FCM token bridge using the ObjC runtime — no Firebase import required.
+    // Subscribes to FIRMessagingRegistrationTokenRefreshedNotification and reads
+    // FIRMessaging.messaging().FCMToken via KVC. Does NOT replace Messaging.delegate
+    // so @react-native-firebase/messaging internals are not affected.
+    private static func installFCMBridgeIfAvailable() {
+        guard !fcmBridgeInstalled else { return }
+        guard NSClassFromString("FIRMessaging") != nil else {
+            NSLog("[Reteno] iosDeviceTokenHandlingMode='manual': FIRMessaging not found at runtime. Provide the push token via setDeviceToken().")
+            return
+        }
+        fcmBridgeInstalled = true
+        fcmTokenObserver = NotificationCenter.default.addObserver(
+            forName: Notification.Name("com.firebase.messaging.notif.fcm-token-refreshed"),
+            object: nil,
+            queue: .main
+        ) { _ in
+            RetenoSdk.forwardFCMTokenToReteno()
+        }
+        // Forward any already-cached token on subsequent launches.
+        forwardFCMTokenToReteno()
+    }
+
+    private static func forwardFCMTokenToReteno() {
+        guard
+            let fmClass = NSClassFromString("FIRMessaging") as? NSObject.Type,
+            let messaging = fmClass.perform(NSSelectorFromString("messaging"))?.takeUnretainedValue() as? NSObject,
+            let token = messaging.value(forKey: "FCMToken") as? String,
+            !token.isEmpty
+        else { return }
+        Reteno.userNotificationService.processRemoteNotificationsToken(token)
     }
     
     @objc(setAnonymousUserAttributes:withResolver:withRejecter:)
@@ -570,5 +765,5 @@ open class RetenoSdk: RCTEventEmitter {
         } catch {
             reject("Reteno iOS SDK Error", error.localizedDescription, error)
         }
-    }  
+    }
 }

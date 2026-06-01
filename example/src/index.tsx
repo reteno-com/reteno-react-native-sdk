@@ -11,10 +11,11 @@ import {
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import {
+  initialize,
+  initializeEventHandler,
   logScreenView,
   registerForRemoteNotifications,
   updatePushPermissionStatusAndroid,
-  initializeEventHandler,
 } from 'reteno-react-native-sdk';
 import AttributesScreen from './screens/attributes';
 import EventsScreen from './screens/events';
@@ -35,6 +36,7 @@ import OrderCreatedScreen from './screens/ecomEventsScreens/OrderCreatedEventScr
 import SearchRequestEventScreen from './screens/ecomEventsScreens/SearchRequestEventScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
+const RETENO_API_KEY = '630A66AF-C1D3-4F2A-ACC1-0D51C38D2B05';
 
 type NavigationProps = {
   appVersion?: string;
@@ -45,8 +47,33 @@ function Navigation({ appVersion }: NavigationProps) {
   const routeNameRef = React.useRef<string | undefined>(undefined);
 
   React.useEffect(() => {
-    initializeEventHandler();
-    registerForRemoteNotifications();
+    const initReteno = async () => {
+      try {
+        await initialize({
+          apiKey: RETENO_API_KEY,
+          isDebugMode: true,
+          pauseInAppMessages: false,
+          sessionDurationSeconds: 900,
+          // 'manual' disables Reteno's AppDelegate swizzling; required when using
+          // @react-native-firebase/messaging to avoid GULAppDelegateProxy conflicts.
+          // The SDK automatically forwards the FCM token to Reteno at runtime.
+          iosDeviceTokenHandlingMode: 'manual',
+          lifecycleTrackingOptions: {
+            appLifecycleEnabled: true,
+            foregroundLifecycleEnabled: false,
+            pushSubscriptionEnabled: true,
+            sessionStartEventsEnabled: true,
+            sessionEndEventsEnabled: false,
+          },
+        });
+        initializeEventHandler();
+        await registerForRemoteNotifications();
+      } catch (error) {
+        console.error('Reteno initialize failed', error);
+      }
+    };
+    initReteno();
+
     if (Platform.OS === 'android') {
       PermissionsAndroid.request(
         PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS!

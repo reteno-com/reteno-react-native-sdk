@@ -97,6 +97,42 @@ export type InAppErrorData = {
 
 export type InAppPauseBehaviour = 'SKIP_IN_APPS' | 'POSTPONE_IN_APPS';
 
+export type LifecycleTrackingOptions =
+  | 'ALL'
+  | 'NONE'
+  | {
+      appLifecycleEnabled?: boolean;
+      foregroundLifecycleEnabled?: boolean;
+      pushSubscriptionEnabled?: boolean;
+      sessionStartEventsEnabled?: boolean;
+      sessionEndEventsEnabled?: boolean;
+      // Backward-compat flag
+      sessionEventsEnabled?: boolean;
+    };
+
+export type DeviceTokenHandlingMode = 'automatic' | 'manual';
+
+export type InitializeOptions = {
+  apiKey: string;
+  isDebugMode?: boolean;
+  pauseInAppMessages?: boolean;
+  sessionDurationSeconds?: number;
+  lifecycleTrackingOptions?: LifecycleTrackingOptions;
+  /**
+   * iOS only. Controls how the device push token is obtained and forwarded to Reteno.
+   *
+   * - `'automatic'` (default): Reteno swizzles the AppDelegate to capture the APNs token
+   *   automatically. Use this when the app does NOT use Firebase / @react-native-firebase.
+   *
+   * - `'manual'`: Reteno skips AppDelegate swizzling. Required when the app uses
+   *   `@react-native-firebase/messaging` (avoids `GULAppDelegateProxy` conflicts).
+   *   The SDK automatically detects Firebase at runtime and bridges the FCM token to
+   *   Reteno — no manual `setDeviceToken` call is needed. If Firebase is not present,
+   *   you can still supply the token manually via `setDeviceToken(token)`.
+   */
+  iosDeviceTokenHandlingMode?: DeviceTokenHandlingMode;
+};
+
 export type NotificationPermissionStatus =
   | 'ALLOWED'
   | 'DENIED'
@@ -170,6 +206,28 @@ const RetenoSdk = NativeModules.RetenoSdk
       }
     );
 
+export function initialize(
+  input: string | InitializeOptions
+): Promise<boolean> {
+  const payload: InitializeOptions =
+    typeof input === 'string' ? { apiKey: input } : input;
+
+  if (!payload?.apiKey || payload.apiKey.trim().length === 0) {
+    return Promise.reject(new Error('Missing argument: "apiKey"'));
+  }
+
+  return RetenoSdk.initialize({
+    ...payload,
+    apiKey: payload.apiKey.trim(),
+  });
+}
+
+/**
+ * iOS: forwards the APNs/FCM token to Reteno via Reteno.userNotificationService.
+ * Android: no-op (the Reteno FCM library auto-receives tokens via
+ * RetenoFirebaseMessagingService registered in the library manifest).
+ * The Promise still resolves so cross-platform code can `await` it uniformly.
+ */
 export function setDeviceToken(deviceToken: string): Promise<void> {
   return RetenoSdk.setDeviceToken(deviceToken);
 }

@@ -8,8 +8,6 @@ import android.os.Bundle;
 import android.net.Uri;
 import android.webkit.URLUtil;
 
-import com.facebook.react.bridge.ReactContext;
-import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.WritableMap;
 
@@ -66,18 +64,10 @@ public class RetenoCustomReceiverInAppData extends BroadcastReceiver {
       eventData.putMap("customData", customDataMap);
     }
 
-    ReactContext reactContext = null;
-    try {
-      reactContext = ((RetenoReactNativeApplication) context.getApplicationContext())
-        .getReactContext();
-    } catch (Exception e) {
-      // Log but continue - event will be queued
-    }
-
     RetenoEventQueue.getInstance().dispatch(
       "reteno-in-app-custom-data-received",
       eventData,
-      reactContext
+      RetenoSdkModule.getSharedReactContext()
     );
   }
 }
