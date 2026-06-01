@@ -103,6 +103,7 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void setDeviceToken(String deviceToken, Promise promise) {
+    promise.resolve(true);
   }
 
   @ReactMethod

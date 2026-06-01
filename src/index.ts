@@ -213,7 +213,7 @@ export function initialize(
     typeof input === 'string' ? { apiKey: input } : input;
 
   if (!payload?.apiKey || payload.apiKey.trim().length === 0) {
-    throw new Error('Missing argument: "apiKey"');
+    return Promise.reject(new Error('Missing argument: "apiKey"'));
   }
 
   return RetenoSdk.initialize({
@@ -222,6 +222,12 @@ export function initialize(
   });
 }
 
+/**
+ * iOS: forwards the APNs/FCM token to Reteno via Reteno.userNotificationService.
+ * Android: no-op (the Reteno FCM library auto-receives tokens via
+ * RetenoFirebaseMessagingService registered in the library manifest).
+ * The Promise still resolves so cross-platform code can `await` it uniformly.
+ */
 export function setDeviceToken(deviceToken: string): Promise<void> {
   return RetenoSdk.setDeviceToken(deviceToken);
 }
