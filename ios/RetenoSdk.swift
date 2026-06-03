@@ -175,17 +175,24 @@ open class RetenoSdk: RCTEventEmitter {
             ),
             isPausedInAppMessages: pauseInAppMessages,
             inAppMessagesPauseBehaviour: .postponeInApps,
-            isDebugMode: isDebugMode,
-            deviceTokenHandlingMode: deviceTokenMode
+            isDebugMode: isDebugMode
         )
 
         // When the AppDelegate called RetenoSdk.delayedStart(), finish the two-phase init so the
         // push collected during cold start is replayed and its in-app is presented. Otherwise
         // (no AppDelegate hook) start normally — everything works except cold-start push → in-app.
         if RetenoSdk.delayedStartCalled {
-            Reteno.delayedSetup(apiKey: apiKey, configuration: configuration)
+            Reteno.delayedSetup(
+                apiKey: apiKey,
+                deviceTokenHandlingMode: deviceTokenMode,
+                configuration: configuration
+            )
         } else {
-            Reteno.start(apiKey: apiKey, configuration: configuration)
+            Reteno.start(
+                apiKey: apiKey,
+                deviceTokenHandlingMode: deviceTokenMode,
+                configuration: configuration
+            )
         }
         setupRetenoCallbacks()
         if deviceTokenMode == .manual {

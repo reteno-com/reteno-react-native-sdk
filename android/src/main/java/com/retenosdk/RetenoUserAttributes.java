@@ -67,6 +67,7 @@ public class RetenoUserAttributes {
     String payloadLastName = null;
     String payloadLanguageCode = null;
     String payloadTimeZone = null;
+    String payloadMarketId = null;
 
     ReadableMap payloadAddress = null;
     ReadableArray payloadFields = null;
@@ -85,6 +86,7 @@ public class RetenoUserAttributes {
         payloadLastName = payloadUserAttributes.getString("lastName");
         payloadLanguageCode = payloadUserAttributes.getString("languageCode");
         payloadTimeZone = payloadUserAttributes.getString("timeZone");
+        payloadMarketId = payloadUserAttributes.getString("marketId");
         payloadAddress = payloadUserAttributes.getMap("address");
         payloadFields = payloadUserAttributes.getArray("fields");
       }
@@ -111,7 +113,8 @@ public class RetenoUserAttributes {
       RetenoUtil.getStringOrNull(payloadLanguageCode),
       RetenoUtil.getStringOrNull(payloadTimeZone),
       address,
-      fields
+      fields,
+      RetenoUtil.getStringOrNull(payloadMarketId)
     );
 
     List<String> subscriptionKeys = buildStringArr(payloadUser, "subscriptionKeys");
@@ -127,6 +130,7 @@ public class RetenoUserAttributes {
     String payloadLastName = payload.getString("lastName");
     String payloadLanguageCode = payload.getString("languageCode");
     String payloadTimeZone = payload.getString("timeZone");
+    String payloadMarketId = payload.getString("marketId");
     ReadableMap payloadAddress = payload.getMap("address");
     ReadableArray payloadFields = payload.getArray("fields");
 
@@ -148,6 +152,6 @@ public class RetenoUserAttributes {
       fields = buildUserCustomData(payloadFields);
     }
 
-    return new UserAttributesAnonymous(payloadFirstName, payloadLastName, payloadLanguageCode, payloadTimeZone, address, fields);
+    return new UserAttributesAnonymous(payloadFirstName, payloadLastName, payloadLanguageCode, payloadTimeZone, address, fields, RetenoUtil.getStringOrNull(payloadMarketId));
   };
 }

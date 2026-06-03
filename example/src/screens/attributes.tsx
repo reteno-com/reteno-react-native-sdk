@@ -20,6 +20,7 @@ export default function Attributes() {
   const [lastName, setLastName] = useState('');
   const [languageCode, setLanguageCode] = useState('');
   const [timeZone, setTimeZone] = useState('');
+  const [marketId, setMarketId] = useState('');
   const [region, setRegion] = useState('');
   const [town, setTown] = useState('');
   const [address, setAddress] = useState('');
@@ -46,6 +47,11 @@ export default function Attributes() {
         label: 'Time zone',
         value: timeZone,
         onChange: setTimeZone,
+      },
+      {
+        label: 'Market ID',
+        value: marketId,
+        onChange: setMarketId,
       },
       {
         label: 'Region',
@@ -76,6 +82,7 @@ export default function Attributes() {
       lastName,
       languageCode,
       timeZone,
+      marketId,
       region,
       town,
       address,
@@ -94,7 +101,7 @@ export default function Attributes() {
         externalUserId,
         user: {},
       };
-      if (email || phone || firstName || lastName || languageCode || timeZone) {
+      if (email || phone || firstName || lastName || languageCode || timeZone || marketId) {
         payload.user = {
           ...payload.user,
           userAttributes: {
@@ -104,6 +111,7 @@ export default function Attributes() {
             lastName,
             languageCode,
             timeZone,
+            marketId,
           },
         };
       }
@@ -135,6 +143,7 @@ export default function Attributes() {
     lastName,
     languageCode,
     timeZone,
+    marketId,
     region,
     town,
     address,
