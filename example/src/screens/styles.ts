@@ -58,6 +58,17 @@ export default StyleSheet.create({
   rowTextRequired: {
     color: 'red',
   },
+  checkboxRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#EBEBEB',
+  },
+  checkboxLabel: {
+    flex: 1,
+  },
   textInput: {
     flex: 1,
     height: '100%',

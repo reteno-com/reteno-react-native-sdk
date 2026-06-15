@@ -7,6 +7,7 @@ import {
   ScrollView,
   SafeAreaView,
   Alert,
+  Switch,
 } from 'react-native';
 import { setUserAttributes, setMultiAccountUserAttributes, UserAttributes } from 'reteno-react-native-sdk';
 import styles from './styles';
@@ -21,6 +22,7 @@ export default function Attributes() {
   const [languageCode, setLanguageCode] = useState('');
   const [timeZone, setTimeZone] = useState('');
   const [marketId, setMarketId] = useState('');
+  const [clearMarketId, setClearMarketId] = useState(false);
   const [region, setRegion] = useState('');
   const [town, setTown] = useState('');
   const [address, setAddress] = useState('');
@@ -101,7 +103,16 @@ export default function Attributes() {
         externalUserId,
         user: {},
       };
-      if (email || phone || firstName || lastName || languageCode || timeZone || marketId) {
+      if (
+        email ||
+        phone ||
+        firstName ||
+        lastName ||
+        languageCode ||
+        timeZone ||
+        marketId ||
+        clearMarketId
+      ) {
         payload.user = {
           ...payload.user,
           userAttributes: {
@@ -111,7 +122,7 @@ export default function Attributes() {
             lastName,
             languageCode,
             timeZone,
-            marketId,
+            marketId: clearMarketId ? '' : marketId,
           },
         };
       }
@@ -144,6 +155,7 @@ export default function Attributes() {
     languageCode,
     timeZone,
     marketId,
+    clearMarketId,
     region,
     town,
     address,
@@ -153,19 +165,30 @@ export default function Attributes() {
     <SafeAreaView style={styles.container}>
       <ScrollView>
         {form.map(item => (
-          <View style={styles.row} key={item.label}>
-            <View style={styles.rowText}>
-              <Text style={styles.text}>
-                <Text style={styles.text}>{item.label}</Text>
-                {item.required && <Text style={styles.rowTextRequired}>*</Text>}
-              </Text>
+          <React.Fragment key={item.label}>
+            <View style={styles.row}>
+              <View style={styles.rowText}>
+                <Text style={styles.text}>
+                  <Text style={styles.text}>{item.label}</Text>
+                  {item.required && <Text style={styles.rowTextRequired}>*</Text>}
+                </Text>
+              </View>
+              <TextInput
+                style={[styles.textInput, styles.text]}
+                value={item.value}
+                onChangeText={item.onChange}
+                editable={item.label !== 'Market ID' || !clearMarketId}
+              />
             </View>
-            <TextInput
-              style={[styles.textInput, styles.text]}
-              value={item.value}
-              onChangeText={item.onChange}
-            />
-          </View>
+            {item.label === 'Market ID' && (
+              <View style={styles.checkboxRow}>
+                <Text style={[styles.text, styles.checkboxLabel]}>
+                  Clear marketId (send empty string)
+                </Text>
+                <Switch value={clearMarketId} onValueChange={setClearMarketId} />
+              </View>
+            )}
+          </React.Fragment>
         ))}
       </ScrollView>
       <Button onPress={submit} label='Set User Attributes' />
