@@ -7,6 +7,7 @@ import {
   ScrollView,
   SafeAreaView,
   Alert,
+  Switch,
 } from 'react-native';
 import {
   setAnonymousUserAttributes,
@@ -20,6 +21,8 @@ export default function AnonymousUserAttributesScreen() {
   const [lastName, setLastName] = useState('');
   const [languageCode, setLanguageCode] = useState('');
   const [timeZone, setTimeZone] = useState('');
+  const [marketId, setMarketId] = useState('');
+  const [clearMarketId, setClearMarketId] = useState(false);
   const [region, setRegion] = useState('');
   const [town, setTown] = useState('');
   const [address, setAddress] = useState('');
@@ -38,6 +41,11 @@ export default function AnonymousUserAttributesScreen() {
         label: 'Time zone',
         value: timeZone,
         onChange: setTimeZone,
+      },
+      {
+        label: 'Market ID',
+        value: marketId,
+        onChange: setMarketId,
       },
       {
         label: 'Region',
@@ -65,6 +73,7 @@ export default function AnonymousUserAttributesScreen() {
       lastName,
       languageCode,
       timeZone,
+      marketId,
       region,
       town,
       address,
@@ -74,13 +83,21 @@ export default function AnonymousUserAttributesScreen() {
 
   const submit = useCallback(() => {
     let payload: AnonymousUserAttributes = {};
-    if (firstName || lastName || languageCode || timeZone) {
+    if (
+      firstName ||
+      lastName ||
+      languageCode ||
+      timeZone ||
+      marketId ||
+      clearMarketId
+    ) {
       payload = {
         ...payload,
         firstName,
         lastName,
         languageCode,
         timeZone,
+        marketId: clearMarketId ? '' : marketId,
       };
     }
     if (region || town || address || postcode) {
@@ -97,13 +114,15 @@ export default function AnonymousUserAttributesScreen() {
         Alert.alert('Success', 'Anonymous attributes sent');
       })
       .catch(error => {
-        Alert.alert('Error', error);
+        Alert.alert('Error', error?.message ?? String(error));
       });
   }, [
     firstName,
     lastName,
     languageCode,
     timeZone,
+    marketId,
+    clearMarketId,
     region,
     town,
     address,
@@ -113,18 +132,29 @@ export default function AnonymousUserAttributesScreen() {
     <SafeAreaView style={styles.container}>
       <ScrollView>
         {form.map(item => (
-          <View style={styles.row} key={item.label}>
-            <View style={styles.rowText}>
-              <Text style={styles.text}>
-                <Text style={styles.text}>{item.label}</Text>
-              </Text>
+          <React.Fragment key={item.label}>
+            <View style={styles.row}>
+              <View style={styles.rowText}>
+                <Text style={styles.text}>
+                  <Text style={styles.text}>{item.label}</Text>
+                </Text>
+              </View>
+              <TextInput
+                style={[styles.textInput, styles.text]}
+                value={item.value}
+                onChangeText={item.onChange}
+                editable={item.label !== 'Market ID' || !clearMarketId}
+              />
             </View>
-            <TextInput
-              style={[styles.textInput, styles.text]}
-              value={item.value}
-              onChangeText={item.onChange}
-            />
-          </View>
+            {item.label === 'Market ID' && (
+              <View style={styles.checkboxRow}>
+                <Text style={[styles.text, styles.checkboxLabel]}>
+                  Clear marketId (send empty string)
+                </Text>
+                <Switch value={clearMarketId} onValueChange={setClearMarketId} />
+              </View>
+            )}
+          </React.Fragment>
         ))}
       </ScrollView>
       <Button onPress={submit} label='Set Anonymous User Attributes' />

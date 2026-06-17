@@ -36,13 +36,20 @@ export type UserAttributes = {
   lastName?: string | null;
   languageCode?: string | null;
   timeZone?: string | null;
+  marketId?: string | null;
   address?: Address | null;
   fields?: Fields | null;
 };
 
 export type AnonymousUserAttributes = Pick<
   UserAttributes,
-  'firstName' | 'lastName' | 'languageCode' | 'timeZone' | 'address' | 'fields'
+  | 'firstName'
+  | 'lastName'
+  | 'languageCode'
+  | 'timeZone'
+  | 'marketId'
+  | 'address'
+  | 'fields'
 >;
 
 export type User = {
