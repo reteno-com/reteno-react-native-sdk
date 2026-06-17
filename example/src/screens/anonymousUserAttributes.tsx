@@ -114,7 +114,7 @@ export default function AnonymousUserAttributesScreen() {
         Alert.alert('Success', 'Anonymous attributes sent');
       })
       .catch(error => {
-        Alert.alert('Error', error);
+        Alert.alert('Error', error?.message ?? String(error));
       });
   }, [
     firstName,

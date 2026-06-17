@@ -247,13 +247,13 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
   @ReactMethod
   public void setUserAttributes(ReadableMap payload, Promise promise) {
     String externalUserId = payload.getString("externalUserId");
-    User user = RetenoUserAttributes.buildUserFromPayload(payload);
     if (externalUserId == null) {
       promise.reject("Parsing error", "externalUserId cannot be null");
       return;
     }
 
     try {
+      User user = RetenoUserAttributes.buildUserFromPayload(payload);
       getRetenoInstance()
         .setUserAttributes(externalUserId, user);
     } catch (Exception e) {
@@ -364,9 +364,8 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
   @ReactMethod
   public void setAnonymousUserAttributes(ReadableMap payload, Promise promise) {
 
-    UserAttributesAnonymous anonymousUser = RetenoUserAttributes.buildAnonymousUserFromPayload(payload);
-
     try {
+      UserAttributesAnonymous anonymousUser = RetenoUserAttributes.buildAnonymousUserFromPayload(payload);
       getRetenoInstance()
         .setAnonymousUserAttributes(anonymousUser);
     } catch (Exception e) {

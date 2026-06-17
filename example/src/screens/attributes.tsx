@@ -143,7 +143,7 @@ export default function Attributes() {
           Alert.alert('Success', 'Attributes sent');
         })
         .catch(error => {
-          Alert.alert('Error', error);
+          Alert.alert('Error', error?.message ?? String(error));
         });
     }
   }, [

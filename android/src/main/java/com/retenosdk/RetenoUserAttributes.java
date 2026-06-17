@@ -12,6 +12,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RetenoUserAttributes {
+  private static void validateMarketId(String marketId) {
+    if (marketId == null || marketId.isEmpty()) return;
+    if (marketId.length() > 64) {
+      throw new IllegalArgumentException("Invalid marketId, max length must be less than 64, allowed symbols: latin characters, digits, '-', '_'");
+    }
+    for (char c : marketId.toCharArray()) {
+      if (!Character.isLetter(c) && !Character.isDigit(c) && c != '-' && c != '_') {
+        throw new IllegalArgumentException("Invalid marketId, max length must be less than 64, allowed symbols: latin characters, digits, '-', '_'");
+      }
+    }
+  }
+
   private static List<UserCustomField> buildUserCustomData(ReadableArray fields) {
     int countView = fields.size();
     if (countView == 0) return null;
@@ -105,6 +117,8 @@ public class RetenoUserAttributes {
       fields = buildUserCustomData(payloadFields);
     }
 
+    validateMarketId(payloadMarketId);
+
     UserAttributes userAttributes = new UserAttributes(
       RetenoUtil.getStringOrNull(payloadPhone),
       RetenoUtil.getStringOrNull(payloadEmail),
@@ -114,7 +128,7 @@ public class RetenoUserAttributes {
       RetenoUtil.getStringOrNull(payloadTimeZone),
       address,
       fields,
-      RetenoUtil.getStringOrNull(payloadMarketId)
+      payloadMarketId
     );
 
     List<String> subscriptionKeys = buildStringArr(payloadUser, "subscriptionKeys");
@@ -152,6 +166,8 @@ public class RetenoUserAttributes {
       fields = buildUserCustomData(payloadFields);
     }
 
-    return new UserAttributesAnonymous(payloadFirstName, payloadLastName, payloadLanguageCode, payloadTimeZone, address, fields, RetenoUtil.getStringOrNull(payloadMarketId));
+    validateMarketId(payloadMarketId);
+
+    return new UserAttributesAnonymous(payloadFirstName, payloadLastName, payloadLanguageCode, payloadTimeZone, address, fields, payloadMarketId);
   };
 }
