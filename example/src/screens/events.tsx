@@ -51,14 +51,31 @@ export default function Events() {
     }
   }, [parameterName, parameterValue, parameters]);
 
+  const removeParameter = useCallback((name: string) => {
+    setParameters(prev => prev.filter(param => param.name !== name));
+  }, []);
+
   const addMessage = useCallback((type: EventMessage['type'], text: string) => {
     setMessages(prev => [{id: Date.now() + Math.random(), type, text}, ...prev].slice(0, 5));
   }, []);
 
   const submit = useCallback(() => {
     if (eventName) {
-      logEvent(eventName, new Date().toISOString(), parameters, false)
+      // include a parameter left filled in the form but not explicitly added via "Add parameter"
+      const pendingParameter =
+        parameterName && parameterValue
+          ? [{name: parameterName, value: parameterValue}]
+          : [];
+      const allParameters = [...parameters, ...pendingParameter];
+
+      logEvent(eventName, new Date().toISOString(), allParameters, false)
         .then(() => {
+          if (pendingParameter.length) {
+            setParameters(allParameters);
+            setParameterName('');
+            setParameterValue('');
+            setShowParameterForm(false);
+          }
           addMessage('success', 'Success: Event sent');
         })
         .catch((error: any) => {
@@ -73,7 +90,7 @@ export default function Events() {
     } else {
       addMessage('error', 'Error: eventName is required for logEvent method');
     }
-  }, [addMessage, eventName, parameters]);
+  }, [addMessage, eventName, parameters, parameterName, parameterValue]);
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
@@ -107,6 +124,8 @@ export default function Events() {
                 style={[styles.textInput, styles.text]}
                 value={item.value}
                 onChangeText={item.onChange}
+                autoCapitalize="none"
+                autoCorrect={false}
               />
             </View>
           </View>
@@ -123,8 +142,13 @@ export default function Events() {
                 <Text style={styles.text}>{item.name}</Text>
               </Text>
             </View>
-            <View style={styles.rowValue}>
+            <View style={[styles.rowValue, styles.rowValueWithAction]}>
               <Text style={styles.text}>{item.value}</Text>
+              <Text
+                style={styles.removeParameter}
+                onPress={() => removeParameter(item.name)}>
+                ✕
+              </Text>
             </View>
           </View>
         ))}
@@ -143,6 +167,8 @@ export default function Events() {
                   style={[styles.textInput, styles.text]}
                   value={parameterName}
                   onChangeText={setParameterName}
+                  autoCapitalize="none"
+                  autoCorrect={false}
                 />
               </View>
             </View>
@@ -158,6 +184,8 @@ export default function Events() {
                   style={[styles.textInput, styles.text]}
                   value={parameterValue}
                   onChangeText={setParameterValue}
+                  autoCapitalize="none"
+                  autoCorrect={false}
                 />
               </View>
             </View>
@@ -232,6 +260,17 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     justifyContent: 'center',
     paddingRight: 20,
+  },
+  rowValueWithAction: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+  },
+  removeParameter: {
+    color: '#B42318',
+    fontWeight: '600',
+    marginLeft: 12,
+    paddingHorizontal: 4,
   },
   textInput: {
     flex: 1,
