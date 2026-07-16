@@ -1,6 +1,6 @@
 {
   "name": "reteno-react-native-sdk",
-  "version": "2.1.1",
+  "version": "2.2.0",
   "description": "The Reteno React Native SDK for App Analytics and Engagement.",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
@@ -30,6 +30,7 @@
     "test": "jest",
     "typecheck": "tsc --noEmit",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
+    "prepare": "lefthook install",
     "prepack": "bob build",
     "release:patch": "release-it patch",
     "release:minor": "release-it minor",
@@ -66,7 +67,6 @@
     "@release-it/conventional-changelog": "^5.0.0",
     "@types/jest": "^28.1.2",
     "@types/react": "^19.0.0",
-    "@types/react-native": "0.70.0",
     "baseline-browser-mapping": "^2.9.19",
     "commitlint": "^17.0.2",
     "del-cli": "^5.0.0",

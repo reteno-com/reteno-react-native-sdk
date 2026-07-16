@@ -28,7 +28,7 @@ methods must split in two:
 - _In scope_ — **honest wrapper behavior**: either keep these methods Android-only and on iOS
   `reject(new Error('Unsupported on iOS'))`, **or** implement a real iOS permission read in our
   own bridge via `UNUserNotificationCenter.getNotificationSettings()`. The second option is
-  native-bridge work in *this* repo, independent of the external Reteno iOS SDK.
+  native-bridge work in _this_ repo, independent of the external Reteno iOS SDK.
 
 ### 02 — segmentation: `add/removeEventListener` = implicitly EventManager
 
@@ -80,9 +80,27 @@ The truth is the **bridge-forwarded common schema plus documented platform-speci
 fields** — using the bridge's field names. Not a pure intersection (that would drop platform
 extras); not a copy of one platform.
 
-**Critical to cross-check both platforms simultaneously.** Where they diverge (e.g.
-`category`/`status` in inbox exist on Android only — already visible in `src/index.ts:183-185`),
-the type reflects this as optional rather than hiding it.
+**Critical to cross-check both platforms simultaneously.** Where they diverge, the type
+reflects this as optional rather than hiding it — e.g. `status` in inbox (`src/index.ts:200`)
+is genuinely Android-only: the iOS native `AppInboxMessage` model has no equivalent field at
+all, so there's nothing to forward.
+
+**Concrete confirmation of this principle, found by checking the local `reteno-ios` /
+`reteno-android` checkouts:** `category` was a _bridge gap_, not a native-model gap — both
+native `AppInboxMessage` models (iOS `AppInboxMessage.swift`, Android `AppInboxMessage.kt`)
+already had `category`, but our **iOS bridge** simply wasn't forwarding it
+(`ios/RetenoSdk.swift`, `getAppInboxMessages`), even though the **Android bridge** was. This is
+now fixed — iOS forwards `category` too — confirmed against the pod version actually pinned
+and installed (`Reteno (2.7.2)` per `example/ios/Podfile.lock`), not just the local dev
+checkout (which uses an unrelated build-number tagging scheme).
+
+**Still open, deliberately not done as part of this:** both native models also have
+`customData` (iOS: `[String: Any]?`, Android: `Map<String, String>?`), and **neither** bridge
+forwards it. Closing this is a bigger step than closing the `category` gap — the value types
+differ per platform, so the JS type needs to be permissive (`Record<string, unknown>`, per the
+typing rule below) rather than a straight one-to-one mirror, and Android needs a
+`Map<String, String>` → `WritableMap` conversion added to the bridge. Left as a follow-up, not
+bundled into Batch 1.
 
 That is, the "types" item in Batch 1 is a study of the native models and bridge mapping,
 not "just write interfaces."
@@ -94,17 +112,16 @@ whether the field has a real fixed schema:
 
 - **Fixed schema** (envelope) → real structure. `InAppCustomData` wrapper, inbox messages,
   `PushButton` action fields, recommendation items — their fields are known from native models
-  + bridge mapping (`inapp_id`, `inapp_source`, `url`, `actionId`, `actionLink`, `id`, `title`…).
+  - bridge mapping (`inapp_id`, `inapp_source`, `url`, `actionId`, `actionLink`, `id`, `title`…).
 - **Genuinely arbitrary bag** → `Record<string, unknown>` + index signature. The contents of
   `InAppCustomData.customData`, the raw push payload (`userInfo`, `getInitialNotification`).
   Keys are set by a marketer in the dashboard / by the APNs–FCM envelope.
 
 **Watch out — two unrelated fields share the name `customData`:** `InAppCustomData.customData`
-is currently `Record<string, any>` (an object bag — tighten to `Record<string, unknown>`), but
-`PushButton.customData` is currently `string | null` (`src/index.ts:200`) — a raw, likely
-JSON-encoded string, not an object. Don't type both the same way; decide explicitly whether
-`PushButton.customData` stays a raw string or gets parsed into a typed/`Record<string, unknown>`
-shape before it reaches JS.
+is now `Record<string, unknown>` (tightened in Batch 1), but `PushButton.customData` is a
+separate field, `string | null` (`src/index.ts:247`) — a raw, likely JSON-encoded string, not
+an object. Decision made in Batch 1: `PushButton.customData` stays a raw string (not parsed),
+documented with a JSDoc comment on the field rather than silently left ambiguous.
 
 A fake structure over a truly arbitrary bag is **worse** than `unknown` — it lies (promises
 fields that may be absent) and invites runtime errors. `unknown` is honest.
@@ -131,42 +148,56 @@ version number.
 
 ## Point-by-point review
 
-| # | Topic | Verdict | Key point |
-|---|-------|---------|-----------|
-| 1 | Typing | ⚠️ refine | The small fixes are flawless. But `getInitial`/`getRecom` — permissive/generic; `Record→unknown` — *potentially* breaking (output positions only). |
-| 2 | Promise consistency | ⚠️ caution | `reject` instead of `throw` — yes. "Always no-op resolve" is wrong for methods returning meaningful state/result → finding 01. |
-| 3 | Unified event API | ✅ solid | Direction is right, backward-compatible. But technically = item 6. |
-| 4 | No-op subscription | ✅ solid | Shared type `RetenoSubscription{remove()}` + `__DEV__` warning: a fake subscription masks that the callback will never fire. |
-| 5 | Namespaces | ✅ solid | Facade over flat exports — low risk **if flat exports stay canonical** (docs risk: users may think flat API is deprecated). Metro has no tree-shaking — a "heavy" namespace is fine. |
-| 6 | EventManager | ✅ solid | Not a "small wrapper." Closing the `DeviceEventEmitter`/`NativeEventEmitter` split needs **Android bridge changes** (add `addListener`/`removeListeners` stubs — the module has no NativeEventEmitter contract today). Not external Reteno SDK, but not pure JS. |
-| 7 | Event queue | ✅ solid | + `__DEV__` warning on drop (the 100 limit is silent). Parity is **not a JS unit test**: JS covers the public EventManager contract; drop-oldest/overflow + init-ordering need native/integration tests or manual QA. |
-| 8 | Tests | ✅ solid | Mock `NativeModules` + `Platform.OS`. Add LINKING_ERROR proxy, iOS getters after the fix. |
-| 9 | Docs / README | ✅ solid | Quick-start, typed examples, cleanup via `removeEventListener`, migration section. |
-| 10 | Tooling / CI | ✅ solid | + `npm run prepack` in CI (catches bob breakage). Drop `@types/react-native` — RN 0.78 ships types. |
-| 11 | TurboModule spec | ✅ solid | Last. More than "add a spec": typed params + a different event model. The legacy bridge can run through New Architecture interop → optimization, not correctness. |
+| #   | Topic               | Verdict    | Key point                                                                                                                                                                                                                                                        |
+| --- | ------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Typing              | ⚠️ refine  | The small fixes are flawless. But `getInitial`/`getRecom` — permissive/generic; `Record→unknown` — _potentially_ breaking (output positions only).                                                                                                               |
+| 2   | Promise consistency | ⚠️ caution | `reject` instead of `throw` — yes. "Always no-op resolve" is wrong for methods returning meaningful state/result → finding 01.                                                                                                                                   |
+| 3   | Unified event API   | ✅ solid   | Direction is right, backward-compatible. But technically = item 6.                                                                                                                                                                                               |
+| 4   | No-op subscription  | ✅ solid   | Shared type `RetenoSubscription{remove()}` + `__DEV__` warning: a fake subscription masks that the callback will never fire.                                                                                                                                     |
+| 5   | Namespaces          | ✅ solid   | Facade over flat exports — low risk **if flat exports stay canonical** (docs risk: users may think flat API is deprecated). Metro has no tree-shaking — a "heavy" namespace is fine.                                                                             |
+| 6   | EventManager        | ✅ solid   | Not a "small wrapper." Closing the `DeviceEventEmitter`/`NativeEventEmitter` split needs **Android bridge changes** (add `addListener`/`removeListeners` stubs — the module has no NativeEventEmitter contract today). Not external Reteno SDK, but not pure JS. |
+| 7   | Event queue         | ✅ solid   | + `__DEV__` warning on drop (the 100 limit is silent). Parity is **not a JS unit test**: JS covers the public EventManager contract; drop-oldest/overflow + init-ordering need native/integration tests or manual QA.                                            |
+| 8   | Tests               | ✅ solid   | Mock `NativeModules` + `Platform.OS`. Add LINKING_ERROR proxy, iOS getters after the fix.                                                                                                                                                                        |
+| 9   | Docs / README       | ✅ solid   | Quick-start, typed examples, cleanup via `removeEventListener`, migration section.                                                                                                                                                                               |
+| 10  | Tooling / CI        | ✅ solid   | + `npm run prepack` in CI (catches bob breakage). Drop `@types/react-native` — RN 0.78 ships types.                                                                                                                                                              |
+| 11  | TurboModule spec    | ✅ solid   | Last. More than "add a spec": typed params. The event model is *not* different — see the verified note below. The legacy bridge can run through New Architecture interop → optimization, not correctness.                                                                                                |
 
 ---
 
-## Roadmap — 5 batches, 5 releases
+## Roadmap — 5 batches, 2 releases
 
-Each batch ships as its own release. Smaller blast radius, faster value to users, easier to
-bisect regressions.
+Batches 0–3 ship together as `2.2.0` from the current `2.1.1` baseline. This keeps the
+public version aligned with the actual release plan: one minor release for infra, types,
+EventManager, namespaces, and docs. Batch 4 remains a separate `3.0.0` major because it adds
+the TurboModule/codegen migration surface.
 
-**One caveat that removes double work:** design the EventManager (Batch 2) with the
-TurboModule event model in mind — abstract the event source behind an interface — even though
-it ships on the old `RCTEventEmitter` first. Otherwise the event layer gets partially rewritten
-again in Batch 4.
+**Correction (verified during the Batch 2 audit, superseding the original caveat below):**
+TurboModules do **not** use a different event model. Checked directly against
+`node_modules/react-native/src/private/specs/modules/NativeAppState.js` — an official,
+already-migrated core RN module — its codegen `Spec` still declares plain
+`+addListener: (eventName: string) => void` / `+removeListeners: (count: number) => void`,
+and `AppState.js` still consumes it via a plain `new NativeEventEmitter(NativeAppState)`,
+identical to the old-architecture pattern. So no interface abstraction around the event
+source is needed for Batch 4 — the `addListener`/`removeListeners` stubs already added to
+`RetenoSdkModule.java` in Batch 2 are exactly what a future codegen `Spec` will also require.
+`addEventListener` calling `eventEmitter.addListener(...)` directly (`src/index.ts`) is fine
+as shipped, no rework expected in Batch 4 for this.
 
-### Batch 0 → `2.1.2` — Infra only · patch if package output is unchanged, otherwise minor
+### Batch 0 → included in `2.2.0` — Infra only
 
-Infra goes **first** so CI gates every subsequent PR — not bundled into the "low risk" release.
+Infra still goes **first** in implementation order so local checks guard every subsequent step,
+even though it ships in the same `2.2.0` release as Batches 1–3.
 
-- Fill `lefthook.yml` (pre-commit lint + typecheck)
-- GitHub Actions: lint / typecheck / test / `npm run prepack` (catches bob breakage)
-- Drop deprecated `@types/react-native` (RN 0.78 ships types) — **verify the emitted `.d.ts`
-  in `lib/typescript` is unchanged**; if the declaration output shifts, bump minor, not patch
+- [x] Fill `lefthook.yml` (pre-commit lint + typecheck) + `"prepare": "lefthook install"` so
+      hooks are wired up automatically on `npm install`
+- [x] Drop deprecated `@types/react-native` (RN 0.78 ships types) — **verified the emitted
+      `.d.ts` in `lib/typescript` is byte-identical before/after** → confirmed patch, not minor
+- [ ] **Backlog, not done:** GitHub Actions (lint / typecheck / test / `npm run prepack`, to
+      catch bob breakage). A draft `.github/workflows/ci.yml` was prepared and verified locally
+      (`npm ci` → lint → typecheck → test → prepack all green on a clean install) but deliberately
+      held back — decide separately whether/when to turn on CI for this repo.
 
-### Batch 1 → `2.2.0` — Types and correctness · `minor + changelog` (behavior changes)
+### Batch 1 → included in `2.2.0` — Types and correctness · `minor + changelog` (behavior changes)
 
 Not "no breaking": the iOS permission-getter fix and `throw`→`reject` are runtime behavior
 changes. Ship with a changelog note.
@@ -183,17 +214,20 @@ changes. Ship with a changelog note.
   `false`); now it rejects as unsupported._
 - JS tests on wrapper behavior (validation, platform branches, LINKING_ERROR proxy)
 
-### Batch 2 → `2.3.0` — EventManager and unified event API · `minor + changelog`
+### Batch 2 → included in `2.2.0` — EventManager and unified event API · `minor + changelog`
 
-- EventManager with a subscription registry (item 6), **event source abstracted behind an
-  interface** (TurboModule-ready); decide the duplicate-`(event, callback)` policy up front
-- Android bridge: add `addListener` / `removeListeners` stubs so `NativeEventEmitter` works on
-  both platforms (closes the `DeviceEventEmitter` split)
-- `addEventListener` / `removeEventListener` on top (item 3)
-- No-op subscription + shared type + `__DEV__` warning (item 4)
-- JS tests on the public EventManager contract
+- [x] EventManager with a subscription registry (item 6); duplicate `(event, callback)` pairs
+      are deliberately a no-op and return the existing subscription. No interface abstraction
+      around the event source needed — see the correction above; `addEventListener` calls
+      `NativeEventEmitter` directly, matching how RN's own already-migrated TurboModules
+      (e.g. `AppState`) do it
+- [x] Android bridge: add `addListener` / `removeListeners` stubs so `NativeEventEmitter` works on
+      both platforms (closes the `DeviceEventEmitter` split)
+- [x] `addEventListener` / `removeEventListener` on top (item 3)
+- [x] No-op subscription + shared type + `__DEV__` warning (item 4)
+- [x] JS tests on the public EventManager contract
 
-### Batch 3 → `2.4.0` — Namespaces and documentation · no breaking
+### Batch 3 → included in `2.2.0` — Namespaces and documentation · no breaking
 
 - Facade `Reteno.user.*`, `Reteno.push.*`, `Reteno.inApp.*`, `Reteno.inbox.*`, `Reteno.ecommerce.*`
 - **Flat exports remain canonical / backward-compatible for at least one major cycle** — the
@@ -208,7 +242,8 @@ Staged migration to keep the step small:
 1. Add `src/NativeRetenoSdk.ts` + `codegenConfig` **mirroring the existing bridge shape** —
    New Arch codegen wired, runtime mapping unchanged.
 2. Then incrementally tighten `NSDictionary` / `ReadableMap` methods into typed structs.
-3. Resolve the event model (codegen events or a legacy emitter alongside).
+3. Declare `addListener` / `removeListeners` in the codegen `Spec` (mirrors the Java stubs
+   already added in Batch 2) — `src/index.ts`'s `NativeEventEmitter` usage does not change.
 4. Native/integration tests + manual QA for queue overflow & init ordering (deferred from
    Batch 2).
 
@@ -217,9 +252,8 @@ Staged migration to keep the step small:
 **Excluded from scope** (requires native Reteno SDK changes): `logout`/clear identity,
 consent/GDPR, push subscription opt-in/opt-out, client-side in-app triggers, a **Reteno-native**
 unified permission API (symmetric opt-in/opt-out driven by the native SDK on both platforms).
-This does *not* cover making the existing wrapper honest — see the scope split under finding 01,
+This does _not_ cover making the existing wrapper honest — see the scope split under finding 01,
 which stays in scope and ships in Batch 1.
 
 **Strengths left untouched:** App Inbox, structured Ecommerce events, Recommendations,
 anonymous/multi-account attributes.
-

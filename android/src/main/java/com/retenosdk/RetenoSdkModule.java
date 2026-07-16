@@ -89,6 +89,16 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
     return NAME;
   }
 
+  @ReactMethod
+  public void addListener(String eventName) {
+    // Required by NativeEventEmitter. Events are registered eagerly by the Reteno callbacks.
+  }
+
+  @ReactMethod
+  public void removeListeners(Integer count) {
+    // Required by NativeEventEmitter. Individual listener cleanup is handled on the JS side.
+  }
+
   @Override
   public void onCatalystInstanceDestroy() {
     cleanupRetenoNotificationsListeners();

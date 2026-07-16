@@ -562,6 +562,7 @@ open class RetenoSdk: RCTEventEmitter {
                         "imageURL": message.imageURL?.absoluteString as Any,
                         "linkURL": message.linkURL?.absoluteString as Any,
                         "isNew": message.isNew,
+                        "category": message.category as Any,
                     ]
                 }
                 resolve(["messages": messages, "totalPages": response.totalPages as Any])
