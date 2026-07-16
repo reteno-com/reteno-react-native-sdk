@@ -229,11 +229,12 @@ changes. Ship with a changelog note.
 
 ### Batch 3 → included in `2.2.0` — Namespaces and documentation · no breaking
 
-- Facade `Reteno.user.*`, `Reteno.push.*`, `Reteno.inApp.*`, `Reteno.inbox.*`, `Reteno.ecommerce.*`
-- **Flat exports remain canonical / backward-compatible for at least one major cycle** — the
+- [x] Facade `Reteno.user.*`, `Reteno.push.*`, `Reteno.events.*`, `Reteno.inApp.*`,
+      `Reteno.inbox.*`, `Reteno.recommendations.*`, `Reteno.ecommerce.*`
+- [x] **Flat exports remain canonical / backward-compatible for at least one major cycle** — the
   facade is additive, not a replacement
-- README quick-start + typed examples + cleanup pattern
-- Migration section: flat API → namespaced API
+- [ ] External docs repo: quick-start + typed examples + cleanup pattern
+- [ ] External docs repo: migration section from flat API to namespaced API
 
 ### Batch 4 → `3.0.0` — TurboModule / codegen spec · major
 

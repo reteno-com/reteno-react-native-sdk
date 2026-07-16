@@ -1057,3 +1057,75 @@ export function setPushInAppMessagesPauseBehaviour(
   }
   return Promise.resolve(undefined);
 }
+
+export const user = {
+  setAttributes: setUserAttributes,
+  setMultiAccountAttributes: setMultiAccountUserAttributes,
+  setAnonymousAttributes: setAnonymousUserAttributes,
+} as const;
+
+export const push = {
+  setDeviceToken,
+  registerForRemoteNotifications,
+  getInitialNotification,
+  setOnReceivedListener: setOnRetenoPushReceivedListener,
+  setOnClickedListener: setOnRetenoPushClickedListener,
+  setOnButtonClickedListener: setOnRetenoPushButtonClickedListener,
+  setOnDismissedListener: setOnRetenoPushDismissedListener,
+  setOnCustomDataListener: setOnRetenoCustomPushDataListener,
+  requestNotificationPermission,
+  getNotificationPermissionStatus,
+  updatePermissionStatusAndroid: updatePushPermissionStatusAndroid,
+  pauseTriggeredInAppMessages: pausePushInAppMessages,
+  setTriggeredInAppMessagesPauseBehaviour: setPushInAppMessagesPauseBehaviour,
+} as const;
+
+export const events = {
+  addEventListener,
+  removeEventListener,
+  initializeEventHandler,
+} as const;
+
+export const inApp = {
+  setLifecycleCallback: setInAppLifecycleCallback,
+  removeLifecycleCallback: removeInAppLifecycleCallback,
+  beforeDisplay: beforeInAppDisplayHandler,
+  onDisplay: onInAppDisplayHandler,
+  beforeClose: beforeInAppCloseHandler,
+  afterClose: afterInAppCloseHandler,
+  onError: onInAppErrorHandler,
+  onCustomData: addInAppMessageCustomDataHandler,
+  pauseMessages: pauseInAppMessages,
+  setPauseBehaviour: setInAppMessagesPauseBehaviour,
+  setAutoOpenLinks,
+  getAutoOpenLinks,
+} as const;
+
+export const inbox = {
+  getMessages: getAppInboxMessages,
+  markAsOpened,
+  markAllAsOpened,
+  getMessagesCount: getAppInboxMessagesCount,
+  subscribeUnreadCount: onUnreadMessagesCountChanged,
+  unsubscribeUnreadCount: unsubscribeMessagesCountChanged,
+  unsubscribeAllUnreadCount: unsubscribeAllMessagesCountChanged,
+  onUnreadCountChanged: unreadMessagesCountHandler,
+  onUnreadCountError: unreadMessagesCountErrorHandler,
+} as const;
+
+export const recommendations = {
+  get: getRecommendations,
+  logEvent: logRecommendationEvent,
+} as const;
+
+export const ecommerce = {
+  productViewed: logEcomEventProductViewed,
+  productCategoryViewed: logEcomEventProductCategoryViewed,
+  productAddedToWishlist: logEcomEventProductAddedToWishlist,
+  cartUpdated: logEcomEventCartUpdated,
+  orderCreated: logEcomEventOrderCreated,
+  orderUpdated: logEcomEventOrderUpdated,
+  orderDelivered: logEcomEventOrderDelivered,
+  orderCancelled: logEcomEventOrderCancelled,
+  searchRequest: logEcomEventSearchRequest,
+} as const;

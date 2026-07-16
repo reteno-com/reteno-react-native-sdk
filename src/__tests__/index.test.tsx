@@ -15,6 +15,8 @@ jest.mock('react-native', () => {
     getNotificationPermissionStatus: jest.fn().mockResolvedValue('DENIED'),
     getInitialNotification: jest.fn().mockResolvedValue(null),
     getRecommendations: jest.fn().mockResolvedValue([{ productId: '1' }]),
+    getAppInboxMessages: jest.fn().mockResolvedValue({ messages: [] }),
+    logEcomEventProductViewed: jest.fn().mockResolvedValue(undefined),
     __emitterAddListener: jest.fn(
       (_eventName: string, _listener: (event: unknown) => void) => ({
         remove: jest.fn(),
@@ -59,6 +61,8 @@ type MockRetenoSdk = {
     | 'getNotificationPermissionStatus'
     | 'getInitialNotification'
     | 'getRecommendations'
+    | 'getAppInboxMessages'
+    | 'logEcomEventProductViewed'
     | '__emitterAddListener']: jest.Mock;
 };
 
@@ -385,6 +389,75 @@ describe('event manager', () => {
     expect(mockRetenoSdk.__emitterAddListener).toHaveBeenCalledWith(
       'reteno-push-dismissed',
       expect.any(Function)
+    );
+  });
+});
+
+describe('namespaces', () => {
+  it('exposes user helpers without replacing the flat API', async () => {
+    const payload = { externalUserId: 'user-1', user: {} };
+
+    expect(Reteno.user.setAttributes).toBe(Reteno.setUserAttributes);
+    await Reteno.user.setAttributes(payload);
+
+    expect(mockRetenoSdk.setUserAttributes).toHaveBeenCalledWith(payload);
+  });
+
+  it('exposes generic event helpers through the events namespace', () => {
+    const listener = jest.fn();
+
+    expect(Reteno.events.addEventListener).toBe(Reteno.addEventListener);
+    expect(Reteno.events.removeEventListener).toBe(Reteno.removeEventListener);
+    expect(Reteno.events.initializeEventHandler).toBe(
+      Reteno.initializeEventHandler
+    );
+
+    Reteno.events.addEventListener('pushReceived', listener);
+
+    expect(mockRetenoSdk.__emitterAddListener).toHaveBeenCalledWith(
+      'reteno-push-received',
+      expect.any(Function)
+    );
+  });
+
+  it('keeps push-triggered in-app pause names distinct from the general in-app pause API', () => {
+    expect(Reteno.inApp.pauseMessages).toBe(Reteno.pauseInAppMessages);
+    expect(Reteno.push.pauseTriggeredInAppMessages).toBe(
+      Reteno.pausePushInAppMessages
+    );
+    expect(Reteno.push.pauseTriggeredInAppMessages).not.toBe(
+      Reteno.inApp.pauseMessages
+    );
+    expect('pauseInAppMessages' in Reteno.push).toBe(false);
+    expect('addEventListener' in Reteno.push).toBe(false);
+  });
+
+  it('exposes inbox helpers through concise names', async () => {
+    const payload = { page: 1, pageSize: 10 };
+
+    expect(Reteno.inbox.getMessages).toBe(Reteno.getAppInboxMessages);
+    await Reteno.inbox.getMessages(payload);
+
+    expect(mockRetenoSdk.getAppInboxMessages).toHaveBeenCalledWith(payload);
+  });
+
+  it('exposes ecommerce helpers through concise names', async () => {
+    const payload = {
+      product: {
+        productId: 'product-1',
+        price: 10,
+        isInStock: true,
+      },
+      currencyCode: 'USD',
+    };
+
+    expect(Reteno.ecommerce.productViewed).toBe(
+      Reteno.logEcomEventProductViewed
+    );
+    await Reteno.ecommerce.productViewed(payload);
+
+    expect(mockRetenoSdk.logEcomEventProductViewed).toHaveBeenCalledWith(
+      payload
     );
   });
 });
