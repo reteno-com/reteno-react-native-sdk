@@ -8,13 +8,10 @@ import {
 } from 'react-native';
 import styles from '../styles';
 import {
+  ecommerce,
   EcomOrder,
   EcomOrderItem,
   EcomSimpleAttribute,
-  logEcomEventOrderCancelled,
-  logEcomEventOrderCreated,
-  logEcomEventOrderDelivered,
-  logEcomEventOrderUpdated,
   OrderStatus,
 } from 'reteno-react-native-sdk';
 import {attributeFields, orderFields, orderItemFields} from '../../utils/data';
@@ -243,7 +240,7 @@ const OrderCreatedScreen = () => {
     const orderData = formatOrderData();
 
     try {
-      const res = await logEcomEventOrderCreated({
+      const res = await ecommerce.orderCreated({
         order: orderData,
         currencyCode,
       });
@@ -266,7 +263,7 @@ const OrderCreatedScreen = () => {
     const {currencyCode} = form;
     const orderData = formatOrderData();
     try {
-      const res = await logEcomEventOrderUpdated({
+      const res = await ecommerce.orderUpdated({
         order: orderData,
         currencyCode,
       });
@@ -285,7 +282,7 @@ const OrderCreatedScreen = () => {
       return;
     }
     try {
-      const res = await logEcomEventOrderDelivered({
+      const res = await ecommerce.orderDelivered({
         externalOrderId: form.order.externalOrderId,
       });
 
@@ -304,7 +301,7 @@ const OrderCreatedScreen = () => {
       return;
     }
 
-    logEcomEventOrderCancelled({
+    ecommerce.orderCancelled({
       externalOrderId: form.order.externalOrderId,
     });
   };

@@ -10,9 +10,9 @@ import {
   Switch,
 } from 'react-native';
 import {
-  setAnonymousUserAttributes,
-  AnonymousUserAttributes,
+  user,
 } from 'reteno-react-native-sdk';
+import type { AnonymousUserAttributes } from 'reteno-react-native-sdk';
 import styles from './styles';
 import { Button } from '../components/Button';
 
@@ -109,7 +109,7 @@ export default function AnonymousUserAttributesScreen() {
       };
     }
 
-    setAnonymousUserAttributes(payload)
+    user.setAnonymousAttributes(payload)
       .then(() => {
         Alert.alert('Success', 'Anonymous attributes sent');
       })

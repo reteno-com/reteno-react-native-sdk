@@ -9,7 +9,8 @@ import {
   Alert,
   Switch,
 } from 'react-native';
-import { setUserAttributes, setMultiAccountUserAttributes, UserAttributes } from 'reteno-react-native-sdk';
+import { user } from 'reteno-react-native-sdk';
+import type { UserAttributes } from 'reteno-react-native-sdk';
 import styles from './styles';
 import { Button } from '../components/Button';
 
@@ -138,7 +139,7 @@ export default function Attributes() {
         };
       }
 
-      setUserAttributes(payload)
+      user.setAttributes(payload)
         .then(() => {
           Alert.alert('Success', 'Attributes sent');
         })
@@ -194,7 +195,7 @@ export default function Attributes() {
       <Button onPress={submit} label='Set User Attributes' />
       <Button
         onPress={() => {
-          setMultiAccountUserAttributes({
+          user.setMultiAccountAttributes({
             externalUserId: 'test-multi-account-user',
             user: {
               userAttributes: {

@@ -7,7 +7,7 @@ import {
   Switch,
   Alert,
 } from 'react-native';
-import {logEcomEventProductAddedToWishlist} from 'reteno-react-native-sdk';
+import {ecommerce} from 'reteno-react-native-sdk';
 import styles from '../styles';
 import {InputRow} from '../../components/InputRow';
 import { Button } from '../../components/Button';
@@ -74,7 +74,7 @@ const ProductAddedToWishlistEventScreen = () => {
           'Обовязкові поля з "*" повинно бути цілим заповнені',
         );
       }
-      const res = await logEcomEventProductAddedToWishlist({
+      const res = await ecommerce.productAddedToWishlist({
         product: {
           productId,
           price: Number(price),

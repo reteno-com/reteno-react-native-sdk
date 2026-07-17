@@ -11,11 +11,10 @@ import {
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import {
+  events,
   initialize,
-  initializeEventHandler,
   logScreenView,
-  registerForRemoteNotifications,
-  updatePushPermissionStatusAndroid,
+  push,
 } from 'reteno-react-native-sdk';
 import AttributesScreen from './screens/attributes';
 import EventsScreen from './screens/events';
@@ -66,8 +65,8 @@ function Navigation({ appVersion }: NavigationProps) {
             sessionEndEventsEnabled: false,
           },
         });
-        initializeEventHandler();
-        await registerForRemoteNotifications();
+        events.initializeEventHandler();
+        await push.registerForRemoteNotifications();
       } catch (error) {
         console.error('Reteno initialize failed', error);
       }
@@ -79,7 +78,7 @@ function Navigation({ appVersion }: NavigationProps) {
         PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS!
       ).then((result) => {
         if (result === 'granted') {
-          updatePushPermissionStatusAndroid().then((status) => {
+          push.updatePermissionStatusAndroid().then((status) => {
             console.log('update status', status);
           });
         }
