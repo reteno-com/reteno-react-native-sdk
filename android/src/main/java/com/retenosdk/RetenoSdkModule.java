@@ -95,7 +95,7 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  public void removeListeners(Integer count) {
+  public void removeListeners(double count) {
     // Required by NativeEventEmitter. Individual listener cleanup is handled on the JS side.
   }
 

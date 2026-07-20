@@ -164,12 +164,13 @@ version number.
 
 ---
 
-## Roadmap — 5 batches, 2 releases
+## Roadmap — one `3.0.0` SDK release
 
-Batches 0–3 ship together as `2.2.0` from the current `2.1.1` baseline. This keeps the
-public version aligned with the actual release plan: one minor release for infra, types,
-EventManager, namespaces, and docs. Batch 4 remains a separate `3.0.0` major because it adds
-the TurboModule/codegen migration surface.
+Batches 0–4 ship together as one `3.0.0` release from the current `2.1.1` baseline. This
+keeps the public version aligned with the actual release plan: the already implemented infra,
+types, EventManager, namespace facade, demo-app updates, and the upcoming TurboModule/codegen
+work all land in one major release. Public documentation is maintained in a separate repo and
+will be updated after implementation and release.
 
 **Correction (verified during the Batch 2 audit, superseding the original caveat below):**
 TurboModules do **not** use a different event model. Checked directly against
@@ -183,10 +184,10 @@ source is needed for Batch 4 — the `addListener`/`removeListeners` stubs alrea
 `addEventListener` calling `eventEmitter.addListener(...)` directly (`src/index.ts`) is fine
 as shipped, no rework expected in Batch 4 for this.
 
-### Batch 0 → included in `2.2.0` — Infra only
+### Batch 0 → included in `3.0.0` — Infra only
 
 Infra still goes **first** in implementation order so local checks guard every subsequent step,
-even though it ships in the same `2.2.0` release as Batches 1–3.
+even though it ships in the same `3.0.0` release as Batches 1–4.
 
 - [x] Fill `lefthook.yml` (pre-commit lint + typecheck) + `"prepare": "lefthook install"` so
       hooks are wired up automatically on `npm install`
@@ -197,7 +198,7 @@ even though it ships in the same `2.2.0` release as Batches 1–3.
       (`npm ci` → lint → typecheck → test → prepack all green on a clean install) but deliberately
       held back — decide separately whether/when to turn on CI for this repo.
 
-### Batch 1 → included in `2.2.0` — Types and correctness · `minor + changelog` (behavior changes)
+### Batch 1 → included in `3.0.0` — Types and correctness · `major + changelog` (behavior changes)
 
 Not "no breaking": the iOS permission-getter fix and `throw`→`reject` are runtime behavior
 changes. Ship with a changelog note.
@@ -214,7 +215,7 @@ changes. Ship with a changelog note.
   `false`); now it rejects as unsupported._
 - JS tests on wrapper behavior (validation, platform branches, LINKING_ERROR proxy)
 
-### Batch 2 → included in `2.2.0` — EventManager and unified event API · `minor + changelog`
+### Batch 2 → included in `3.0.0` — EventManager and unified event API · `major + changelog`
 
 - [x] EventManager with a subscription registry (item 6); duplicate `(event, callback)` pairs
       are deliberately a no-op and return the existing subscription. No interface abstraction
@@ -227,26 +228,46 @@ changes. Ship with a changelog note.
 - [x] No-op subscription + shared type + `__DEV__` warning (item 4)
 - [x] JS tests on the public EventManager contract
 
-### Batch 3 → included in `2.2.0` — Namespaces and documentation · no breaking
+### Batch 3 → included in `3.0.0` — Namespaces and demo app · no breaking
 
 - [x] Facade `Reteno.user.*`, `Reteno.push.*`, `Reteno.events.*`, `Reteno.inApp.*`,
       `Reteno.inbox.*`, `Reteno.recommendations.*`, `Reteno.ecommerce.*`
 - [x] **Flat exports remain canonical / backward-compatible for at least one major cycle** — the
   facade is additive, not a replacement
-- [ ] External docs repo: quick-start + typed examples + cleanup pattern
-- [ ] External docs repo: migration section from flat API to namespaced API
+- [x] Demo app migrated to the namespace facade where applicable
+- [ ] Post-release external docs repo: quick-start + typed examples + cleanup pattern
+- [ ] Post-release external docs repo: migration section from flat API to namespaced API
 
-### Batch 4 → `3.0.0` — TurboModule / codegen spec · major
+### Batch 4 → included in `3.0.0` — TurboModule / codegen spec · major
 
 Staged migration to keep the step small:
 
-1. Add `src/NativeRetenoSdk.ts` + `codegenConfig` **mirroring the existing bridge shape** —
-   New Arch codegen wired, runtime mapping unchanged.
-2. Then incrementally tighten `NSDictionary` / `ReadableMap` methods into typed structs.
-3. Declare `addListener` / `removeListeners` in the codegen `Spec` (mirrors the Java stubs
-   already added in Batch 2) — `src/index.ts`'s `NativeEventEmitter` usage does not change.
-4. Native/integration tests + manual QA for queue overflow & init ordering (deferred from
-   Batch 2).
+- [x] Add `src/NativeRetenoSdk.ts` + `codegenConfig` **mirroring the existing bridge shape** —
+      New Arch codegen wired, runtime mapping unchanged so old-architecture apps still use the
+      existing `NativeModules.RetenoSdk` bridge.
+- [x] Remove non-native / non-portable methods from the initial codegen `Spec`: `logScreenView`
+      is JS-only in RN today; `markAsOpened` has incompatible native shapes
+      (`String` on Android, `[String]` on iOS); in-app lifecycle callback methods also diverge
+      (`Promise` on Android, `void` / missing on iOS).
+- [ ] Incrementally tighten `NSDictionary` / `ReadableMap` methods into typed structs.
+- [x] Declare `addListener` / `removeListeners` in the codegen `Spec` (mirrors the Java stubs
+      already added in Batch 2) — `src/index.ts`'s `NativeEventEmitter` usage does not change.
+- [ ] Normalize `logScreenView` before adding it to the native `Spec`: Cordova parity is Android
+      native `reteno.logScreenView(screenName)` and iOS technical `logEvent("screenView", ...)`;
+      RN currently implements the cross-platform behavior as a JS wrapper around `logEvent`.
+- [ ] Normalize `markAsOpened` before adding it back to the native `Spec` — either align Android
+      to accept an array or introduce a shared adapter method; the current single codegen
+      signature cannot honestly represent both platforms.
+- [ ] Normalize in-app lifecycle callback methods before adding them back to the native `Spec`:
+      Android currently exposes `setInAppLifecycleCallback(Promise)` /
+      `removeInAppLifecycleCallback(Promise)`, while iOS exposes only
+      `setInAppLifecycleCallback()` and no remove method.
+- [ ] Add explicit opposite-platform stubs before full native TurboModule conformance for
+      platform-only methods (`forcePushData`, permission APIs, push-triggered in-app pause APIs,
+      `registerForRemoteNotifications`). TypeScript optional methods generate Android no-op base
+      methods, but iOS codegen still emits selectors, so this is not a substitute for iOS stubs.
+- [ ] Native/integration tests + manual QA for queue overflow & init ordering (deferred from
+      Batch 2).
 
 ---
 
