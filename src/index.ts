@@ -4,6 +4,7 @@ import {
   NativeModules,
   Platform,
 } from 'react-native';
+import NativeRetenoSdk from './NativeRetenoSdk';
 
 const LINKING_ERROR =
   `The package 'reteno-react-native-sdk' doesn't seem to be linked. Make sure: \n\n` +
@@ -251,8 +252,10 @@ export type PushButton = {
 
 export type RetenoPushButtonClickedEvent = PushButton;
 
-const RetenoSdk = NativeModules.RetenoSdk
-  ? NativeModules.RetenoSdk
+const nativeRetenoSdk = NativeRetenoSdk ?? NativeModules.RetenoSdk;
+
+const RetenoSdk = nativeRetenoSdk
+  ? nativeRetenoSdk
   : new Proxy(
       {},
       {
@@ -545,7 +548,7 @@ export function setOnRetenoPushButtonClickedListener(
 }
 
 export function setInAppLifecycleCallback() {
-  RetenoSdk.setInAppLifecycleCallback();
+  return RetenoSdk.setInAppLifecycleCallback();
 }
 
 /**
@@ -553,8 +556,9 @@ export function setInAppLifecycleCallback() {
  */
 export function removeInAppLifecycleCallback() {
   if (Platform.OS === 'android') {
-    RetenoSdk.removeInAppLifecycleCallback();
+    return RetenoSdk.removeInAppLifecycleCallback();
   }
+  return Promise.resolve(undefined);
 }
 
 export function beforeInAppDisplayHandler(
@@ -667,19 +671,14 @@ export function setMultiAccountUserAttributes(
  * Call this function to send all accumulated events
  */
 export function forcePushData(): Promise<void> {
-  if (Platform.OS === 'ios') {
-    // for ios we have to use this hack, because there isn't separate forcePush function as on android, sending an event with forcePush flag does the same thing
-    return logEvent('', new Date().toISOString(), [], true);
-  } else return RetenoSdk.forcePushData();
+  return RetenoSdk.forcePushData();
 }
 /**
  * Send log screen view event
  * @param screenName name of the screen
  */
-export function logScreenView(screenName: string) {
-  return logEvent(CustomEventTypes.screenView, new Date().toISOString(), [
-    { name: CustomEventTypes.screenView, value: screenName },
-  ]);
+export function logScreenView(screenName: string): Promise<void> {
+  return RetenoSdk.logScreenView(screenName);
 }
 
 /**
@@ -738,13 +737,6 @@ export function markAsOpened(
     ids: messageIds,
     status: messageIds?.length ? 'OPENED' : '',
   };
-
-  if (Platform.OS === 'android') {
-    return RetenoSdk.markAsOpened(messageIds?.[0]).then(
-      () => response,
-      (error: any) => Promise.reject(error)
-    );
-  }
 
   return RetenoSdk.markAsOpened(messageIds).then(
     () => response,

@@ -9,6 +9,7 @@ jest.mock('react-native', () => {
     setUserAttributes: jest.fn().mockResolvedValue(undefined),
     setMultiAccountUserAttributes: jest.fn().mockResolvedValue(undefined),
     logEvent: jest.fn().mockResolvedValue(undefined),
+    logScreenView: jest.fn().mockResolvedValue(undefined),
     forcePushData: jest.fn().mockResolvedValue(undefined),
     markAsOpened: jest.fn().mockResolvedValue(undefined),
     requestNotificationPermission: jest.fn().mockResolvedValue(true),
@@ -17,6 +18,11 @@ jest.mock('react-native', () => {
     getRecommendations: jest.fn().mockResolvedValue([{ productId: '1' }]),
     getAppInboxMessages: jest.fn().mockResolvedValue({ messages: [] }),
     logEcomEventProductViewed: jest.fn().mockResolvedValue(undefined),
+    setInAppLifecycleCallback: jest.fn().mockResolvedValue(undefined),
+    removeInAppLifecycleCallback: jest.fn().mockResolvedValue(undefined),
+    pausePushInAppMessages: jest.fn().mockResolvedValue(undefined),
+    setPushInAppMessagesPauseBehaviour: jest.fn().mockResolvedValue(undefined),
+    updatePushPermissionStatusAndroid: jest.fn().mockResolvedValue(undefined),
     __emitterAddListener: jest.fn(
       (_eventName: string, _listener: (event: unknown) => void) => ({
         remove: jest.fn(),
@@ -27,6 +33,9 @@ jest.mock('react-native', () => {
   return {
     NativeModules: {
       RetenoSdk,
+    },
+    TurboModuleRegistry: {
+      get: jest.fn(() => RetenoSdk),
     },
     Platform: {
       OS: 'ios',
@@ -55,6 +64,7 @@ type MockRetenoSdk = {
     | 'setUserAttributes'
     | 'setMultiAccountUserAttributes'
     | 'logEvent'
+    | 'logScreenView'
     | 'forcePushData'
     | 'markAsOpened'
     | 'requestNotificationPermission'
@@ -63,6 +73,11 @@ type MockRetenoSdk = {
     | 'getRecommendations'
     | 'getAppInboxMessages'
     | 'logEcomEventProductViewed'
+    | 'setInAppLifecycleCallback'
+    | 'removeInAppLifecycleCallback'
+    | 'pausePushInAppMessages'
+    | 'setPushInAppMessagesPauseBehaviour'
+    | 'updatePushPermissionStatusAndroid'
     | '__emitterAddListener']: jest.Mock;
 };
 
@@ -143,17 +158,11 @@ describe('setMultiAccountUserAttributes', () => {
 });
 
 describe('forcePushData', () => {
-  it('on iOS, forwards via logEvent with forcePush=true', async () => {
+  it('delegates to the native forcePushData method on iOS', async () => {
     setPlatform('ios');
     await Reteno.forcePushData();
-    expect(mockRetenoSdk.logEvent).toHaveBeenCalledWith(
-      expect.objectContaining({
-        eventName: '',
-        parameters: [],
-        forcePush: true,
-      })
-    );
-    expect(mockRetenoSdk.forcePushData).not.toHaveBeenCalled();
+    expect(mockRetenoSdk.forcePushData).toHaveBeenCalled();
+    expect(mockRetenoSdk.logEvent).not.toHaveBeenCalled();
   });
 
   it('on Android, calls the native forcePushData method directly', async () => {
@@ -165,10 +174,10 @@ describe('forcePushData', () => {
 });
 
 describe('markAsOpened', () => {
-  it('on Android, sends only the first id and reports all ids as opened', async () => {
+  it('on Android, sends the full id array and reports all ids as opened', async () => {
     setPlatform('android');
     const result = await Reteno.markAsOpened(['a', 'b']);
-    expect(mockRetenoSdk.markAsOpened).toHaveBeenCalledWith('a');
+    expect(mockRetenoSdk.markAsOpened).toHaveBeenCalledWith(['a', 'b']);
     expect(result).toEqual({ ids: ['a', 'b'], status: 'OPENED' });
   });
 
@@ -187,14 +196,9 @@ describe('markAsOpened', () => {
 });
 
 describe('logScreenView', () => {
-  it('logs a screenView event with the screen name', async () => {
+  it('delegates to native logScreenView with the screen name', async () => {
     await Reteno.logScreenView('Home');
-    expect(mockRetenoSdk.logEvent).toHaveBeenCalledWith(
-      expect.objectContaining({
-        eventName: 'screenView',
-        parameters: [{ name: 'screenView', value: 'Home' }],
-      })
-    );
+    expect(mockRetenoSdk.logScreenView).toHaveBeenCalledWith('Home');
   });
 });
 
@@ -459,5 +463,79 @@ describe('namespaces', () => {
     expect(mockRetenoSdk.logEcomEventProductViewed).toHaveBeenCalledWith(
       payload
     );
+  });
+});
+
+describe('in-app lifecycle callbacks', () => {
+  it('setInAppLifecycleCallback delegates to native on both platforms and returns its promise', async () => {
+    setPlatform('ios');
+    await expect(Reteno.setInAppLifecycleCallback()).resolves.toBeUndefined();
+    expect(mockRetenoSdk.setInAppLifecycleCallback).toHaveBeenCalled();
+
+    setPlatform('android');
+    await expect(Reteno.setInAppLifecycleCallback()).resolves.toBeUndefined();
+    expect(mockRetenoSdk.setInAppLifecycleCallback).toHaveBeenCalledTimes(2);
+  });
+
+  it('removeInAppLifecycleCallback delegates to native on Android', async () => {
+    setPlatform('android');
+    await expect(
+      Reteno.removeInAppLifecycleCallback()
+    ).resolves.toBeUndefined();
+    expect(mockRetenoSdk.removeInAppLifecycleCallback).toHaveBeenCalled();
+  });
+
+  it('removeInAppLifecycleCallback resolves without calling native on iOS', async () => {
+    setPlatform('ios');
+    await expect(
+      Reteno.removeInAppLifecycleCallback()
+    ).resolves.toBeUndefined();
+    expect(mockRetenoSdk.removeInAppLifecycleCallback).not.toHaveBeenCalled();
+  });
+});
+
+describe('Android-only fire-and-forget commands', () => {
+  it('pausePushInAppMessages delegates to native on Android, no-ops on iOS', async () => {
+    setPlatform('android');
+    await expect(Reteno.pausePushInAppMessages(true)).resolves.toBeUndefined();
+    expect(mockRetenoSdk.pausePushInAppMessages).toHaveBeenCalledWith(true);
+
+    setPlatform('ios');
+    await expect(Reteno.pausePushInAppMessages(true)).resolves.toBeUndefined();
+    expect(mockRetenoSdk.pausePushInAppMessages).toHaveBeenCalledTimes(1);
+  });
+
+  it('setPushInAppMessagesPauseBehaviour delegates to native on Android, no-ops on iOS', async () => {
+    setPlatform('android');
+    await expect(
+      Reteno.setPushInAppMessagesPauseBehaviour('SKIP_IN_APPS')
+    ).resolves.toBeUndefined();
+    expect(
+      mockRetenoSdk.setPushInAppMessagesPauseBehaviour
+    ).toHaveBeenCalledWith('SKIP_IN_APPS');
+
+    setPlatform('ios');
+    await expect(
+      Reteno.setPushInAppMessagesPauseBehaviour('SKIP_IN_APPS')
+    ).resolves.toBeUndefined();
+    expect(
+      mockRetenoSdk.setPushInAppMessagesPauseBehaviour
+    ).toHaveBeenCalledTimes(1);
+  });
+
+  it('updatePushPermissionStatusAndroid delegates to native on Android, no-ops on iOS', async () => {
+    setPlatform('android');
+    await expect(
+      Reteno.updatePushPermissionStatusAndroid()
+    ).resolves.toBeUndefined();
+    expect(mockRetenoSdk.updatePushPermissionStatusAndroid).toHaveBeenCalled();
+
+    setPlatform('ios');
+    await expect(
+      Reteno.updatePushPermissionStatusAndroid()
+    ).resolves.toBeUndefined();
+    expect(
+      mockRetenoSdk.updatePushPermissionStatusAndroid
+    ).toHaveBeenCalledTimes(1);
   });
 });

@@ -16,22 +16,25 @@ export interface Spec extends TurboModule {
   setAnonymousUserAttributes(payload: UnsafeObject): Promise<void>;
 
   logEvent(payload: UnsafeObject): Promise<void>;
-  forcePushData?(): Promise<void>;
+  logScreenView(screenName: string): Promise<void>;
+  forcePushData(): Promise<void>;
 
   getInitialNotification(): Promise<UnsafeObject | null>;
 
-  registerForRemoteNotifications?(): void;
-  updatePushPermissionStatusAndroid?(): Promise<void>;
-  requestNotificationPermission?(): Promise<boolean>;
-  getNotificationPermissionStatus?(): Promise<string>;
+  registerForRemoteNotifications(): void;
+  updatePushPermissionStatusAndroid(): Promise<void>;
+  requestNotificationPermission(): Promise<boolean>;
+  getNotificationPermissionStatus(): Promise<string>;
 
   setAutoOpenLinks(enabled: boolean): Promise<boolean>;
   getAutoOpenLinks(): Promise<boolean>;
 
   pauseInAppMessages(isPaused: boolean): Promise<void>;
   setInAppMessagesPauseBehaviour(behaviour: string): Promise<void>;
-  pausePushInAppMessages?(isPaused: boolean): Promise<void>;
-  setPushInAppMessagesPauseBehaviour?(behaviour: string): Promise<void>;
+  setInAppLifecycleCallback(): Promise<void>;
+  removeInAppLifecycleCallback(): Promise<void>;
+  pausePushInAppMessages(isPaused: boolean): Promise<void>;
+  setPushInAppMessagesPauseBehaviour(behaviour: string): Promise<void>;
 
   getRecommendations(payload: UnsafeObject): Promise<Array<UnsafeObject>>;
   logRecommendationEvent(payload: UnsafeObject): Promise<void>;
@@ -40,6 +43,7 @@ export interface Spec extends TurboModule {
   onUnreadMessagesCountChanged(): Promise<void>;
   unsubscribeMessagesCountChanged(): Promise<void>;
   unsubscribeAllMessagesCountChanged(): Promise<void>;
+  markAsOpened(messageIds: string[]): Promise<void>;
   markAllAsOpened(): Promise<UnsafeObject>;
   getAppInboxMessagesCount(): Promise<number>;
 

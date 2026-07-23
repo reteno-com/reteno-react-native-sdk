@@ -245,29 +245,96 @@ Staged migration to keep the step small:
 - [x] Add `src/NativeRetenoSdk.ts` + `codegenConfig` **mirroring the existing bridge shape** —
       New Arch codegen wired, runtime mapping unchanged so old-architecture apps still use the
       existing `NativeModules.RetenoSdk` bridge.
-- [x] Remove non-native / non-portable methods from the initial codegen `Spec`: `logScreenView`
-      is JS-only in RN today; `markAsOpened` has incompatible native shapes
-      (`String` on Android, `[String]` on iOS); in-app lifecycle callback methods also diverge
-      (`Promise` on Android, `void` / missing on iOS).
+- [x] Normalize previously non-portable methods before native TurboModule conformance:
+      `logScreenView` is now native on both platforms; `markAsOpened` accepts an array on both
+      platforms; in-app lifecycle callback methods use Promise-based signatures on both
+      platforms.
 - [ ] Incrementally tighten `NSDictionary` / `ReadableMap` methods into typed structs.
 - [x] Declare `addListener` / `removeListeners` in the codegen `Spec` (mirrors the Java stubs
       already added in Batch 2) — `src/index.ts`'s `NativeEventEmitter` usage does not change.
-- [ ] Normalize `logScreenView` before adding it to the native `Spec`: Cordova parity is Android
+- [x] Normalize `logScreenView` before adding it to the native `Spec`: Cordova parity is Android
       native `reteno.logScreenView(screenName)` and iOS technical `logEvent("screenView", ...)`;
-      RN currently implements the cross-platform behavior as a JS wrapper around `logEvent`.
-- [ ] Normalize `markAsOpened` before adding it back to the native `Spec` — either align Android
-      to accept an array or introduce a shared adapter method; the current single codegen
-      signature cannot honestly represent both platforms.
-- [ ] Normalize in-app lifecycle callback methods before adding them back to the native `Spec`:
-      Android currently exposes `setInAppLifecycleCallback(Promise)` /
-      `removeInAppLifecycleCallback(Promise)`, while iOS exposes only
-      `setInAppLifecycleCallback()` and no remove method.
-- [ ] Add explicit opposite-platform stubs before full native TurboModule conformance for
+      RN now delegates to the normalized native method.
+- [x] Normalize `markAsOpened` before adding it back to the native `Spec` — Android now accepts
+      the same string-array shape as iOS and marks each supplied message id.
+- [x] Normalize in-app lifecycle callback methods before adding them back to the native `Spec`:
+      both platforms now expose Promise-based `setInAppLifecycleCallback` and
+      `removeInAppLifecycleCallback`.
+- [x] Add explicit opposite-platform stubs before full native TurboModule conformance for
       platform-only methods (`forcePushData`, permission APIs, push-triggered in-app pause APIs,
       `registerForRemoteNotifications`). TypeScript optional methods generate Android no-op base
       methods, but iOS codegen still emits selectors, so this is not a substitute for iOS stubs.
 - [ ] Native/integration tests + manual QA for queue overflow & init ordering (deferred from
       Batch 2).
+
+#### Backward-compatibility strategy for the remaining wiring (verified against RN source)
+
+Full TurboModule wiring does **not** break apps still on the old architecture, provided the
+migration stays additive. Verified directly in `node_modules/react-native` and
+`@react-native/codegen`, not assumed:
+
+- **Android**: the generated `NativeRetenoSdkSpec` is
+  `public abstract class NativeRetenoSdkSpec extends ReactContextBaseJavaModule implements TurboModule`
+  (`GenerateModuleJavaSpec.js:117`) — a superset of our current base class, not a replacement.
+  `@ReactMethod` methods stay callable from the old bridge unchanged.
+- **`RetenoSdkPackage.java` needs no changes.** `ReactPackageTurboModuleManagerDelegate.java`
+  has a dedicated legacy path: it calls our existing `createNativeModules(...)` as-is and uses
+  reflection (`ReactModuleInfo.classIsTurboModule(moduleClass)`) to detect TurboModule
+  conformance. Gated behind `shouldSupportLegacyPackages()`, true by default in RN's generated
+  delegate — a plain `ReactPackage` keeps working under New Architecture with zero edits.
+- **iOS**: the generated protocol is `@protocol RetenoSdkSpec <RCTBridgeModule, RCTTurboModule>`
+  (`GenerateModuleObjCpp/index.js:32`) — conformance requires **both**; keep the existing
+  `@objc(RetenoSdk)` / bridge-module registration, add the new protocol on top, don't replace one
+  with the other.
+- **JS**: `TurboModuleRegistry.get()` already falls back to `NativeModules[name]` internally when
+  `global.__turboModuleProxy` is absent (`TurboModuleRegistry.js`). Still add an explicit
+  `NativeRetenoSdk ?? NativeModules.RetenoSdk` fallback in our own code rather than relying on
+  this — it's an undocumented internal detail that can change between RN versions, and
+  `peerDependencies.react-native` here is `"*"`, including versions old enough to predate it.
+
+**Staged execution order:**
+
+- [x] 1. Align `src/NativeRetenoSdk.ts` with the real public API — resolved the `markAsOpened` /
+      `logScreenView` / lifecycle-callback normalization TODOs above; a Spec must be 1:1 with real
+      native methods before any native class conforms to it.
+- [x] 2. Android: `RetenoSdkModule extends NativeRetenoSdkSpec`; `RetenoSdkPackage` left untouched
+      — confirmed via `git diff`, zero changes to that file. Codegen only generates
+      `NativeRetenoSdkSpec` when `isNewArchitectureEnabled()`, so old-architecture builds need a
+      real class of that name to compile against. Added a hand-written stand-in —
+      `android/src/oldarch/java/com/retenosdk/NativeRetenoSdkSpec.java`, a bare
+      `abstract class NativeRetenoSdkSpec extends ReactContextBaseJavaModule` with no abstract
+      methods — wired via a conditional `sourceSets { main { if (!isNewArchitectureEnabled())
+      { java.srcDirs += ["src/oldarch/java"] } } }` block in `android/build.gradle`, so exactly
+      one definition of the class exists at a time. Safe because none of `RetenoSdkModule`'s 42
+      `@ReactMethod` methods carry `@Override` — verified all 19 `@Override` occurrences in the
+      file belong to `getName()`/`onCatalystInstanceDestroy()`/`invalidate()` (inherited from
+      `ReactContextBaseJavaModule` regardless of which `NativeRetenoSdkSpec` is in scope) or to
+      unrelated anonymous callback interfaces, so the methods compile against either the trivial
+      stub (old architecture) or the real codegen-generated abstract class (new architecture)
+      without change. iOS needs no equivalent stub — `#if __has_include(...)` is a preprocessor
+      conditional, so the protocol-conformance category in `ios/RetenoSdk.mm` is simply omitted
+      under old architecture rather than requiring a class to exist.
+- [x] 3. JS: `src/index.ts` switched to `NativeRetenoSdk ?? NativeModules.RetenoSdk` (explicit
+      fallback).
+- [x] 4. iOS: added TurboModule/codegen protocol conformance via `ios/RetenoSdk.mm`
+      (`#if __has_include(<RetenoSdkSpec/RetenoSdkSpec.h>)` guarding a `<NativeRetenoSdkSpec>`
+      category) — the existing legacy bridge export (`RCT_EXTERN_MODULE`/`@objc(RetenoSdk)`) is
+      kept, not removed. All `@objc` selectors renamed from `withResolver:withRejecter:` to
+      `resolve:reject:` to match the codegen-generated selector convention
+      (`GenerateModuleObjCpp/serializeMethod.js`: `paramName: 'resolve'/'reject'`).
+- [ ] 5. Verify the demo app both with `newArchEnabled=true` and separately against an older RN /
+      old-architecture setup before shipping. **Not done** — steps 1–4 are verified statically
+      (schema parsing + a byte-for-byte diff between the actual codegen-generated
+      `NativeRetenoSdkSpec.java` and `RetenoSdkModule.java`'s real method signatures — zero
+      mismatches), but nothing has been verified with a real Gradle/Xcode build yet.
+
+**What would actually break old-architecture apps (avoid these):**
+removing `ReactPackage` registration on Android; removing the iOS bridge export
+(`RCT_EXTERN_MODULE`/`@objc(RetenoSdk)`) without the compatible protocol addition; changing
+method names or signatures in the Spec without matching native-side changes; using
+`TurboModuleRegistry.getEnforcing` (throws if not found) instead of `get()` with a fallback;
+describing Spec methods that aren't 1:1 with real native implementations (exactly the class of
+bug already caught above — `logScreenView`, `markAsOpened`, lifecycle callbacks).
 
 ---
 

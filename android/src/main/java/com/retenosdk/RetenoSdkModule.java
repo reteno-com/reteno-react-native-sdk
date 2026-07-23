@@ -14,7 +14,6 @@ import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContext;
-import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReadableArray;
@@ -60,7 +59,7 @@ import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-public class RetenoSdkModule extends ReactContextBaseJavaModule {
+public class RetenoSdkModule extends NativeRetenoSdkSpec {
   public static final String NAME = "RetenoSdk";
   private static final String PREFS_NAME = "RetenoPrefs";
   private static final String AUTO_OPEN_LINKS_KEY = "autoOpenLinks";
@@ -357,6 +356,11 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
+  public void registerForRemoteNotifications() {
+    // iOS-only API. Kept as an explicit no-op so the generated Spec can be cross-platform.
+  }
+
+  @ReactMethod
   public void logEvent(ReadableMap payload, Promise promise) {
     try {
       getRetenoInstance()
@@ -369,6 +373,21 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
     WritableMap res = new WritableNativeMap();
     res.putBoolean("success", true);
     promise.resolve(res);
+  }
+
+  @ReactMethod
+  public void logScreenView(String screenName, Promise promise) {
+    if (screenName == null || screenName.trim().isEmpty()) {
+      promise.reject("InvalidArgument", "Missing argument: screenName");
+      return;
+    }
+
+    try {
+      getRetenoInstance().logScreenView(screenName);
+      promise.resolve(true);
+    } catch (Exception e) {
+      promise.reject("Reteno Android SDK logScreenView Error", e);
+    }
   }
 
   @ReactMethod
@@ -401,7 +420,7 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  public void pauseInAppMessages(Boolean isPaused, Promise promise) {
+  public void pauseInAppMessages(boolean isPaused, Promise promise) {
     try {
       getRetenoInstance()
         .pauseInAppMessages(isPaused);
@@ -819,11 +838,18 @@ public class RetenoSdkModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  public void markAsOpened(String messageId, Promise promise) {
+  public void markAsOpened(ReadableArray messageIds, Promise promise) {
     try {
-      getRetenoInstance()
-        .getAppInbox()
-        .markAsOpened(messageId);
+      if (messageIds != null) {
+        for (int i = 0; i < messageIds.size(); i++) {
+          String messageId = messageIds.getString(i);
+          if (messageId != null && !messageId.isEmpty()) {
+            getRetenoInstance()
+              .getAppInbox()
+              .markAsOpened(messageId);
+          }
+        }
+      }
       promise.resolve(true);
     } catch (Exception e) {
       promise.reject("Reteno Android SDK markAsOpened Error", e);
@@ -1144,7 +1170,7 @@ public void logEcomEventSearchRequest(ReadableMap payload, Promise promise) {
   }
 
   @ReactMethod
-  public void pausePushInAppMessages(Boolean isPaused, Promise promise) {
+  public void pausePushInAppMessages(boolean isPaused, Promise promise) {
     try {
       getRetenoInstance()
         .pausePushInAppMessages(isPaused);

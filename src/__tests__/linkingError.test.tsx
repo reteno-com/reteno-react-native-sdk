@@ -2,6 +2,9 @@
 // src/index.ts falls back to a Proxy that throws on any property access.
 jest.mock('react-native', () => ({
   NativeModules: {},
+  TurboModuleRegistry: {
+    get: jest.fn(() => null),
+  },
   Platform: {
     OS: 'ios',
     select: (obj: Record<string, unknown>) => obj.ios ?? obj.default,
