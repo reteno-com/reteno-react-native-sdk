@@ -322,11 +322,33 @@ migration stays additive. Verified directly in `node_modules/react-native` and
       kept, not removed. All `@objc` selectors renamed from `withResolver:withRejecter:` to
       `resolve:reject:` to match the codegen-generated selector convention
       (`GenerateModuleObjCpp/serializeMethod.js`: `paramName: 'resolve'/'reject'`).
-- [ ] 5. Verify the demo app both with `newArchEnabled=true` and separately against an older RN /
-      old-architecture setup before shipping. **Not done** — steps 1–4 are verified statically
-      (schema parsing + a byte-for-byte diff between the actual codegen-generated
-      `NativeRetenoSdkSpec.java` and `RetenoSdkModule.java`'s real method signatures — zero
-      mismatches), but nothing has been verified with a real Gradle/Xcode build yet.
+- [~] 5. Verify the demo app both with `newArchEnabled=true` and separately against an older RN /
+      old-architecture setup before shipping. **Partially done:**
+      - [x] iOS, `newArchEnabled=true`: a real `fastlane gym` Release archive build of
+        `example/ios` (`RCT_NEW_ARCH_ENABLED=1` in `example/ios/Podfile`) succeeded end-to-end
+        (compile, link, code sign, dSYM). Read the actual codegen-generated
+        `example/ios/build/generated/ios/ReactCodegen/RetenoSdkSpec/RetenoSdkSpec.h` from that
+        build and diffed its 43 `@protocol NativeRetenoSdkSpec` methods against
+        `ios/RetenoSdk.swift`'s `@objc` selectors — zero unexplained gaps (the only 3 methods
+        the protocol declares that Swift doesn't implement directly are `addListener` /
+        `removeListeners`, inherited from `RCTEventEmitter`, and `setEventEmitterCallback`,
+        owned by the generated `NativeRetenoSdkSpecBase`/JSI infrastructure, not our code).
+        Objective-C protocol conformance is checked strictly at compile time, so this build
+        succeeding is direct evidence the wiring is correct, not just statically plausible.
+      - [x] Android, `newArchEnabled=true`: a real Gradle debug build of `example/android`
+        (`newArchEnabled=true` in `example/android/gradle.properties`) produced
+        `app-debug.apk`. Read the actual codegen-generated
+        `android/build/generated/source/codegen/java/com/retenosdk/NativeRetenoSdkSpec.java`
+        from that build — byte-for-byte identical to the manually-invoked-generator output
+        verified earlier. Both `compileDebugJavaWithJavac` and `compileReleaseJavaWithJavac`
+        produced `NativeRetenoSdkSpec.class`, and both got bundled through to
+        `.../bundleLibRuntimeToDir{Debug,Release}_dex/.../NativeRetenoSdkSpec.dex`. `javac` is
+        strict about abstract-method conformance, so this compiling end to end for both
+        build variants is direct proof `RetenoSdkModule extends NativeRetenoSdkSpec` is
+        correct, not just statically plausible.
+      - [ ] Old architecture (either platform, `newArchEnabled=false`): not yet built/verified —
+        this is what the `android/src/oldarch` stub and the `#if __has_include` guard in
+        `ios/RetenoSdk.mm` are *for*, but neither path has been exercised with a real build yet.
 
 **What would actually break old-architecture apps (avoid these):**
 removing `ReactPackage` registration on Android; removing the iOS bridge export
