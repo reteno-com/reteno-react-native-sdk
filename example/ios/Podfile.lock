@@ -2599,7 +2599,7 @@ PODS:
     - React-utils (= 0.83.0)
     - SocketRocket
   - Reteno (2.7.3)
-  - reteno-react-native-sdk (2.1.1):
+  - reteno-react-native-sdk (2.2.0):
     - boost
     - DoubleConversion
     - fast_float
@@ -3056,7 +3056,7 @@ SPEC CHECKSUMS:
   ReactCodegen: 0c8601ce03eb3f724f4d251e4aa158555bf20942
   ReactCommon: 913c93ca20654c90cc57a3dd9e291b4ef9956e54
   Reteno: 68363208d2074b359a95516f11391499121718c3
-  reteno-react-native-sdk: 1dd788e65a55d282817951f7817158ff6c987eaf
+  reteno-react-native-sdk: 9427080f530254b3d6bec335bfa81e032d0a1fdc
   RNFBApp: 3cbad248e866e6c5d753612446ffc48f6ac3be3a
   RNFBMessaging: 7d5016a17a2e62e66b3c92ffdf4851249c06e9c0
   RNScreens: e902eba58a27d3ad399a495d578e8aba3ea0f490
