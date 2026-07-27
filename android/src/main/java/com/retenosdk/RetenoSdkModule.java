@@ -1134,6 +1134,41 @@ public void logEcomEventSearchRequest(ReadableMap payload, Promise promise) {
   }
 
   @ReactMethod
+  public void setNotificationGroupingRule(@Nullable ReadableMap rule, Promise promise) {
+    if (rule == null) {
+      RetenoNotificationGroupingRuleProvider.configure(context, null, null);
+      promise.resolve(true);
+      return;
+    }
+
+    boolean payloadKeyIsString = rule.hasKey("payloadKey")
+      && !rule.isNull("payloadKey")
+      && rule.getType("payloadKey") == ReadableType.String;
+    boolean groupIdIsString = rule.hasKey("groupId")
+      && !rule.isNull("groupId")
+      && rule.getType("groupId") == ReadableType.String;
+    String payloadKey = payloadKeyIsString ? rule.getString("payloadKey").trim() : null;
+    String groupId = groupIdIsString ? rule.getString("groupId").trim() : null;
+    boolean hasPayloadKey = payloadKey != null && !payloadKey.isEmpty();
+    boolean hasGroupId = groupId != null && !groupId.isEmpty();
+
+    if (hasPayloadKey == hasGroupId) {
+      promise.reject(
+        "InvalidArgument",
+        "Invalid argument: provide exactly one non-empty payloadKey or groupId"
+      );
+      return;
+    }
+
+    RetenoNotificationGroupingRuleProvider.configure(
+      context,
+      hasPayloadKey ? payloadKey : null,
+      hasGroupId ? groupId : null
+    );
+    promise.resolve(true);
+  }
+
+  @ReactMethod
   public void pausePushInAppMessages(Boolean isPaused, Promise promise) {
     try {
       getRetenoInstance()
