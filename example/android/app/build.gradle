@@ -89,7 +89,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
-        versionName "1.7.15"
+        versionName "1.7.18"
     }
 
     signingConfigs {
@@ -126,7 +126,7 @@ dependencies {
     implementation("com.facebook.react:react-android")
     // implementation("com.facebook.react:flipper-integration")
 
-    implementation 'com.reteno:fcm:2.9.6'
+    implementation 'com.reteno:fcm:2.10.1'
     implementation "com.google.firebase:firebase-messaging:23.1.0"
     implementation "com.google.firebase:firebase-messaging-ktx:23.1.0"
 
@@ -136,5 +136,5 @@ dependencies {
         implementation jscFlavor
     }
 
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.2.2'
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
 }

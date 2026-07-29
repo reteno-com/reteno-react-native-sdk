@@ -145,6 +145,14 @@ export type NotificationPermissionStatus =
   | 'DENIED'
   | 'PERMANENTLY_DENIED';
 
+/**
+ * Android notification grouping rule. The rule is stored natively and restored
+ * before React Native starts, so it is also applied to background notifications.
+ */
+export type NotificationGroupingRule =
+  | { payloadKey: string; groupId?: never }
+  | { groupId: string; payloadKey?: never };
+
 export type InAppCustomData = {
   customData?: Record<string, any>;
   inapp_id?: string;
@@ -878,6 +886,45 @@ export function getNotificationPermissionStatus(): Promise<NotificationPermissio
     return RetenoSdk.getNotificationPermissionStatus();
   }
   return Promise.resolve('ALLOWED' as NotificationPermissionStatus);
+}
+
+/**
+ * Android only. Groups notifications by a push payload value or a constant ID.
+ * Pass `null` to disable grouping.
+ */
+export function setNotificationGroupingRule(
+  rule: NotificationGroupingRule | null
+): Promise<void> {
+  if (Platform.OS !== 'android') {
+    return Promise.resolve(undefined);
+  }
+
+  if (rule === null) {
+    return RetenoSdk.setNotificationGroupingRule(null);
+  }
+
+  if (!rule || typeof rule !== 'object') {
+    return Promise.reject(
+      new Error(
+        'Invalid argument: expected null or an object with payloadKey or groupId'
+      )
+    );
+  }
+
+  const payloadKey =
+    typeof rule.payloadKey === 'string' ? rule.payloadKey.trim() : '';
+  const groupId = typeof rule.groupId === 'string' ? rule.groupId.trim() : '';
+  if (!!payloadKey === !!groupId) {
+    return Promise.reject(
+      new Error(
+        'Invalid argument: provide exactly one of payloadKey or groupId'
+      )
+    );
+  }
+
+  return RetenoSdk.setNotificationGroupingRule(
+    payloadKey ? { payloadKey } : { groupId }
+  );
 }
 
 /**
