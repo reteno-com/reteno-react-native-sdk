@@ -46,6 +46,18 @@ public final class RetenoNotificationGroupingRuleProvider extends ContentProvide
     );
   }
 
+  /** Resolves the group a received push belongs to under the currently configured rule, or null if none applies. */
+  public static String resolveGroup(Context context, Map<String, String> payload) {
+    SharedPreferences preferences = preferences(context);
+    String payloadKey = preferences.getString(PAYLOAD_KEY, null);
+    if (!TextUtils.isEmpty(payloadKey)) {
+      String value = payload.get(payloadKey);
+      return TextUtils.isEmpty(value) ? null : value;
+    }
+    String groupId = preferences.getString(GROUP_ID, null);
+    return TextUtils.isEmpty(groupId) ? null : groupId;
+  }
+
   private static SharedPreferences preferences(Context context) {
     return context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE);
   }
