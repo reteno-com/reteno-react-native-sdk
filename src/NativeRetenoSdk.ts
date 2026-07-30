@@ -35,6 +35,7 @@ export interface Spec extends TurboModule {
   removeInAppLifecycleCallback(): Promise<void>;
   pausePushInAppMessages(isPaused: boolean): Promise<void>;
   setPushInAppMessagesPauseBehaviour(behaviour: string): Promise<void>;
+  setNotificationGroupingRule(rule: UnsafeObject | null): Promise<void>;
 
   getRecommendations(payload: UnsafeObject): Promise<Array<UnsafeObject>>;
   logRecommendationEvent(payload: UnsafeObject): Promise<void>;

@@ -1050,6 +1050,54 @@ export function setPushInAppMessagesPauseBehaviour(
   return Promise.resolve(undefined);
 }
 
+/**
+ * Android only. Groups notifications by a push payload value or a constant ID.
+ * The rule is persisted natively and restored before the app starts, so it is
+ * also applied to notifications received while the app is not running.
+ */
+export type NotificationGroupingRule =
+  | { payloadKey: string; groupId?: never }
+  | { groupId: string; payloadKey?: never };
+
+/**
+ * Android only. Groups notifications by a push payload value or a constant ID.
+ * Pass `null` to disable grouping.
+ */
+export function setNotificationGroupingRule(
+  rule: NotificationGroupingRule | null
+): Promise<void> {
+  if (Platform.OS !== 'android') {
+    return Promise.resolve(undefined);
+  }
+
+  if (rule === null) {
+    return RetenoSdk.setNotificationGroupingRule(null);
+  }
+
+  if (!rule || typeof rule !== 'object') {
+    return Promise.reject(
+      new Error(
+        'Invalid argument: expected null or an object with payloadKey or groupId'
+      )
+    );
+  }
+
+  const payloadKey =
+    typeof rule.payloadKey === 'string' ? rule.payloadKey.trim() : '';
+  const groupId = typeof rule.groupId === 'string' ? rule.groupId.trim() : '';
+  if (!!payloadKey === !!groupId) {
+    return Promise.reject(
+      new Error(
+        'Invalid argument: provide exactly one of payloadKey or groupId'
+      )
+    );
+  }
+
+  return RetenoSdk.setNotificationGroupingRule(
+    payloadKey ? { payloadKey } : { groupId }
+  );
+}
+
 export const user = {
   setAttributes: setUserAttributes,
   setMultiAccountAttributes: setMultiAccountUserAttributes,
@@ -1070,6 +1118,7 @@ export const push = {
   updatePermissionStatusAndroid: updatePushPermissionStatusAndroid,
   pauseTriggeredInAppMessages: pausePushInAppMessages,
   setTriggeredInAppMessagesPauseBehaviour: setPushInAppMessagesPauseBehaviour,
+  setGroupingRule: setNotificationGroupingRule,
 } as const;
 
 export const events = {

@@ -167,7 +167,7 @@ open class RetenoSdk: RCTEventEmitter {
             isAutomaticScreenReportingEnabled: false,
             isAutomaticAppLifecycleReportingEnabled: lifecycleAppEnabled,
             isApplicationForegroundLifecycleReportingEnabled: lifecycleForegroundEnabled,
-            isAutomaticPushSubsriptionReportingEnabled: lifecyclePushEnabled,
+            isAutomaticPushSubscriptionReportingEnabled: lifecyclePushEnabled,
             sessionConfiguration: RetenoSessionConfiguration(
                 sessionDuration: sessionDurationSeconds,
                 isSessionStartReportingEnabled: lifecycleSessionStartEnabled,

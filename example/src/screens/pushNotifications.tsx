@@ -5,7 +5,10 @@ import {
   inApp,
   push,
 } from 'reteno-react-native-sdk';
-import type { InAppPauseBehaviour } from 'reteno-react-native-sdk';
+import type {
+  InAppPauseBehaviour,
+  NotificationGroupingRule,
+} from 'reteno-react-native-sdk';
 import { Button } from '../components/Button';
 import styles from './styles';
 
@@ -109,6 +112,12 @@ export default function PushNotificationsScreen() {
       .catch(error => Alert.alert('Error', String(error)));
   };
 
+  const handleSetNotificationGroupingRule = (rule: NotificationGroupingRule | null) => {
+    push.setGroupingRule(rule)
+      .then(() => Alert.alert('Success', `Notification grouping rule: ${rule ? JSON.stringify(rule) : 'disabled'}`))
+      .catch(error => Alert.alert('Error', String(error)));
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
@@ -156,6 +165,21 @@ export default function PushNotificationsScreen() {
             onPress={() => handleSetPushInAppMessagesPauseBehaviour('POSTPONE_IN_APPS')}
             label="Push-triggered in-app behaviour: Postpone"
           />
+        )}
+        {Platform.OS === 'android' && (
+          <Button
+            onPress={() => handleSetNotificationGroupingRule({ payloadKey: 'chatId' })}
+            label="Group notifications by payload key 'chatId'"
+          />
+        )}
+        {Platform.OS === 'android' && (
+          <Button
+            onPress={() => handleSetNotificationGroupingRule({ groupId: 'messages' })}
+            label="Group notifications under constant ID 'messages'"
+          />
+        )}
+        {Platform.OS === 'android' && (
+          <Button onPress={() => handleSetNotificationGroupingRule(null)} label="Disable notification grouping" />
         )}
         {Platform.OS === 'ios' && (
           <Button onPress={push.registerForRemoteNotifications} label="Register for Remote Notifications" />

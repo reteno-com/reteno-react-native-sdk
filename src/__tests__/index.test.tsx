@@ -22,6 +22,7 @@ jest.mock('react-native', () => {
     removeInAppLifecycleCallback: jest.fn().mockResolvedValue(undefined),
     pausePushInAppMessages: jest.fn().mockResolvedValue(undefined),
     setPushInAppMessagesPauseBehaviour: jest.fn().mockResolvedValue(undefined),
+    setNotificationGroupingRule: jest.fn().mockResolvedValue(undefined),
     updatePushPermissionStatusAndroid: jest.fn().mockResolvedValue(undefined),
     __emitterAddListener: jest.fn(
       (_eventName: string, _listener: (event: unknown) => void) => ({
@@ -77,6 +78,7 @@ type MockRetenoSdk = {
     | 'removeInAppLifecycleCallback'
     | 'pausePushInAppMessages'
     | 'setPushInAppMessagesPauseBehaviour'
+    | 'setNotificationGroupingRule'
     | 'updatePushPermissionStatusAndroid'
     | '__emitterAddListener']: jest.Mock;
 };
@@ -537,5 +539,71 @@ describe('Android-only fire-and-forget commands', () => {
     expect(
       mockRetenoSdk.updatePushPermissionStatusAndroid
     ).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('setNotificationGroupingRule', () => {
+  it('is exposed under the push namespace with a concise name', () => {
+    expect(Reteno.push.setGroupingRule).toBe(
+      Reteno.setNotificationGroupingRule
+    );
+  });
+
+  it('normalizes a payload key rule on Android', async () => {
+    setPlatform('android');
+    await Reteno.setNotificationGroupingRule({ payloadKey: '  chatId  ' });
+
+    expect(mockRetenoSdk.setNotificationGroupingRule).toHaveBeenCalledWith({
+      payloadKey: 'chatId',
+    });
+  });
+
+  it('normalizes a constant group id rule on Android', async () => {
+    setPlatform('android');
+    await Reteno.setNotificationGroupingRule({ groupId: '  messages  ' });
+
+    expect(mockRetenoSdk.setNotificationGroupingRule).toHaveBeenCalledWith({
+      groupId: 'messages',
+    });
+  });
+
+  it('passes null through to disable grouping', async () => {
+    setPlatform('android');
+    await Reteno.setNotificationGroupingRule(null);
+
+    expect(mockRetenoSdk.setNotificationGroupingRule).toHaveBeenCalledWith(
+      null
+    );
+  });
+
+  it('rejects a rule with neither payloadKey nor groupId', async () => {
+    setPlatform('android');
+    await expect(
+      Reteno.setNotificationGroupingRule({ payloadKey: '  ' } as never)
+    ).rejects.toThrow(
+      'Invalid argument: provide exactly one of payloadKey or groupId'
+    );
+  });
+
+  it('rejects a rule with both payloadKey and groupId', async () => {
+    setPlatform('android');
+    await expect(
+      Reteno.setNotificationGroupingRule({
+        payloadKey: 'chatId',
+        groupId: 'messages',
+      } as never)
+    ).rejects.toThrow(
+      'Invalid argument: provide exactly one of payloadKey or groupId'
+    );
+  });
+
+  it('no-ops on iOS without calling native', async () => {
+    setPlatform('ios');
+    mockRetenoSdk.setNotificationGroupingRule.mockClear();
+
+    await expect(
+      Reteno.setNotificationGroupingRule({ groupId: 'messages' })
+    ).resolves.toBeUndefined();
+    expect(mockRetenoSdk.setNotificationGroupingRule).not.toHaveBeenCalled();
   });
 });
