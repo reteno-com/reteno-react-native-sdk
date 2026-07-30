@@ -177,13 +177,17 @@ export default function PushNotificationsScreen() {
         )}
         {Platform.OS === 'android' && (
           <Button
-            onPress={() => handleSetNotificationGroupingRule({ payloadKey: 'chatId' })}
+            onPress={() =>
+              handleSetNotificationGroupingRule({ payloadKey: 'chatId', showSummary: true })
+            }
             label="Group notifications by payload key 'chatId'"
           />
         )}
         {Platform.OS === 'android' && (
           <Button
-            onPress={() => handleSetNotificationGroupingRule({ groupId: 'messages' })}
+            onPress={() =>
+              handleSetNotificationGroupingRule({ groupId: 'messages', showSummary: true })
+            }
             label="Group notifications under constant ID 'messages'"
           />
         )}

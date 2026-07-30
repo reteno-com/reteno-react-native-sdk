@@ -2599,7 +2599,7 @@ PODS:
     - React-utils (= 0.83.0)
     - SocketRocket
   - Reteno (2.7.3)
-  - reteno-react-native-sdk (2.2.0):
+  - reteno-react-native-sdk (2.3.0):
     - boost
     - DoubleConversion
     - fast_float
