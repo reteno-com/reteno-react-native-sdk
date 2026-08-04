@@ -1136,7 +1136,7 @@ public void logEcomEventSearchRequest(ReadableMap payload, Promise promise) {
   @ReactMethod
   public void setNotificationGroupingRule(@Nullable ReadableMap rule, Promise promise) {
     if (rule == null) {
-      RetenoNotificationGroupingRuleProvider.configure(context, null, null);
+      RetenoNotificationGroupingRuleProvider.configure(context, null, null, false);
       promise.resolve(true);
       return;
     }
@@ -1160,10 +1160,20 @@ public void logEcomEventSearchRequest(ReadableMap payload, Promise promise) {
       return;
     }
 
+    boolean showSummaryIsBoolean = rule.hasKey("showSummary")
+      && !rule.isNull("showSummary")
+      && rule.getType("showSummary") == ReadableType.Boolean;
+    if (rule.hasKey("showSummary") && !rule.isNull("showSummary") && !showSummaryIsBoolean) {
+      promise.reject("InvalidArgument", "Invalid argument: showSummary must be a boolean");
+      return;
+    }
+    boolean showSummary = showSummaryIsBoolean && rule.getBoolean("showSummary");
+
     RetenoNotificationGroupingRuleProvider.configure(
       context,
       hasPayloadKey ? payloadKey : null,
-      hasGroupId ? groupId : null
+      hasGroupId ? groupId : null,
+      showSummary
     );
     promise.resolve(true);
   }

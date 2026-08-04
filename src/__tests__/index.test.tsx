@@ -68,4 +68,36 @@ describe('setNotificationGroupingRule', () => {
       'Invalid argument: provide exactly one of payloadKey or groupId'
     );
   });
+
+  it('forwards showSummary when true', async () => {
+    await setNotificationGroupingRule({
+      groupId: 'messages',
+      showSummary: true,
+    });
+
+    expect(mockSetNotificationGroupingRule).toHaveBeenCalledWith({
+      groupId: 'messages',
+      showSummary: true,
+    });
+  });
+
+  it('omits showSummary when false', async () => {
+    await setNotificationGroupingRule({
+      groupId: 'messages',
+      showSummary: false,
+    });
+
+    expect(mockSetNotificationGroupingRule).toHaveBeenCalledWith({
+      groupId: 'messages',
+    });
+  });
+
+  it('rejects a non-boolean showSummary value', async () => {
+    await expect(
+      setNotificationGroupingRule({
+        groupId: 'messages',
+        showSummary: 'yes',
+      } as unknown as Parameters<typeof setNotificationGroupingRule>[0])
+    ).rejects.toThrow('Invalid argument: showSummary must be a boolean');
+  });
 });
