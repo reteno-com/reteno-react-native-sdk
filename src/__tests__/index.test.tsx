@@ -606,4 +606,39 @@ describe('setNotificationGroupingRule', () => {
     ).resolves.toBeUndefined();
     expect(mockRetenoSdk.setNotificationGroupingRule).not.toHaveBeenCalled();
   });
+
+  it('forwards showSummary when true', async () => {
+    setPlatform('android');
+    await Reteno.setNotificationGroupingRule({
+      groupId: 'messages',
+      showSummary: true,
+    });
+
+    expect(mockRetenoSdk.setNotificationGroupingRule).toHaveBeenCalledWith({
+      groupId: 'messages',
+      showSummary: true,
+    });
+  });
+
+  it('omits showSummary when false', async () => {
+    setPlatform('android');
+    await Reteno.setNotificationGroupingRule({
+      groupId: 'messages',
+      showSummary: false,
+    });
+
+    expect(mockRetenoSdk.setNotificationGroupingRule).toHaveBeenCalledWith({
+      groupId: 'messages',
+    });
+  });
+
+  it('rejects a non-boolean showSummary value', async () => {
+    setPlatform('android');
+    await expect(
+      Reteno.setNotificationGroupingRule({
+        groupId: 'messages',
+        showSummary: 'yes',
+      } as unknown as Parameters<typeof Reteno.setNotificationGroupingRule>[0])
+    ).rejects.toThrow('Invalid argument: showSummary must be a boolean');
+  });
 });

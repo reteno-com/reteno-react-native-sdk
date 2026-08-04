@@ -1054,14 +1054,20 @@ export function setPushInAppMessagesPauseBehaviour(
  * Android only. Groups notifications by a push payload value or a constant ID.
  * The rule is persisted natively and restored before the app starts, so it is
  * also applied to notifications received while the app is not running.
+ *
+ * `showSummary` requires Android 6.0 (API 23) or higher. On older versions it is
+ * silently ignored - grouping still applies, but no summary notification is shown.
  */
 export type NotificationGroupingRule =
-  | { payloadKey: string; groupId?: never }
-  | { groupId: string; payloadKey?: never };
+  | { payloadKey: string; groupId?: never; showSummary?: boolean }
+  | { groupId: string; payloadKey?: never; showSummary?: boolean };
 
 /**
  * Android only. Groups notifications by a push payload value or a constant ID.
  * Pass `null` to disable grouping.
+ *
+ * `showSummary` requires Android 6.0 (API 23) or higher; on older versions the
+ * promise still resolves successfully, but no summary notification is created.
  */
 export function setNotificationGroupingRule(
   rule: NotificationGroupingRule | null
@@ -1093,9 +1099,19 @@ export function setNotificationGroupingRule(
     );
   }
 
-  return RetenoSdk.setNotificationGroupingRule(
-    payloadKey ? { payloadKey } : { groupId }
-  );
+  if (rule.showSummary !== undefined && typeof rule.showSummary !== 'boolean') {
+    return Promise.reject(
+      new Error('Invalid argument: showSummary must be a boolean')
+    );
+  }
+
+  const normalizedRule: Record<string, unknown> = payloadKey
+    ? { payloadKey }
+    : { groupId };
+  if (rule.showSummary === true) {
+    normalizedRule.showSummary = true;
+  }
+  return RetenoSdk.setNotificationGroupingRule(normalizedRule);
 }
 
 export const user = {
