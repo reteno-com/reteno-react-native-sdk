@@ -57,6 +57,14 @@ android {
     targetCompatibility JavaVersion.VERSION_1_8
   }
 
+  sourceSets {
+    main {
+      if (!isNewArchitectureEnabled()) {
+        java.srcDirs += ["src/oldarch/java"]
+      }
+    }
+  }
+
 }
 
 repositories {
@@ -81,7 +89,7 @@ dependencies {
 if (isNewArchitectureEnabled()) {
   react {
     jsRootDir = file("../src/")
-    libraryName = "RetenoSdk"
+    libraryName = "RetenoSdkSpec"
     codegenJavaPackageName = "com.retenosdk"
   }
 }

@@ -5,7 +5,7 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
-import {logEcomEventProductCategoryViewed} from 'reteno-react-native-sdk';
+import {ecommerce} from 'reteno-react-native-sdk';
 import styles from '../styles';
 import { InputRow } from '../../components/InputRow';
 import { Button } from '../../components/Button';
@@ -68,7 +68,7 @@ const ProductCategoryViewedScreen = () => {
           'Обовязкові поля з "Category ID" повинно бути цілим заповнені',
         );
       }
-      const res = await logEcomEventProductCategoryViewed({
+      const res = await ecommerce.productCategoryViewed({
         category: {
           productCategoryId: categoryId,
           attributes,

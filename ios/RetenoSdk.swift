@@ -109,13 +109,13 @@ open class RetenoSdk: RCTEventEmitter {
         return EventEmitter.sharedInstance.allEvents;
     }
 
-    @objc(initializeEventHandler:withRejecter:)
+    @objc(initializeEventHandler:reject:)
     func initializeEventHandler(resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
         EventEmitter.sharedInstance.setInitialized()
         resolve(true)
     }
 
-    @objc(initialize:withResolver:withRejecter:)
+    @objc(initialize:resolve:reject:)
     func initialize(payload: NSDictionary, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
         if RetenoSdk.sdkInitialized {
             resolve(true)
@@ -255,24 +255,24 @@ open class RetenoSdk: RCTEventEmitter {
         )
     }
 
-    @objc(setAutoOpenLinks:withResolver:withRejecter:)
+    @objc(setAutoOpenLinks:resolve:reject:)
     func setAutoOpenLinks(enabled: Bool, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
         RetenoSdk.autoOpenLinks = enabled
         resolve(true)
     }
 
-    @objc(getAutoOpenLinks:withRejecter:)
+    @objc(getAutoOpenLinks:reject:)
     func getAutoOpenLinks(resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
         resolve(RetenoSdk.autoOpenLinks)
     }
 
-    @objc(setDeviceToken:withResolver:withRejecter:)
+    @objc(setDeviceToken:resolve:reject:)
     func setDeviceToken(deviceToken: String, resolve:RCTPromiseResolveBlock,reject:RCTPromiseRejectBlock) -> Void {
         Reteno.userNotificationService.processRemoteNotificationsToken(deviceToken)
         resolve(true)
     }
     
-    @objc(setUserAttributes:withResolver:withRejecter:)
+    @objc(setUserAttributes:resolve:reject:)
     func setUserAttributes(payload: NSDictionary, resolve:RCTPromiseResolveBlock,reject:RCTPromiseRejectBlock) -> Void {
         let externalUserId = payload["externalUserId"] as? String;
 
@@ -293,7 +293,7 @@ open class RetenoSdk: RCTEventEmitter {
         }
     }
 
-    @objc(setMultiAccountUserAttributes:withResolver:withRejecter:)
+    @objc(setMultiAccountUserAttributes:resolve:reject:)
     func setMultiAccountUserAttributes(payload: NSDictionary, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
         let externalUserId = payload["externalUserId"] as? String
 
@@ -318,7 +318,7 @@ open class RetenoSdk: RCTEventEmitter {
         }
     }
     
-    @objc(getInitialNotification:withRejecter:)
+    @objc(getInitialNotification:reject:)
     func getInitialNotification(_ resolve:RCTPromiseResolveBlock,reject:RCTPromiseRejectBlock) -> Void {
         var initialNotif: Any? = nil;
         let remoteUserInfo = bridge.launchOptions?[UIApplication.LaunchOptionsKey.remoteNotification];
@@ -332,7 +332,7 @@ open class RetenoSdk: RCTEventEmitter {
         }
     }
     
-    @objc(logEvent:withResolver:withRejecter:)
+    @objc(logEvent:resolve:reject:)
     func logEvent(payload: NSDictionary, resolve:RCTPromiseResolveBlock,reject:RCTPromiseRejectBlock) -> Void {
         do {
             let requestPayload = try RetenoEvent.buildEventPayload(payload: payload);
@@ -349,6 +349,23 @@ open class RetenoSdk: RCTEventEmitter {
         } catch {
             reject("100", "Reteno iOS SDK Error", error);
         }
+    }
+
+    @objc(logScreenView:resolve:reject:)
+    func logScreenView(screenName: String, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) -> Void {
+        Reteno.logEvent(
+            eventTypeKey: "screenView",
+            date: Date(),
+            parameters: [Event.Parameter(name: "screenClass", value: screenName)],
+            forcePush: false
+        )
+        resolve(true)
+    }
+
+    @objc(forcePushData:reject:)
+    func forcePushData(resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) -> Void {
+        Reteno.logEvent(eventTypeKey: "", date: Date(), parameters: [], forcePush: true)
+        resolve(true)
     }
     
     @objc(registerForRemoteNotifications)
@@ -389,7 +406,7 @@ open class RetenoSdk: RCTEventEmitter {
         Reteno.userNotificationService.processRemoteNotificationsToken(token)
     }
     
-    @objc(setAnonymousUserAttributes:withResolver:withRejecter:)
+    @objc(setAnonymousUserAttributes:resolve:reject:)
     func setAnonymousUserAttributes(payload: NSDictionary, resolve:RCTPromiseResolveBlock,reject:RCTPromiseRejectBlock) -> Void {
         do {
             let anonymousUser = try RetenoUserAttributes.buildSetAnonymousUserAttributesPayload(payload: payload)
@@ -401,13 +418,13 @@ open class RetenoSdk: RCTEventEmitter {
         }
     }
     
-    @objc(pauseInAppMessages:withResolver:withRejecter:)
+    @objc(pauseInAppMessages:resolve:reject:)
     func pauseInAppMessages(isPaused: Bool, resolve:RCTPromiseResolveBlock,reject:RCTPromiseRejectBlock) -> Void {
         Reteno.pauseInAppMessages(isPaused: isPaused)
         resolve(true)
     }
 
-    @objc(setInAppMessagesPauseBehaviour:withResolver:withRejecter:)
+    @objc(setInAppMessagesPauseBehaviour:resolve:reject:)
     func setInAppMessagesPauseBehaviour(behaviour: String, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
         let normalized = behaviour.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
         switch normalized {
@@ -422,8 +439,8 @@ open class RetenoSdk: RCTEventEmitter {
         }
     }
     
-    @objc(setInAppLifecycleCallback)
-    func setInAppLifecycleCallback() {
+    @objc(setInAppLifecycleCallback:reject:)
+    func setInAppLifecycleCallback(resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
         Reteno.addInAppStatusHandler { inAppMessageStatus in
             switch inAppMessageStatus {
             case .inAppShouldBeDisplayed:
@@ -448,6 +465,37 @@ open class RetenoSdk: RCTEventEmitter {
                 EventEmitter.sharedInstance.dispatch(name: "reteno-on-in-app-error", body: ["errorMessage": error])
             }
         }
+        resolve(true)
+    }
+
+    @objc(removeInAppLifecycleCallback:reject:)
+    func removeInAppLifecycleCallback(resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
+        resolve(true)
+    }
+
+    @objc(updatePushPermissionStatusAndroid:reject:)
+    func updatePushPermissionStatusAndroid(resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
+        resolve(nil)
+    }
+
+    @objc(requestNotificationPermission:reject:)
+    func requestNotificationPermission(resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
+        reject("UnsupportedPlatform", "requestNotificationPermission() is not supported on iOS", nil)
+    }
+
+    @objc(getNotificationPermissionStatus:reject:)
+    func getNotificationPermissionStatus(resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
+        reject("UnsupportedPlatform", "getNotificationPermissionStatus() is not supported on iOS", nil)
+    }
+
+    @objc(pausePushInAppMessages:resolve:reject:)
+    func pausePushInAppMessages(isPaused: Bool, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
+        resolve(nil)
+    }
+
+    @objc(setPushInAppMessagesPauseBehaviour:resolve:reject:)
+    func setPushInAppMessagesPauseBehaviour(behaviour: String, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
+        resolve(nil)
     }
 
     private static func closeActionName(_ action: InAppMessageAction) -> String {
@@ -457,7 +505,7 @@ open class RetenoSdk: RCTEventEmitter {
         return "UNKNOWN"
     }
 
-    @objc(getRecommendations:withResolver:withRejecter:)
+    @objc(getRecommendations:resolve:reject:)
     func getRecommendations(payload: NSDictionary, resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) -> Void {
         guard let recomVariantId = payload["recomVariantId"] as? String,
               let productIds = payload["productIds"] as? [String],
@@ -500,7 +548,7 @@ open class RetenoSdk: RCTEventEmitter {
         }
     }
     
-    @objc(logRecommendationEvent:withResolver:withRejecter:)
+    @objc(logRecommendationEvent:resolve:reject:)
     func logRecommendationEvent(payload: NSDictionary, resolve:RCTPromiseResolveBlock, reject:RCTPromiseRejectBlock) -> Void {
         
         guard let recomVariantId = payload["recomVariantId"] as? String,
@@ -533,7 +581,7 @@ open class RetenoSdk: RCTEventEmitter {
         resolve(res)
     }
     
-    @objc(getAppInboxMessages:withResolver:withRejecter:)
+    @objc(getAppInboxMessages:resolve:reject:)
     func getAppInboxMessages(payload: NSDictionary, resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         let page = payload["page"] as? Int
         let pageSize = payload["pageSize"] as? Int
@@ -562,6 +610,7 @@ open class RetenoSdk: RCTEventEmitter {
                         "imageURL": message.imageURL?.absoluteString as Any,
                         "linkURL": message.linkURL?.absoluteString as Any,
                         "isNew": message.isNew,
+                        "category": message.category as Any,
                     ]
                 }
                 resolve(["messages": messages, "totalPages": response.totalPages as Any])
@@ -572,7 +621,7 @@ open class RetenoSdk: RCTEventEmitter {
         }
     }
     
-    @objc(onUnreadMessagesCountChanged:withRejecter:)
+    @objc(onUnreadMessagesCountChanged:reject:)
     func onUnreadMessagesCountChanged(resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         Reteno.inbox().onUnreadMessagesCountChanged = { count in
             EventEmitter.sharedInstance.dispatch(name: "reteno-unread-messages-count", body: ["count": count])
@@ -580,19 +629,19 @@ open class RetenoSdk: RCTEventEmitter {
         resolve(nil)
     }
 
-    @objc(unsubscribeMessagesCountChanged:withRejecter:)
+    @objc(unsubscribeMessagesCountChanged:reject:)
     func unsubscribeMessagesCountChanged(resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         Reteno.inbox().onUnreadMessagesCountChanged = nil
         resolve(nil)
     }
 
-    @objc(unsubscribeAllMessagesCountChanged:withRejecter:)
+    @objc(unsubscribeAllMessagesCountChanged:reject:)
     func unsubscribeAllMessagesCountChanged(resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         Reteno.inbox().onUnreadMessagesCountChanged = nil
         resolve(nil)
     }
     
-    @objc(markAsOpened:withResolver:withRejecter:)
+    @objc(markAsOpened:resolve:reject:)
         func markAsOpened(messageIds: [String], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
             Reteno.inbox().markAsOpened(messageIds: messageIds) { result in
                 switch result {
@@ -604,7 +653,7 @@ open class RetenoSdk: RCTEventEmitter {
             }
         }
     
-    @objc(markAllAsOpened:withRejecter:)
+    @objc(markAllAsOpened:reject:)
         func markAllAsOpened(resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
             Reteno.inbox().markAllAsOpened { result in
                 switch result {
@@ -616,7 +665,7 @@ open class RetenoSdk: RCTEventEmitter {
             }
         }
     
-    @objc(getAppInboxMessagesCount:withRejecter:)
+    @objc(getAppInboxMessagesCount:reject:)
 
         func getAppInboxMessagesCount(resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
             Reteno.inbox().getUnreadMessagesCount { result in
@@ -629,7 +678,8 @@ open class RetenoSdk: RCTEventEmitter {
             }
         }
 
-      @objc func logEcomEventProductViewed(_ payload: [String: Any], resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+      @objc(logEcomEventProductViewed:resolve:reject:)
+      func logEcomEventProductViewed(_ payload: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         guard let data = RetenoEcomEvent.buildProductDataFromPayload(payload) else {
             reject("Payload Error", "Payload cannot be null", nil)
             return
@@ -645,7 +695,8 @@ open class RetenoSdk: RCTEventEmitter {
         }
     }
     
-    @objc func logEcomEventProductCategoryViewed(_ payload: [String: Any], resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+    @objc(logEcomEventProductCategoryViewed:resolve:reject:)
+    func logEcomEventProductCategoryViewed(_ payload: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         guard let category = RetenoEcomEvent.buildProductCategoryDataFromPayload(payload) else {
             reject("Payload Error", "Payload cannot be null", nil)
             return
@@ -661,7 +712,8 @@ open class RetenoSdk: RCTEventEmitter {
         }
     }
     
-    @objc func logEcomEventProductAddedToWishlist(_ payload: [String: Any], resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+    @objc(logEcomEventProductAddedToWishlist:resolve:reject:)
+    func logEcomEventProductAddedToWishlist(_ payload: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         guard let data = RetenoEcomEvent.buildProductDataFromPayload(payload) else {
             reject("Payload Error", "Payload cannot be null", nil)
             return
@@ -677,7 +729,8 @@ open class RetenoSdk: RCTEventEmitter {
         }
     }
     
-    @objc func logEcomEventCartUpdated(_ payload: [String: Any], resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+    @objc(logEcomEventCartUpdated:resolve:reject:)
+    func logEcomEventCartUpdated(_ payload: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         guard let data = RetenoEcomEvent.buildCartUpdatedDataFromPayload(payload) else {
             reject("Payload Error", "Payload cannot be null", nil)
             return
@@ -698,7 +751,8 @@ open class RetenoSdk: RCTEventEmitter {
     }
     
     
-    @objc func logEcomEventOrderCreated(_ payload: [String: Any], resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+    @objc(logEcomEventOrderCreated:resolve:reject:)
+    func logEcomEventOrderCreated(_ payload: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         guard let data = RetenoEcomEvent.buildOrderDataFromPayload(payload) else {
             reject("Payload Error", "Payload cannot be null", nil)
             return
@@ -715,7 +769,8 @@ open class RetenoSdk: RCTEventEmitter {
         }
     }
     
-    @objc func logEcomEventOrderUpdated(_ payload: [String: Any], resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+    @objc(logEcomEventOrderUpdated:resolve:reject:)
+    func logEcomEventOrderUpdated(_ payload: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         guard let data = RetenoEcomEvent.buildOrderDataFromPayload(payload) else {
             reject("Payload Error", "Payload cannot be null", nil)
             return
@@ -731,7 +786,8 @@ open class RetenoSdk: RCTEventEmitter {
         }
     }
     
-    @objc func logEcomEventOrderDelivered(_ payload: [String: Any], resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+    @objc(logEcomEventOrderDelivered:resolve:reject:)
+    func logEcomEventOrderDelivered(_ payload: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         guard let externalOrderId = RetenoEcomEvent.buildOrderExternalIdFromPayload(payload) else {
             reject("Payload Error", "Payload cannot be null", nil)
             return
@@ -745,7 +801,8 @@ open class RetenoSdk: RCTEventEmitter {
         }
     }
     
-    @objc func logEcomEventOrderCancelled(_ payload: [String: Any], resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+    @objc(logEcomEventOrderCancelled:resolve:reject:)
+    func logEcomEventOrderCancelled(_ payload: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         guard let externalOrderId = RetenoEcomEvent.buildOrderExternalIdFromPayload(payload) else {
             reject("Payload Error", "Payload cannot be null", nil)
             return
@@ -761,7 +818,8 @@ open class RetenoSdk: RCTEventEmitter {
         }
     }
     
-    @objc func logEcomEventSearchRequest(_ payload: [String: Any], resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+    @objc(logEcomEventSearchRequest:resolve:reject:)
+    func logEcomEventSearchRequest(_ payload: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         guard let data = RetenoEcomEvent.buildSearchRequestDataFromPayload(payload) else {
             reject("Payload Error", "Payload cannot be null", nil)
             return

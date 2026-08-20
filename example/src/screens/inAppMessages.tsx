@@ -1,16 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { SafeAreaView, ScrollView, Alert, Platform, Text, View } from 'react-native';
 import {
-  pauseInAppMessages,
-  setInAppMessagesPauseBehaviour,
-  setInAppLifecycleCallback,
-  removeInAppLifecycleCallback,
-  beforeInAppDisplayHandler,
-  onInAppDisplayHandler,
-  beforeInAppCloseHandler,
-  afterInAppCloseHandler,
-  onInAppErrorHandler,
-  addInAppMessageCustomDataHandler,
+  inApp,
 } from 'reteno-react-native-sdk';
 import type { InAppPauseBehaviour } from 'reteno-react-native-sdk';
 import { Button } from '../components/Button';
@@ -41,24 +32,24 @@ export default function InAppMessagesScreen() {
   );
 
   useEffect(() => {
-    setInAppLifecycleCallback();
+    inApp.setLifecycleCallback();
 
-    const beforeInAppDisplayListener = beforeInAppDisplayHandler(data =>
+    const beforeInAppDisplayListener = inApp.beforeDisplay(data =>
       addSubscriptionEvent('beforeInAppDisplayHandler', data),
     );
-    const onInAppDisplayListener = onInAppDisplayHandler(data =>
+    const onInAppDisplayListener = inApp.onDisplay(data =>
       addSubscriptionEvent('onInAppDisplayHandler', data),
     );
-    const beforeInAppCloseListener = beforeInAppCloseHandler(data =>
+    const beforeInAppCloseListener = inApp.beforeClose(data =>
       addSubscriptionEvent('beforeInAppCloseHandler', data),
     );
-    const afterInAppCloseListener = afterInAppCloseHandler(data =>
+    const afterInAppCloseListener = inApp.afterClose(data =>
       addSubscriptionEvent('afterInAppCloseHandler', data),
     );
-    const onInAppErrorListener = onInAppErrorHandler(data =>
+    const onInAppErrorListener = inApp.onError(data =>
       addSubscriptionEvent('onInAppErrorHandler', data, 'error'),
     );
-    const addInAppMessageCustomDataListener = addInAppMessageCustomDataHandler(data =>
+    const addInAppMessageCustomDataListener = inApp.onCustomData(data =>
       addSubscriptionEvent('addInAppMessageCustomDataHandler', data),
     );
 
@@ -69,12 +60,12 @@ export default function InAppMessagesScreen() {
       afterInAppCloseListener.remove();
       onInAppErrorListener.remove();
       addInAppMessageCustomDataListener.remove();
-      removeInAppLifecycleCallback();
+      inApp.removeLifecycleCallback();
     };
   }, [addSubscriptionEvent]);
 
   const handleInAppMessagesStatus = (isPaused: boolean) => {
-    pauseInAppMessages(isPaused)
+    inApp.pauseMessages(isPaused)
       .then(() => {
         if (isPaused) {
           setStatusInfo('In-app messages paused');
@@ -86,7 +77,7 @@ export default function InAppMessagesScreen() {
   };
 
   const handleSetPauseBehaviour = (behaviour: InAppPauseBehaviour) => {
-    setInAppMessagesPauseBehaviour(behaviour)
+    inApp.setPauseBehaviour(behaviour)
       .then(() => setStatusInfo(`Pause behaviour set to: ${behaviour}`))
       .catch(error => Alert.alert('Error', String(error)));
   };
@@ -124,9 +115,9 @@ export default function InAppMessagesScreen() {
           onPress={() => handleSetPauseBehaviour('POSTPONE_IN_APPS')}
           label="Pause behaviour: Postpone"
         />
-        <Button onPress={setInAppLifecycleCallback} label="Subscribe to lifecycle events" />
+        <Button onPress={inApp.setLifecycleCallback} label="Subscribe to lifecycle events" />
         {Platform.OS === 'android' && (
-          <Button onPress={removeInAppLifecycleCallback} label="Unsubscribe from lifecycle events" />
+          <Button onPress={inApp.removeLifecycleCallback} label="Unsubscribe from lifecycle events" />
         )}
       </ScrollView>
     </SafeAreaView>

@@ -7,7 +7,7 @@ import {
   Alert,
   Switch,
 } from 'react-native';
-import {logEcomEventSearchRequest} from 'reteno-react-native-sdk';
+import {ecommerce} from 'reteno-react-native-sdk';
 import styles from '../styles';
 import { InputRow } from '../../components/InputRow';
 import { Button } from '../../components/Button';
@@ -28,7 +28,7 @@ const SearchRequestEventScreen = () => {
   const handleEcomEvent = async () => {
     const {searchQuery, isFound} = form;
     try {
-      const res = await logEcomEventSearchRequest({
+      const res = await ecommerce.searchRequest({
         searchQuery,
         isFound,
       });

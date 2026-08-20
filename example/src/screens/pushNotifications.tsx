@@ -2,22 +2,13 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { SafeAreaView, ScrollView, Alert, Platform, Text, View } from 'react-native';
 import {
   forcePushData,
-  setOnRetenoPushReceivedListener,
-  setOnRetenoPushClickedListener,
-  setOnRetenoPushButtonClickedListener,
-  setOnRetenoPushDismissedListener,
-  setOnRetenoCustomPushDataListener,
-  getInitialNotification,
-  setAutoOpenLinks,
-  getAutoOpenLinks,
-  requestNotificationPermission,
-  getNotificationPermissionStatus,
-  pausePushInAppMessages,
-  setPushInAppMessagesPauseBehaviour,
-  registerForRemoteNotifications,
-  setNotificationGroupingRule,
+  inApp,
+  push,
 } from 'reteno-react-native-sdk';
-import type { InAppPauseBehaviour, NotificationGroupingRule } from 'reteno-react-native-sdk';
+import type {
+  InAppPauseBehaviour,
+  NotificationGroupingRule,
+} from 'reteno-react-native-sdk';
 import { Button } from '../components/Button';
 import styles from './styles';
 
@@ -61,21 +52,21 @@ export default function PushNotificationsScreen() {
   );
 
   useEffect(() => {
-    getAutoOpenLinks().then(setAutoOpenLinksEnabled);
+    inApp.getAutoOpenLinks().then(setAutoOpenLinksEnabled);
   }, []);
 
   useEffect(() => {
-    getInitialNotification().then(data => {
+    push.getInitialNotification().then(data => {
       addSubscriptionEvent('getInitialNotification', data);
     });
 
-    const pushListener = setOnRetenoPushReceivedListener(onRetenoPushReceived);
-    const pushClickListener = setOnRetenoPushClickedListener(onRetenoPushClicked);
-    const pushButtonClickListener = setOnRetenoPushButtonClickedListener(onRetenoPushButtonClicked);
-    const pushDismissedListener = setOnRetenoPushDismissedListener(event =>
+    const pushListener = push.setOnReceivedListener(onRetenoPushReceived);
+    const pushClickListener = push.setOnClickedListener(onRetenoPushClicked);
+    const pushButtonClickListener = push.setOnButtonClickedListener(onRetenoPushButtonClicked);
+    const pushDismissedListener = push.setOnDismissedListener(event =>
       addSubscriptionEvent('onRetenoPushDismissed', event),
     );
-    const customPushListener = setOnRetenoCustomPushDataListener(event =>
+    const customPushListener = push.setOnCustomDataListener(event =>
       addSubscriptionEvent('onRetenoCustomPushData', event),
     );
     return () => {
@@ -89,7 +80,7 @@ export default function PushNotificationsScreen() {
 
   const handleToggleAutoOpenLinks = () => {
     const newValue = !autoOpenLinksEnabled;
-    setAutoOpenLinks(newValue)
+    inApp.setAutoOpenLinks(newValue)
       .then(() => {
         setAutoOpenLinksEnabled(newValue);
         Alert.alert('Success', `Auto open links: ${newValue ? 'enabled' : 'disabled'}`);
@@ -98,31 +89,31 @@ export default function PushNotificationsScreen() {
   };
 
   const handleRequestNotificationPermission = () => {
-    requestNotificationPermission()
+    push.requestNotificationPermission()
       .then(granted => Alert.alert('Notification Permission', granted ? 'Granted' : 'Denied'))
       .catch(error => Alert.alert('Error', String(error)));
   };
 
   const handleGetNotificationPermissionStatus = () => {
-    getNotificationPermissionStatus()
+    push.getNotificationPermissionStatus()
       .then(status => Alert.alert('Notification Permission Status', status))
       .catch(error => Alert.alert('Error', String(error)));
   };
 
   const handlePausePushInAppMessages = (isPaused: boolean) => {
-    pausePushInAppMessages(isPaused)
+    push.pauseTriggeredInAppMessages(isPaused)
       .then(() => Alert.alert('Success', `Push InApp pause state: ${isPaused}`))
       .catch(error => Alert.alert('Error', String(error)));
   };
 
   const handleSetPushInAppMessagesPauseBehaviour = (behaviour: InAppPauseBehaviour) => {
-    setPushInAppMessagesPauseBehaviour(behaviour)
+    push.setTriggeredInAppMessagesPauseBehaviour(behaviour)
       .then(() => Alert.alert('Success', `Push InApp pause behaviour: ${behaviour}`))
       .catch(error => Alert.alert('Error', String(error)));
   };
 
   const handleSetNotificationGroupingRule = (rule: NotificationGroupingRule | null) => {
-    setNotificationGroupingRule(rule)
+    push.setGroupingRule(rule)
       .then(() => Alert.alert('Success', `Notification grouping rule: ${rule ? JSON.stringify(rule) : 'disabled'}`))
       .catch(error => Alert.alert('Error', String(error)));
   };
@@ -195,7 +186,7 @@ export default function PushNotificationsScreen() {
           <Button onPress={() => handleSetNotificationGroupingRule(null)} label="Disable notification grouping" />
         )}
         {Platform.OS === 'ios' && (
-          <Button onPress={registerForRemoteNotifications} label="Register for Remote Notifications" />
+          <Button onPress={push.registerForRemoteNotifications} label="Register for Remote Notifications" />
         )}
       </ScrollView>
     </SafeAreaView>

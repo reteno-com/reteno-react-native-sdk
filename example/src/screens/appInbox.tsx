@@ -1,15 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { SafeAreaView, ScrollView, Alert, Text, View } from 'react-native';
 import {
-  getAppInboxMessages,
-  getAppInboxMessagesCount,
-  markAsOpened,
-  markAllAsOpened,
-  onUnreadMessagesCountChanged,
-  unreadMessagesCountHandler,
-  unreadMessagesCountErrorHandler,
-  unsubscribeMessagesCountChanged,
-  unsubscribeAllMessagesCountChanged,
+  inbox,
 } from 'reteno-react-native-sdk';
 import { Button } from '../components/Button';
 import styles from './styles';
@@ -39,10 +31,10 @@ export default function AppInboxScreen() {
   );
 
   useEffect(() => {
-    const unreadCountListener = unreadMessagesCountHandler(data => {
+    const unreadCountListener = inbox.onUnreadCountChanged(data => {
       addSubscriptionEvent('unreadMessagesCountHandler', data);
 
-      getAppInboxMessages({}).then(response => {
+      inbox.getMessages({}).then(response => {
         const newMessagesIds: string[] = response?.messages
           ?.filter(el => el?.isNew)
           ?.sort(
@@ -60,7 +52,7 @@ export default function AppInboxScreen() {
   }, [addSubscriptionEvent]);
 
   useEffect(() => {
-    const unreadCountErrorListener = unreadMessagesCountErrorHandler(error =>
+    const unreadCountErrorListener = inbox.onUnreadCountError(error =>
       addSubscriptionEvent('unreadMessagesCountErrorHandler', error, 'error'),
     );
 
@@ -72,7 +64,7 @@ export default function AppInboxScreen() {
   }, [addSubscriptionEvent]);
 
   const handleGetMessagesCount = () => {
-    getAppInboxMessagesCount()
+    inbox.getMessagesCount()
       .then(response =>
         Alert.alert('Success', response !== null ? JSON.stringify(response) : String(response)),
       )
@@ -80,7 +72,7 @@ export default function AppInboxScreen() {
   };
 
   const handleDownloadMessages = () => {
-    getAppInboxMessages({})
+    inbox.getMessages({})
       .then(response =>
         Alert.alert('Success', response ? JSON.stringify(response) : String(response)),
       )
@@ -88,7 +80,7 @@ export default function AppInboxScreen() {
   };
 
   const handleMarkAsOpened = () => {
-    markAsOpened([messagesId])
+    inbox.markAsOpened([messagesId])
       .then(response =>
         Alert.alert('Success mark as opened', response ? JSON.stringify(response) : String(response)),
       )
@@ -96,7 +88,7 @@ export default function AppInboxScreen() {
   };
 
   const handleMarkAllAsOpened = () => {
-    markAllAsOpened()
+    inbox.markAllAsOpened()
       .then(response =>
         Alert.alert('Success mark all as opened', response ? JSON.stringify(response) : String(response)),
       )
@@ -126,9 +118,9 @@ export default function AppInboxScreen() {
         <Button onPress={handleDownloadMessages} label="Download messages" />
         <Button onPress={handleMarkAsOpened} label="Mark as opened" />
         <Button onPress={handleMarkAllAsOpened} label="Mark all as opened" />
-        <Button onPress={onUnreadMessagesCountChanged} label="Subscribe on unread messages count" />
-        <Button onPress={unsubscribeMessagesCountChanged} label="Unsubscribe from unread messages count" />
-        <Button onPress={unsubscribeAllMessagesCountChanged} label="Unsubscribe from all unread messages count" />
+        <Button onPress={inbox.subscribeUnreadCount} label="Subscribe on unread messages count" />
+        <Button onPress={inbox.unsubscribeUnreadCount} label="Unsubscribe from unread messages count" />
+        <Button onPress={inbox.unsubscribeAllUnreadCount} label="Unsubscribe from all unread messages count" />
       </ScrollView>
     </SafeAreaView>
   );

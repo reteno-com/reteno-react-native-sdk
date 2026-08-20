@@ -7,7 +7,7 @@ import {
   Alert,
   KeyboardType,
 } from 'react-native';
-import {logEcomEventCartUpdated} from 'reteno-react-native-sdk';
+import {ecommerce} from 'reteno-react-native-sdk';
 import styles from '../styles';
 import { InputRow } from '../../components/InputRow';
 import { cartItemFields } from '../../utils/data';
@@ -106,7 +106,7 @@ const CartUpdateScreen = () => {
         category: item.category || null,
       }));
 
-      const res = await logEcomEventCartUpdated({
+      const res = await ecommerce.cartUpdated({
         cartItems: cartItemsFormatted,
         cartId,
         currencyCode: currencyCode || null,

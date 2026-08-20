@@ -26,7 +26,7 @@
 		134814201AA4EA6300B7C361 /* libRetenoSdk.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libRetenoSdk.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		1705822A2951B4DF00B65623 /* EventEmitter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventEmitter.swift; sourceTree = "<group>"; };
 		17C9E39A2949EE030021AF59 /* RetenoUserAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetenoUserAttributes.swift; sourceTree = "<group>"; };
-		B3E7B5891CC2AC0600A0062D /* RetenoSdk.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RetenoSdk.m; sourceTree = "<group>"; };
+		B3E7B5891CC2AC0600A0062D /* RetenoSdk.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = RetenoSdk.mm; sourceTree = "<group>"; };
 		F4FF95D5245B92E700C19C63 /* RetenoSdk-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "RetenoSdk-Bridging-Header.h"; sourceTree = "<group>"; };
 		F4FF95D6245B92E800C19C63 /* RetenoSdk.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetenoSdk.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -56,7 +56,7 @@
 				1705822A2951B4DF00B65623 /* EventEmitter.swift */,
 				17C9E39A2949EE030021AF59 /* RetenoUserAttributes.swift */,
 				F4FF95D6245B92E800C19C63 /* RetenoSdk.swift */,
-				B3E7B5891CC2AC0600A0062D /* RetenoSdk.m */,
+				B3E7B5891CC2AC0600A0062D /* RetenoSdk.mm */,
 				F4FF95D5245B92E700C19C63 /* RetenoSdk-Bridging-Header.h */,
 				134814211AA4EA7D00B7C361 /* Products */,
 			);

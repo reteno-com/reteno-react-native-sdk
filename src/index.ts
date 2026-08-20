@@ -1,9 +1,10 @@
 import {
-  DeviceEventEmitter,
+  EmitterSubscription,
   NativeEventEmitter,
   NativeModules,
   Platform,
 } from 'react-native';
+import NativeRetenoSdk from './NativeRetenoSdk';
 
 const LINKING_ERROR =
   `The package 'reteno-react-native-sdk' doesn't seem to be linked. Make sure: \n\n` +
@@ -54,9 +55,9 @@ export type AnonymousUserAttributes = Pick<
 
 export type User = {
   userAttributes?: UserAttributes | null;
-  subscriptionKeys?: String[] | null;
-  groupNamesInclude?: String[] | null;
-  groupNamesExclude?: String[] | null;
+  subscriptionKeys?: string[] | null;
+  groupNamesInclude?: string[] | null;
+  groupNamesExclude?: string[] | null;
 };
 
 export type SetUserAttributesPayload = {
@@ -64,10 +65,7 @@ export type SetUserAttributesPayload = {
   user: User;
 };
 
-export type SetMultiAccountUserAttributesPayload = {
-  externalUserId: string;
-  user: User;
-};
+export type SetMultiAccountUserAttributesPayload = SetUserAttributesPayload;
 
 export type CustomEventParameter = {
   name: string;
@@ -145,29 +143,30 @@ export type NotificationPermissionStatus =
   | 'DENIED'
   | 'PERMANENTLY_DENIED';
 
-/**
- * Android notification grouping rule. The rule is stored natively and restored
- * before React Native starts, so it is also applied to background notifications.
- *
- * `showSummary` requires Android 6.0 (API 23) or higher. On older versions it is
- * silently ignored - grouping still applies, but no summary notification is shown.
- */
-export type NotificationGroupingRule =
-  | { payloadKey: string; groupId?: never; showSummary?: boolean }
-  | { groupId: string; payloadKey?: never; showSummary?: boolean };
-
 export type InAppCustomData = {
-  customData?: Record<string, any>;
+  customData?: Record<string, unknown>;
   inapp_id?: string;
   inapp_source?: 'DISPLAY_RULES' | 'PUSH_NOTIFICATION';
   url?: string;
+};
+
+/** Alias for {@link InAppCustomData}, named to match the other typed event payloads. */
+export type RetenoInAppCustomDataEvent = InAppCustomData;
+
+export type RecomFilter = {
+  name: string;
+  values: string[];
 };
 
 export type RecommendationsPayload = {
   recomVariantId: string;
   productIds: string[];
   categoryId: string;
-  filters?: { [key: string]: any }[];
+  /**
+   * Android currently ignores this field (the bridge never reads it from the payload,
+   * see `RetenoSdkModule.getRecommendations`) — only iOS applies filters today.
+   */
+  filters?: RecomFilter[];
   fields: string[];
 };
 
@@ -186,13 +185,19 @@ export type RecommendationEventPayload = {
 export type InboxMessage = {
   id: string;
   title: string;
-  createdDate: string;
+  /**
+   * Format differs by platform (pre-existing, not introduced here): Android sends the raw
+   * date string from the API as-is; iOS sends a Unix timestamp in seconds
+   * (`Date.timeIntervalSince1970`) as a number. Normalizing this to one shape across
+   * platforms is a bridge change, tracked separately — not done as part of this typing pass.
+   */
+  createdDate: string | number;
   imageURL?: string;
   linkURL?: string;
   isNew: boolean;
   content?: string;
-  // Only on Android
   category?: string;
+  // Only on Android — the iOS native SDK has no equivalent concept.
   status?: AppInboxStatus;
 };
 
@@ -206,15 +211,51 @@ export type UnreadMessagesCountErrorData = {
   error?: string | null;
 };
 
-export type PushButton = {
-  actionId: string;
-  customData: string | null;
-  actionLink: string | null;
-  userInfo: any;
+/**
+ * Raw native push payload, forwarded as-is from FCM/APNs. The `es_*` keys below are set by
+ * Reteno on every Reteno-originated push and are confirmed present on both native SDKs
+ * (iOS: `RetenoUserNotification.swift`; Android: `RetenoSdkPush/Constants.kt`). Everything
+ * else is app- or campaign-specific and intentionally left open via the index signature —
+ * do not assume a fixed shape beyond these.
+ */
+export type RetenoPushPayload = {
+  /** Correlates this push back to a Reteno interaction (opens/clicks reporting). */
+  es_interaction_id?: string;
+  /** Wrapped/tracked deep link. */
+  es_link?: string;
+  /** Original, unwrapped deep link. */
+  es_link_raw?: string;
+  /** Main notification image URL. */
+  es_notification_image?: string;
+  /** JSON-encoded carousel image URLs. */
+  es_notification_images?: string;
+  /** JSON-encoded action buttons definition. */
+  es_buttons?: string;
+  /** Present when this push also carries a push-triggered in-app message. */
+  es_inapp?: string;
+  [key: string]: unknown;
 };
 
-const RetenoSdk = NativeModules.RetenoSdk
-  ? NativeModules.RetenoSdk
+export type RetenoPushReceivedEvent = RetenoPushPayload;
+export type RetenoPushClickedEvent = RetenoPushPayload;
+export type RetenoPushDismissedEvent = RetenoPushPayload;
+export type RetenoCustomPushDataEvent = RetenoPushPayload;
+export type RetenoInitialNotification = RetenoPushPayload;
+
+export type PushButton = {
+  actionId: string;
+  /** Raw string as forwarded by the native SDK (commonly JSON-encoded) — not parsed here. */
+  customData: string | null;
+  actionLink: string | null;
+  userInfo: RetenoPushPayload;
+};
+
+export type RetenoPushButtonClickedEvent = PushButton;
+
+const nativeRetenoSdk = NativeRetenoSdk ?? NativeModules.RetenoSdk;
+
+const RetenoSdk = nativeRetenoSdk
+  ? nativeRetenoSdk
   : new Proxy(
       {},
       {
@@ -223,6 +264,88 @@ const RetenoSdk = NativeModules.RetenoSdk
         },
       }
     );
+
+export type RetenoEventPayloadMap = {
+  pushReceived: RetenoPushReceivedEvent;
+  pushClicked: RetenoPushClickedEvent;
+  pushButtonClicked: RetenoPushButtonClickedEvent;
+  pushDismissed: RetenoPushDismissedEvent;
+  customPushData: RetenoCustomPushDataEvent;
+  beforeInAppDisplay: InAppDisplayData;
+  inAppDisplay: InAppDisplayData;
+  beforeInAppClose: InAppCloseData;
+  afterInAppClose: InAppCloseData;
+  inAppError: InAppErrorData;
+  inAppCustomData: RetenoInAppCustomDataEvent;
+  unreadMessagesCountChanged: UnreadMessagesCountData;
+  unreadMessagesCountError: UnreadMessagesCountErrorData;
+};
+
+export type RetenoEventType = keyof RetenoEventPayloadMap;
+
+export type RetenoEventListener<T extends RetenoEventType> = (
+  event: RetenoEventPayloadMap[T]
+) => void;
+
+export type RetenoSubscription = {
+  remove(): void;
+};
+
+const RETENO_NATIVE_EVENTS: Record<RetenoEventType, string> = {
+  pushReceived: 'reteno-push-received',
+  pushClicked: 'reteno-push-clicked',
+  pushButtonClicked: 'reteno-push-button-clicked',
+  pushDismissed: 'reteno-push-dismissed',
+  customPushData: 'reteno-custom-push-received',
+  beforeInAppDisplay: 'reteno-before-in-app-display',
+  inAppDisplay: 'reteno-on-in-app-display',
+  beforeInAppClose: 'reteno-before-in-app-close',
+  afterInAppClose: 'reteno-after-in-app-close',
+  inAppError: 'reteno-on-in-app-error',
+  inAppCustomData: 'reteno-in-app-custom-data-received',
+  unreadMessagesCountChanged: 'reteno-unread-messages-count',
+  unreadMessagesCountError: 'reteno-unread-messages-count-error',
+};
+
+const PLATFORM_EVENT_SUPPORT: Partial<
+  Record<RetenoEventType, 'ios' | 'android'>
+> = {
+  pushButtonClicked: 'ios',
+  pushDismissed: 'android',
+  customPushData: 'android',
+  unreadMessagesCountError: 'android',
+};
+
+const eventEmitter = new NativeEventEmitter(RetenoSdk);
+
+const eventSubscriptions = new Map<
+  RetenoEventType,
+  Map<RetenoEventListener<RetenoEventType>, RetenoSubscription>
+>();
+
+const noopSubscription: RetenoSubscription = {
+  remove: () => undefined,
+};
+
+function warnUnsupportedEvent(
+  eventName: RetenoEventType,
+  supportedPlatform: string
+) {
+  const isDev =
+    typeof globalThis !== 'undefined' &&
+    Boolean((globalThis as { __DEV__?: boolean }).__DEV__);
+
+  if (isDev) {
+    console.warn(
+      `Reteno event "${eventName}" is only supported on ${supportedPlatform}. Returning a no-op subscription.`
+    );
+  }
+}
+
+function isEventSupportedOnCurrentPlatform(eventName: RetenoEventType) {
+  const supportedPlatform = PLATFORM_EVENT_SUPPORT[eventName];
+  return !supportedPlatform || Platform.OS === supportedPlatform;
+}
 
 export function initialize(
   input: string | InitializeOptions
@@ -257,19 +380,34 @@ export function setUserAttributes(
     !payload.externalUserId ||
     (payload.externalUserId && payload.externalUserId.length === 0)
   ) {
-    throw new Error('Missing argument: "externalUserId"');
+    return Promise.reject(new Error('Missing argument: "externalUserId"'));
   }
   return RetenoSdk.setUserAttributes(payload);
 }
 
-export function getInitialNotification(): Promise<any> {
+export function getInitialNotification(): Promise<RetenoInitialNotification | null> {
   return RetenoSdk.getInitialNotification();
 }
 
-export function getRecommendations(
+/**
+ * Recommendation item shape depends on the `fields` requested in `payload.fields`,
+ * so it's intentionally left open rather than a fixed structure.
+ */
+export type RetenoRecommendationItem = {
+  [key: string]: unknown;
+};
+
+export function getRecommendations<T extends object = RetenoRecommendationItem>(
   payload: RecommendationsPayload
-): Promise<any> {
-  return RetenoSdk.getRecommendations(payload);
+): Promise<T[]> {
+  // The iOS bridge reads `filters` via a single `guard let` chain alongside the required
+  // fields, so an absent key fails that guard and rejects the whole call with "Invalid
+  // payload" — even though `filters` is optional in this API. Always send an array so the
+  // optional JS type matches what the native side actually requires.
+  return RetenoSdk.getRecommendations({
+    ...payload,
+    filters: payload.filters ?? [],
+  });
 }
 
 export function logRecommendationEvent(
@@ -278,10 +416,56 @@ export function logRecommendationEvent(
   return RetenoSdk.logRecommendationEvent(payload);
 }
 
-const eventEmitter =
-  Platform.OS === 'android'
-    ? DeviceEventEmitter
-    : new NativeEventEmitter(RetenoSdk);
+export function addEventListener<T extends RetenoEventType>(
+  eventName: T,
+  listener: RetenoEventListener<T>
+): RetenoSubscription {
+  const supportedPlatform = PLATFORM_EVENT_SUPPORT[eventName];
+  if (!isEventSupportedOnCurrentPlatform(eventName)) {
+    warnUnsupportedEvent(eventName, supportedPlatform ?? 'this platform');
+    return noopSubscription;
+  }
+
+  const eventListeners =
+    eventSubscriptions.get(eventName) ??
+    new Map<RetenoEventListener<RetenoEventType>, RetenoSubscription>();
+  eventSubscriptions.set(eventName, eventListeners);
+
+  const registeredListener = listener as RetenoEventListener<RetenoEventType>;
+  const existingSubscription = eventListeners.get(registeredListener);
+  if (existingSubscription) {
+    return existingSubscription;
+  }
+
+  const nativeSubscription: EmitterSubscription = eventEmitter.addListener(
+    RETENO_NATIVE_EVENTS[eventName],
+    (event) => listener(event as RetenoEventPayloadMap[T])
+  );
+
+  const subscription: RetenoSubscription = {
+    remove: () => {
+      nativeSubscription.remove();
+      eventListeners.delete(registeredListener);
+      if (eventListeners.size === 0) {
+        eventSubscriptions.delete(eventName);
+      }
+    },
+  };
+
+  eventListeners.set(registeredListener, subscription);
+  return subscription;
+}
+
+export function removeEventListener<T extends RetenoEventType>(
+  eventName: T,
+  listener: RetenoEventListener<T>
+): void {
+  const registeredListener = listener as RetenoEventListener<RetenoEventType>;
+  const subscription = eventSubscriptions
+    .get(eventName)
+    ?.get(registeredListener);
+  subscription?.remove();
+}
 
 /**
  * Initialize event handler. Call this after setting up all event listeners.
@@ -343,30 +527,28 @@ export function getAutoOpenLinks(): Promise<boolean> {
 }
 
 export function setOnRetenoPushReceivedListener(
-  listener: (event: any) => void
+  listener: (event: RetenoPushReceivedEvent) => void
 ) {
-  return eventEmitter.addListener('reteno-push-received', listener);
+  return addEventListener('pushReceived', listener);
 }
 
-export function setOnRetenoPushClickedListener(listener: (event: any) => void) {
-  return eventEmitter.addListener('reteno-push-clicked', listener);
+export function setOnRetenoPushClickedListener(
+  listener: (event: RetenoPushClickedEvent) => void
+) {
+  return addEventListener('pushClicked', listener);
 }
 
 /**
  * iOS Only
  */
 export function setOnRetenoPushButtonClickedListener(
-  listener: (event: PushButton) => void
+  listener: (event: RetenoPushButtonClickedEvent) => void
 ) {
-  if (Platform.OS === 'ios') {
-    return eventEmitter.addListener('reteno-push-button-clicked', listener);
-  }
-
-  return undefined;
+  return addEventListener('pushButtonClicked', listener);
 }
 
 export function setInAppLifecycleCallback() {
-  RetenoSdk.setInAppLifecycleCallback();
+  return RetenoSdk.setInAppLifecycleCallback();
 }
 
 /**
@@ -374,69 +556,43 @@ export function setInAppLifecycleCallback() {
  */
 export function removeInAppLifecycleCallback() {
   if (Platform.OS === 'android') {
-    RetenoSdk.removeInAppLifecycleCallback();
+    return RetenoSdk.removeInAppLifecycleCallback();
   }
+  return Promise.resolve(undefined);
 }
 
 export function beforeInAppDisplayHandler(
   callback: (data: InAppDisplayData) => void
 ) {
-  return eventEmitter.addListener('reteno-before-in-app-display', (data) => {
-    if (callback && typeof callback === 'function') {
-      callback(data);
-    }
-  });
+  return addEventListener('beforeInAppDisplay', callback);
 }
 
 export function onInAppDisplayHandler(
   callback: (data: InAppDisplayData) => void
 ) {
-  return eventEmitter.addListener('reteno-on-in-app-display', (data) => {
-    if (callback && typeof callback === 'function') {
-      callback(data);
-    }
-  });
+  return addEventListener('inAppDisplay', callback);
 }
 
 export function beforeInAppCloseHandler(
   callback: (data: InAppCloseData) => void
 ) {
-  return eventEmitter.addListener('reteno-before-in-app-close', (data) => {
-    if (callback && typeof callback === 'function') {
-      callback(data);
-    }
-  });
+  return addEventListener('beforeInAppClose', callback);
 }
 
 export function afterInAppCloseHandler(
   callback: (data: InAppCloseData) => void
 ) {
-  return eventEmitter.addListener('reteno-after-in-app-close', (data) => {
-    if (callback && typeof callback === 'function') {
-      callback(data);
-    }
-  });
+  return addEventListener('afterInAppClose', callback);
 }
 
 export function onInAppErrorHandler(callback: (data: InAppErrorData) => void) {
-  return eventEmitter.addListener('reteno-on-in-app-error', (data) => {
-    if (callback && typeof callback === 'function') {
-      callback(data);
-    }
-  });
+  return addEventListener('inAppError', callback);
 }
 
 export function addInAppMessageCustomDataHandler(
-  callback: (data: InAppCustomData) => void
+  callback: (data: RetenoInAppCustomDataEvent) => void
 ) {
-  return eventEmitter.addListener(
-    'reteno-in-app-custom-data-received',
-    (data) => {
-      if (callback && typeof callback === 'function') {
-        callback(data);
-      }
-    }
-  );
+  return addEventListener('inAppCustomData', callback);
 }
 
 /**
@@ -504,7 +660,7 @@ export function setMultiAccountUserAttributes(
   payload: SetMultiAccountUserAttributesPayload
 ): Promise<void> {
   if (!payload.externalUserId) {
-    throw new Error('Missing argument: "externalUserId"');
+    return Promise.reject(new Error('Missing argument: "externalUserId"'));
   }
   return RetenoSdk.setMultiAccountUserAttributes(payload);
 }
@@ -515,19 +671,14 @@ export function setMultiAccountUserAttributes(
  * Call this function to send all accumulated events
  */
 export function forcePushData(): Promise<void> {
-  if (Platform.OS === 'ios') {
-    // for ios we have to use this hack, because there isn't separate forcePush function as on android, sending an event with forcePush flag does the same thing
-    return logEvent('', new Date().toISOString(), [], true);
-  } else return RetenoSdk.forcePushData();
+  return RetenoSdk.forcePushData();
 }
 /**
  * Send log screen view event
  * @param screenName name of the screen
  */
-export function logScreenView(screenName: string) {
-  return logEvent(CustomEventTypes.screenView, new Date().toISOString(), [
-    { name: CustomEventTypes.screenView, value: screenName },
-  ]);
+export function logScreenView(screenName: string): Promise<void> {
+  return RetenoSdk.logScreenView(screenName);
 }
 
 /**
@@ -567,11 +718,7 @@ export function unsubscribeAllMessagesCountChanged(): Promise<void> {
 export function unreadMessagesCountHandler(
   callback: (data: UnreadMessagesCountData) => void
 ) {
-  return eventEmitter.addListener('reteno-unread-messages-count', (data) => {
-    if (callback && typeof callback === 'function') {
-      callback(data);
-    }
-  });
+  return addEventListener('unreadMessagesCountChanged', callback);
 }
 
 /**
@@ -580,18 +727,7 @@ export function unreadMessagesCountHandler(
 export function unreadMessagesCountErrorHandler(
   callback: (data: UnreadMessagesCountErrorData) => void
 ) {
-  if (Platform.OS === 'android') {
-    return eventEmitter.addListener(
-      'reteno-unread-messages-count-error',
-      (data) => {
-        if (callback && typeof callback === 'function') {
-          callback(data);
-        }
-      }
-    );
-  }
-
-  return undefined;
+  return addEventListener('unreadMessagesCountError', callback);
 }
 
 export function markAsOpened(
@@ -601,13 +737,6 @@ export function markAsOpened(
     ids: messageIds,
     status: messageIds?.length ? 'OPENED' : '',
   };
-
-  if (Platform.OS === 'android') {
-    return RetenoSdk.markAsOpened(messageIds?.[0]).then(
-      () => response,
-      (error: any) => Promise.reject(error)
-    );
-  }
 
   return RetenoSdk.markAsOpened(messageIds).then(
     () => response,
@@ -845,12 +974,9 @@ export function logEcomEventSearchRequest(
  * Listen for push notification dismissed (swiped away) events.
  */
 export function setOnRetenoPushDismissedListener(
-  listener: (event: any) => void
-): ReturnType<typeof eventEmitter.addListener> | undefined {
-  if (Platform.OS === 'android') {
-    return eventEmitter.addListener('reteno-push-dismissed', listener);
-  }
-  return undefined;
+  listener: (event: RetenoPushDismissedEvent) => void
+): RetenoSubscription {
+  return addEventListener('pushDismissed', listener);
 }
 
 /**
@@ -858,38 +984,83 @@ export function setOnRetenoPushDismissedListener(
  * Listen for custom push data events (silent/data-only push messages).
  */
 export function setOnRetenoCustomPushDataListener(
-  listener: (event: any) => void
-): ReturnType<typeof eventEmitter.addListener> | undefined {
-  if (Platform.OS === 'android') {
-    return eventEmitter.addListener('reteno-custom-push-received', listener);
-  }
-  return undefined;
+  listener: (event: RetenoCustomPushDataEvent) => void
+): RetenoSubscription {
+  return addEventListener('customPushData', listener);
 }
 
 /**
- * Android Only
+ * Android Only.
  * Request notification permission. Returns true if granted, false otherwise.
  * Uses the new RetenoNotifications API introduced in SDK 2.9.0.
+ *
+ * On iOS the promise rejects — this method is not supported there. (Previously it
+ * silently resolved to `false`, which looked like a real "denied" result.)
  */
 export function requestNotificationPermission(): Promise<boolean> {
   if (Platform.OS === 'android') {
     return RetenoSdk.requestNotificationPermission();
   }
-  return Promise.resolve(false);
+  return Promise.reject(
+    new Error('requestNotificationPermission() is not supported on iOS')
+  );
 }
 
 /**
- * Android Only
+ * Android Only.
  * Get current notification permission status.
  * Returns 'ALLOWED', 'DENIED', or 'PERMANENTLY_DENIED'.
  * Uses the new RetenoNotifications API introduced in SDK 2.9.0.
+ *
+ * On iOS the promise rejects — this method is not supported there. (Previously it
+ * silently resolved to `'ALLOWED'`, which looked like a real permission read.)
  */
 export function getNotificationPermissionStatus(): Promise<NotificationPermissionStatus> {
   if (Platform.OS === 'android') {
     return RetenoSdk.getNotificationPermissionStatus();
   }
-  return Promise.resolve('ALLOWED' as NotificationPermissionStatus);
+  return Promise.reject(
+    new Error('getNotificationPermissionStatus() is not supported on iOS')
+  );
 }
+
+/**
+ * Android Only
+ * Pause or resume push-triggered in-app messages specifically.
+ * Introduced in Android SDK 2.9.0.
+ */
+export function pausePushInAppMessages(isPaused: boolean): Promise<void> {
+  if (Platform.OS === 'android') {
+    return RetenoSdk.pausePushInAppMessages(isPaused);
+  }
+  return Promise.resolve(undefined);
+}
+
+/**
+ * Android Only
+ * Set the behaviour for push-triggered in-app messages when paused.
+ * Introduced in Android SDK 2.9.0.
+ */
+export function setPushInAppMessagesPauseBehaviour(
+  behaviour: InAppPauseBehaviour
+): Promise<void> {
+  if (Platform.OS === 'android') {
+    return RetenoSdk.setPushInAppMessagesPauseBehaviour(behaviour);
+  }
+  return Promise.resolve(undefined);
+}
+
+/**
+ * Android only. Groups notifications by a push payload value or a constant ID.
+ * The rule is persisted natively and restored before the app starts, so it is
+ * also applied to notifications received while the app is not running.
+ *
+ * `showSummary` requires Android 6.0 (API 23) or higher. On older versions it is
+ * silently ignored - grouping still applies, but no summary notification is shown.
+ */
+export type NotificationGroupingRule =
+  | { payloadKey: string; groupId?: never; showSummary?: boolean }
+  | { groupId: string; payloadKey?: never; showSummary?: boolean };
 
 /**
  * Android only. Groups notifications by a push payload value or a constant ID.
@@ -927,6 +1098,7 @@ export function setNotificationGroupingRule(
       )
     );
   }
+
   if (rule.showSummary !== undefined && typeof rule.showSummary !== 'boolean') {
     return Promise.reject(
       new Error('Invalid argument: showSummary must be a boolean')
@@ -942,28 +1114,75 @@ export function setNotificationGroupingRule(
   return RetenoSdk.setNotificationGroupingRule(normalizedRule);
 }
 
-/**
- * Android Only
- * Pause or resume push-triggered in-app messages specifically.
- * Introduced in Android SDK 2.9.0.
- */
-export function pausePushInAppMessages(isPaused: boolean): Promise<void> {
-  if (Platform.OS === 'android') {
-    return RetenoSdk.pausePushInAppMessages(isPaused);
-  }
-  return Promise.resolve(undefined);
-}
+export const user = {
+  setAttributes: setUserAttributes,
+  setMultiAccountAttributes: setMultiAccountUserAttributes,
+  setAnonymousAttributes: setAnonymousUserAttributes,
+} as const;
 
-/**
- * Android Only
- * Set the behaviour for push-triggered in-app messages when paused.
- * Introduced in Android SDK 2.9.0.
- */
-export function setPushInAppMessagesPauseBehaviour(
-  behaviour: InAppPauseBehaviour
-): Promise<void> {
-  if (Platform.OS === 'android') {
-    return RetenoSdk.setPushInAppMessagesPauseBehaviour(behaviour);
-  }
-  return Promise.resolve(undefined);
-}
+export const push = {
+  setDeviceToken,
+  registerForRemoteNotifications,
+  getInitialNotification,
+  setOnReceivedListener: setOnRetenoPushReceivedListener,
+  setOnClickedListener: setOnRetenoPushClickedListener,
+  setOnButtonClickedListener: setOnRetenoPushButtonClickedListener,
+  setOnDismissedListener: setOnRetenoPushDismissedListener,
+  setOnCustomDataListener: setOnRetenoCustomPushDataListener,
+  requestNotificationPermission,
+  getNotificationPermissionStatus,
+  updatePermissionStatusAndroid: updatePushPermissionStatusAndroid,
+  pauseTriggeredInAppMessages: pausePushInAppMessages,
+  setTriggeredInAppMessagesPauseBehaviour: setPushInAppMessagesPauseBehaviour,
+  setGroupingRule: setNotificationGroupingRule,
+} as const;
+
+export const events = {
+  addEventListener,
+  removeEventListener,
+  initializeEventHandler,
+} as const;
+
+export const inApp = {
+  setLifecycleCallback: setInAppLifecycleCallback,
+  removeLifecycleCallback: removeInAppLifecycleCallback,
+  beforeDisplay: beforeInAppDisplayHandler,
+  onDisplay: onInAppDisplayHandler,
+  beforeClose: beforeInAppCloseHandler,
+  afterClose: afterInAppCloseHandler,
+  onError: onInAppErrorHandler,
+  onCustomData: addInAppMessageCustomDataHandler,
+  pauseMessages: pauseInAppMessages,
+  setPauseBehaviour: setInAppMessagesPauseBehaviour,
+  setAutoOpenLinks,
+  getAutoOpenLinks,
+} as const;
+
+export const inbox = {
+  getMessages: getAppInboxMessages,
+  markAsOpened,
+  markAllAsOpened,
+  getMessagesCount: getAppInboxMessagesCount,
+  subscribeUnreadCount: onUnreadMessagesCountChanged,
+  unsubscribeUnreadCount: unsubscribeMessagesCountChanged,
+  unsubscribeAllUnreadCount: unsubscribeAllMessagesCountChanged,
+  onUnreadCountChanged: unreadMessagesCountHandler,
+  onUnreadCountError: unreadMessagesCountErrorHandler,
+} as const;
+
+export const recommendations = {
+  get: getRecommendations,
+  logEvent: logRecommendationEvent,
+} as const;
+
+export const ecommerce = {
+  productViewed: logEcomEventProductViewed,
+  productCategoryViewed: logEcomEventProductCategoryViewed,
+  productAddedToWishlist: logEcomEventProductAddedToWishlist,
+  cartUpdated: logEcomEventCartUpdated,
+  orderCreated: logEcomEventOrderCreated,
+  orderUpdated: logEcomEventOrderUpdated,
+  orderDelivered: logEcomEventOrderDelivered,
+  orderCancelled: logEcomEventOrderCancelled,
+  searchRequest: logEcomEventSearchRequest,
+} as const;

@@ -1,6 +1,6 @@
 import React from 'react';
 import { SafeAreaView, ScrollView, Alert } from 'react-native';
-import { getRecommendations, logRecommendationEvent } from 'reteno-react-native-sdk';
+import { recommendations } from 'reteno-react-native-sdk';
 import { Button } from '../components/Button';
 import styles from './styles';
 
@@ -14,7 +14,7 @@ export default function RecommendationsScreen() {
       fields: ['productId', 'name', 'descr', 'imageUrl', 'price'],
     };
 
-    getRecommendations(payload)
+    recommendations.get(payload)
       .then(response =>
         Alert.alert('Recommendations received:', response ? JSON.stringify(response) : String(response)),
       )
@@ -31,7 +31,7 @@ export default function RecommendationsScreen() {
       forcePush: true,
     };
 
-    logRecommendationEvent(payload)
+    recommendations.logEvent(payload)
       .then(() => Alert.alert('Recommendation event logged successfully'))
       .catch(error =>
         Alert.alert('Error logging recommendation event:', error ? JSON.stringify(error) : String(error)),
