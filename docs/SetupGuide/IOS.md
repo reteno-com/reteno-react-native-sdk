@@ -146,9 +146,9 @@ await initialize({
 
 In this mode SDK bridges FCM token to Reteno automatically.
 
-#### Step 4.1: Add `RetenoSdk.delayedStart()` to your AppDelegate
+#### Step 4.1: Add `RetenoReactNativeSdk.delayedStart()` to your AppDelegate
 
-**Required if you rely on push click attribution or on in-app messages triggered by a push.** Call `RetenoSdk.delayedStart()` in `AppDelegate` before React Native bootstraps:
+**Required if you rely on push click attribution or on in-app messages triggered by a push.** Call `RetenoReactNativeSdk.delayedStart()` in `AppDelegate` before React Native bootstraps:
 
 ```swift
 import reteno_react_native_sdk
@@ -159,7 +159,7 @@ func application(
 ) -> Bool {
   // Insert this line first — before your existing React Native bootstrap code
   // (e.g. before `factory.startReactNative(...)` or `RCTBridge(delegate:launchOptions:)`).
-  RetenoSdk.delayedStart()
+  RetenoReactNativeSdk.delayedStart()
 
   // ...your existing React Native bootstrap code continues here, unchanged...
 
@@ -244,7 +244,7 @@ This is the most common iOS integration issue. `pushSubscribed` is read live fro
 
 ### Pushes are delivered, but clicks are never reported
 
-If clicks are missing only when the app was fully closed before the tap, `RetenoSdk.delayedStart()` is not called in your AppDelegate — see [Step 4.1](#step-41-add-retenosdkdelayedstart-to-your-appdelegate).
+If clicks are missing only when the app was fully closed before the tap, `RetenoReactNativeSdk.delayedStart()` is not called in your AppDelegate — see [Step 4.1](#step-41-add-retenoreactnativesdkdelayedstart-to-your-appdelegate).
 
 ### Rich media (images) does not appear in notifications
 

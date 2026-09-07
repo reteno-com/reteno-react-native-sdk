@@ -230,7 +230,7 @@ useEffect(() => {
 }, []);
 ```
 
-On iOS this also requires `RetenoSdk.delayedStart()` in your AppDelegate — see [iOS setup, Step 4.1](../SetupGuide/IOS.md#step-41-add-retenosdkdelayedstart-to-your-appdelegate). It is what makes click attribution and push-triggered in-app messages work on a cold start; it does not deliver the event to your listener.
+On iOS this also requires `RetenoReactNativeSdk.delayedStart()` in your AppDelegate — see [iOS setup, Step 4.1](../SetupGuide/IOS.md#step-41-add-retenoreactnativesdkdelayedstart-to-your-appdelegate). It is what makes click attribution and push-triggered in-app messages work on a cold start; it does not deliver the event to your listener.
 
 Test deep links in all three states — foreground, background, and fully terminated — on both platforms. Warm-start behaviour working is not evidence that cold start works, and Android working is not evidence that iOS does.
 
