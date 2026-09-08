@@ -7,6 +7,7 @@ require Pod::Executable.execute_command('node', ['-p',
 
 platform :ios, '15.1'
 ENV['RCT_NEW_ARCH_ENABLED'] = '1'
+$RNFirebaseDisableSPM = true
 prepare_react_native_project!
 
 # If you are using a `react-native-flipper` your iOS build will fail when `NO_FLIPPER=1` is set.
@@ -28,7 +29,7 @@ end
 
 target 'RetenoSdkExample' do
   config = use_native_modules!
-  pod 'Reteno', '2.7.3'
+  pod 'Reteno', '2.7.4'
 
   use_frameworks! :linkage => :static
   $RNFirebaseAsStaticFramework = true
@@ -40,7 +41,7 @@ target 'RetenoSdkExample' do
 
   target 'NotificationServiceExtension' do
     inherit! :search_paths
-    pod 'Reteno', '2.7.3'
+    pod 'Reteno', '2.7.4'
   end
 
   target 'RetenoSdkExampleTests' do

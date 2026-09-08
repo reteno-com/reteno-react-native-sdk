@@ -2,6 +2,15 @@ import Foundation
 import UserNotifications
 import Reteno
 
+/// Swift entry points that must be called before React Native creates the `RetenoSdk` module.
+public enum RetenoReactNativeSdk {
+    /// Registers Reteno as the notification-center delegate early, so a notification response
+    /// that cold-launched the app can be replayed when the JavaScript SDK is initialized.
+    public static func delayedStart() {
+        RetenoSdk.delayedStart()
+    }
+}
+
 @objc(RetenoSdk)
 open class RetenoSdk: RCTEventEmitter {
 
@@ -50,7 +59,7 @@ open class RetenoSdk: RCTEventEmitter {
     /// ```swift
     /// func application(_ application: UIApplication, didFinishLaunchingWithOptions ...) -> Bool {
     ///     FirebaseApp.configure()
-    ///     RetenoSdk.delayedStart()
+    ///     RetenoReactNativeSdk.delayedStart()
     ///     ...
     /// }
     /// ```

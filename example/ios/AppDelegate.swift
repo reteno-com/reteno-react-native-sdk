@@ -21,7 +21,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // didFinishLaunchingWithOptions returns, so iOS delivers the notification response that
     // launched the app. The RN module's own init() runs too late (lazy instantiation).
     // JS initialize() then completes startup via Reteno.delayedSetup(), replaying the push.
-    RetenoSdk.delayedStart()
+    RetenoReactNativeSdk.delayedStart()
 
     let delegate = ReactNativeDelegate()
     delegate.dependencyProvider = RCTAppDependencyProvider()
