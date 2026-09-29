@@ -318,6 +318,17 @@ public class RetenoSdkModule extends NativeRetenoSdkSpec {
     return parseBundle(intent.getExtras());
   }
 
+  private static WritableMap parseInitialNotificationIntent(Intent intent) {
+    Bundle extras = intent.getExtras();
+    // Reteno uses the interaction id as the canonical identifier for push interactions.
+    // App/deep-link SDK extras (for example Branch) must not be exposed as an initial
+    // Reteno notification.
+    if (extras == null || !extras.containsKey("es_interaction_id")) {
+      return null;
+    }
+    return parseBundle(extras);
+  }
+
   private static WritableMap convertHashMap(HashMap<String, Object> map) {
     WritableMap writableMap = Arguments.createMap();
 
@@ -352,7 +363,7 @@ public class RetenoSdkModule extends NativeRetenoSdkSpec {
       promise.resolve(null);
       return;
     }
-    promise.resolve(parseIntent(activity.getIntent()));
+    promise.resolve(parseInitialNotificationIntent(activity.getIntent()));
   }
 
   @ReactMethod

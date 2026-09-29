@@ -1952,8 +1952,8 @@ PODS:
     - React-utils (= 0.86.2)
     - ReactNativeDependencies
   - ReactNativeDependencies (0.86.2)
-  - Reteno (2.7.4)
-  - reteno-react-native-sdk (3.0.1):
+  - Reteno (2.7.5)
+  - reteno-react-native-sdk (3.0.2):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -1974,7 +1974,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
-    - Reteno (= 2.7.4)
+    - Reteno (= 2.7.5)
     - Yoga
   - RNFBApp (26.3.3):
     - Firebase/CoreOnly (= 12.18.0)
@@ -2150,7 +2150,7 @@ DEPENDENCIES:
   - ReactCodegen (from `build/generated/ios/ReactCodegen`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - ReactNativeDependencies (from `../node_modules/react-native/third-party-podspecs/ReactNativeDependencies.podspec`)
-  - Reteno (= 2.7.4)
+  - Reteno (= 2.7.5)
   - reteno-react-native-sdk (from `../..`)
   - "RNFBApp (from `../node_modules/@react-native-firebase/app`)"
   - "RNFBMessaging (from `../node_modules/@react-native-firebase/messaging`)"
@@ -2420,13 +2420,13 @@ SPEC CHECKSUMS:
   ReactCodegen: b4e2c5f0d9415b8fe2faf163fca6f40c62f9666a
   ReactCommon: 9002f006f571256348994183f7d4387aa7cf84e8
   ReactNativeDependencies: 2bd6854ade79bf1b60586d1ab7813a389df1b6bf
-  Reteno: c208f7724209a774906d187a94da16b156c05f54
-  reteno-react-native-sdk: bba4e0592039fd902dbc41b02cc7e3453220a92a
+  Reteno: 6ec969a8ecb3853f41f7b31cfc40ec7ed4329927
+  reteno-react-native-sdk: f2d51c0c9cd2726e0580000ffcc8bf3df775c293
   RNFBApp: a1cbbdf38129ebfa8b9ccb9aa0c28484ef70d6aa
   RNFBMessaging: 92eb411bbd83987129b3c314c5c7012c8fec518a
   RNScreens: c58f17578c73435d8c00998cac0d89ad8105263c
   Yoga: 542a30dafe5b0f5f1d9f185ea7b2a3811ac54801
 
-PODFILE CHECKSUM: 5e933a46439069d655a4ac8e0e6495d27854e032
+PODFILE CHECKSUM: ce4190fad5b07f8d6ded10ea253ddf4a3e78f326
 
 COCOAPODS: 1.16.2

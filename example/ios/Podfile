@@ -29,7 +29,7 @@ end
 
 target 'RetenoSdkExample' do
   config = use_native_modules!
-  pod 'Reteno', '2.7.4'
+  pod 'Reteno', '2.7.5'
 
   use_frameworks! :linkage => :static
   $RNFirebaseAsStaticFramework = true
@@ -41,7 +41,7 @@ target 'RetenoSdkExample' do
 
   target 'NotificationServiceExtension' do
     inherit! :search_paths
-    pod 'Reteno', '2.7.4'
+    pod 'Reteno', '2.7.5'
   end
 
   target 'RetenoSdkExampleTests' do
