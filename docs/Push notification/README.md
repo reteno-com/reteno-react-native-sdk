@@ -202,6 +202,8 @@ The two platforms behave differently here, and handling both the same way causes
 
 > **Do not call `getInitialNotification()` unconditionally.** On Android it returns the same push that already reached your click listener, so handling both paths navigates twice for a single tap. Guard it by platform.
 
+Since `v3.0.2`, on Android `getInitialNotification()` resolves only for a launch from a Reteno push, identified by the `es_interaction_id` extra. If the launch intent carries only extras from other SDKs, such as a Branch deep link, it resolves with `null`.
+
 ```ts
 import { useEffect } from "react";
 import { Platform } from "react-native";
