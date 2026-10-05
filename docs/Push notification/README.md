@@ -182,10 +182,15 @@ The setting is stored natively, so it survives restarts. If you expose it as a t
 type InAppCustomData = {
   customData?: Record<string, any>; // custom data attached to the message
   url?: string; // the URL that was clicked
+  source?: "inAppMessage" | "pushNotification"; // origin of the link interaction
   inapp_id?: string; // in-app message ID (Android)
-  inapp_source?: "DISPLAY_RULES" | "PUSH_NOTIFICATION"; // source (Android)
+  inapp_source?: "DISPLAY_RULES" | "PUSH_NOTIFICATION"; // how the in-app was shown (Android)
 };
 ```
+
+`source` identifies whether the link interaction itself came from an in-app
+message or a push notification. `inapp_source` is a separate Android-only field
+that identifies whether an in-app was shown by display rules or by a push click.
 
 ### Cold start (app launched by tapping a push)
 

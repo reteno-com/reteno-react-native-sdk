@@ -319,6 +319,26 @@ describe('event manager', () => {
     expect(listener).toHaveBeenCalledWith(event);
   });
 
+  it('forwards the link event source to the in-app custom data listener', () => {
+    const listener = jest.fn();
+    const event: Reteno.InAppCustomData = {
+      source: 'inAppMessage',
+      inapp_source: 'PUSH_NOTIFICATION',
+      url: 'https://reteno.com',
+    };
+
+    Reteno.addInAppMessageCustomDataHandler(listener);
+    const nativeListener =
+      mockRetenoSdk.__emitterAddListener.mock.calls[0]?.[1];
+    nativeListener(event);
+
+    expect(mockRetenoSdk.__emitterAddListener).toHaveBeenCalledWith(
+      'reteno-in-app-custom-data-received',
+      expect.any(Function)
+    );
+    expect(listener).toHaveBeenCalledWith(event);
+  });
+
   it('removes a listener by event and callback', () => {
     const listener = jest.fn();
 

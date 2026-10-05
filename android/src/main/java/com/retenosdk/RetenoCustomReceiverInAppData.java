@@ -18,7 +18,7 @@ public class RetenoCustomReceiverInAppData extends BroadcastReceiver {
     if (extras != null) {
       String url = extras.getString("url");
 
-      handleCustomData(extras, context);
+      dispatchCustomData(extras);
 
       if (url != null && URLUtil.isValidUrl(url) && RetenoSdkModule.isAutoOpenLinksEnabled(context)) {
         Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
@@ -32,42 +32,41 @@ public class RetenoCustomReceiverInAppData extends BroadcastReceiver {
     }
   }
 
-  private void handleCustomData(Bundle extras, Context context) {
+  private void dispatchCustomData(Bundle extras) {
     WritableMap eventData = Arguments.createMap();
     WritableMap customDataMap = Arguments.createMap();
-    if (extras != null) {
-      for (String key : extras.keySet()) {
-        Object value = extras.get(key);
-        if ("inapp_id".equals(key) || "inapp_source".equals(key) || "url".equals(key)) {
-          if (value instanceof String) {
-            eventData.putString(key, (String) value);
-          } else if (value instanceof Integer) {
-            eventData.putInt(key, (Integer) value);
-          } else if (value instanceof Boolean) {
-            eventData.putBoolean(key, (Boolean) value);
-          } else if (value instanceof Double) {
-            eventData.putDouble(key, (Double) value);
-          }
-        } else {
-          if (value instanceof String) {
-            customDataMap.putString(key, (String) value);
-          } else if (value instanceof Integer) {
-            customDataMap.putInt(key, (Integer) value);
-          } else if (value instanceof Boolean) {
-            customDataMap.putBoolean(key, (Boolean) value);
-          } else if (value instanceof Double) {
-            customDataMap.putDouble(key, (Double) value);
-          }
-        }
-      }
 
-      eventData.putMap("customData", customDataMap);
+    for (String key : extras.keySet()) {
+      Object value = extras.get(key);
+      WritableMap target = isInAppMetadataKey(key) ? eventData : customDataMap;
+      putValue(target, key, value);
     }
 
+    eventData.putMap("customData", customDataMap);
+    eventData.putString("source", "inAppMessage");
+
+    // Keep this receiver as the single Android producer for the JS event. It can
+    // enqueue the event before React Native calls initializeEventHandler().
     RetenoEventQueue.getInstance().dispatch(
       "reteno-in-app-custom-data-received",
       eventData,
       RetenoSdkModule.getSharedReactContext()
     );
+  }
+
+  private boolean isInAppMetadataKey(String key) {
+    return "inapp_id".equals(key) || "inapp_source".equals(key) || "url".equals(key);
+  }
+
+  private void putValue(WritableMap target, String key, Object value) {
+    if (value instanceof String) {
+      target.putString(key, (String) value);
+    } else if (value instanceof Integer) {
+      target.putInt(key, (Integer) value);
+    } else if (value instanceof Boolean) {
+      target.putBoolean(key, (Boolean) value);
+    } else if (value instanceof Double) {
+      target.putDouble(key, (Double) value);
+    }
   }
 }

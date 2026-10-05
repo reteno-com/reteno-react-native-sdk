@@ -5,6 +5,7 @@ import {
 } from 'reteno-react-native-sdk';
 import type { InAppPauseBehaviour } from 'reteno-react-native-sdk';
 import { Button } from '../components/Button';
+import { useLinkEventMonitor } from '../LinkEventMonitor';
 import styles from './styles';
 
 type SubscriptionEvent = {
@@ -17,6 +18,7 @@ type SubscriptionEvent = {
 export default function InAppMessagesScreen() {
   const [subscriptionEvents, setSubscriptionEvents] = useState<SubscriptionEvent[]>([]);
   const [statusInfo, setStatusInfo] = useState<string>('No status changes yet');
+  const { events: linkEvents, clearEvents: clearLinkEvents } = useLinkEventMonitor();
 
   const addSubscriptionEvent = useCallback(
     (name: string, payload: unknown, level: SubscriptionEvent['level'] = 'info') => {
@@ -49,17 +51,12 @@ export default function InAppMessagesScreen() {
     const onInAppErrorListener = inApp.onError(data =>
       addSubscriptionEvent('onInAppErrorHandler', data, 'error'),
     );
-    const addInAppMessageCustomDataListener = inApp.onCustomData(data =>
-      addSubscriptionEvent('addInAppMessageCustomDataHandler', data),
-    );
-
     return () => {
       beforeInAppDisplayListener.remove();
       onInAppDisplayListener.remove();
       beforeInAppCloseListener.remove();
       afterInAppCloseListener.remove();
       onInAppErrorListener.remove();
-      addInAppMessageCustomDataListener.remove();
       inApp.removeLifecycleCallback();
     };
   }, [addSubscriptionEvent]);
@@ -85,6 +82,56 @@ export default function InAppMessagesScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
+        <View style={styles.eventsContainer}>
+          <Text style={styles.eventsTitle}>Link Source Test (custom-data links)</Text>
+          <Text style={styles.eventsEmpty}>
+            Test a direct push link, a display-rules in-app link, and a
+            push-triggered in-app link. Events are captured globally, including
+            queued cold-start events.
+          </Text>
+          {Platform.OS === 'android' ? (
+            <Text style={styles.sourceValue}>
+              Android test setup: add at least one custom-data field to the
+              in-app link action (for example, link_source_test=true). The
+              native Android SDK opens URL-only actions without emitting the
+              custom-data callback used by this test.
+            </Text>
+          ) : null}
+          {linkEvents.length === 0 ? (
+            <Text style={styles.eventsEmpty}>
+              No custom-data link events received yet
+            </Text>
+          ) : (
+            linkEvents.map(event => (
+              <View key={event.id} style={styles.eventItem}>
+                <Text style={styles.eventName}>Received: {event.receivedAt}</Text>
+                <Text style={styles.sourceValue}>
+                  source: {event.data.source ?? 'not provided'}
+                </Text>
+                <Text style={styles.eventPayload}>
+                  inapp_source: {event.data.inapp_source ?? 'not provided'}
+                </Text>
+                <Text style={styles.eventPayload}>
+                  url: {event.data.url ?? 'not provided'}
+                </Text>
+                <Text style={styles.eventPayload}>
+                  customData: {JSON.stringify(event.data.customData ?? {})}
+                </Text>
+                <Text style={styles.eventPayload}>
+                  payload: {JSON.stringify(event.data)}
+                </Text>
+              </View>
+            ))
+          )}
+          <Text style={styles.eventsEmpty}>
+            Expected: an iOS direct push link → pushNotification; a link inside
+            an in-app on either platform → inAppMessage. Android direct push
+            clicks are shown on the Push Notifications screen. An Android
+            push-triggered in-app link has source=inAppMessage and
+            inapp_source=PUSH_NOTIFICATION.
+          </Text>
+          <Button onPress={clearLinkEvents} label="Clear link events" />
+        </View>
         <View style={styles.eventsContainer}>
           <Text style={styles.eventsTitle}>In-App Status</Text>
           <Text style={styles.eventsEmpty}>{statusInfo}</Text>

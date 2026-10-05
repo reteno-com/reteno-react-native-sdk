@@ -152,3 +152,18 @@ useEffect(() => {
   };
 }, []);
 ```
+
+The callback payload includes an optional `source` field with either
+`"inAppMessage"` or `"pushNotification"`. It identifies the origin of the link
+interaction. On Android, the separate `inapp_source` field identifies how the
+in-app was shown (`"DISPLAY_RULES"` or `"PUSH_NOTIFICATION"`).
+
+On Android, one in-app custom-data interaction produces one callback. Events
+received before `initializeEventHandler()` are queued; register the JavaScript
+listener first and then call `initializeEventHandler()` to flush them.
+
+> **Android testing note:** the native Android SDK emits this callback only
+> when the in-app link action contains at least one custom-data field. A
+> URL-only action is opened directly and does not emit
+> `reteno-in-app-custom-data-received`. To verify `source` and `inapp_source`,
+> configure test custom data such as `link_source_test=true` on the link action.

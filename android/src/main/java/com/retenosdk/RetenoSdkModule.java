@@ -45,7 +45,6 @@ import com.reteno.core.domain.model.ecom.EcomEvent;
 import com.reteno.core.features.iam.InAppPauseBehaviour;
 import com.reteno.push.RetenoNotifications;
 import com.reteno.push.permission.NotificationStatus;
-import com.reteno.push.events.InAppCustomData;
 import com.reteno.core.util.Procedure;
 
 import kotlin.Unit;
@@ -510,7 +509,6 @@ public class RetenoSdkModule extends NativeRetenoSdkSpec {
 
   private Procedure<Bundle> pushDismissedListener;
   private Procedure<Bundle> customPushListener;
-  private Procedure<InAppCustomData> inAppCustomDataRetenoListener;
   private boolean notificationsListenersSetup = false;
 
   private void setupRetenoNotificationsListeners() {
@@ -534,26 +532,6 @@ public class RetenoSdkModule extends NativeRetenoSdkSpec {
       RetenoNotifications.INSTANCE.getCustom().addListener(customPushListener);
     } catch (Exception e) {
       Log.w(NAME, "Could not register custom push listener", e);
-    }
-
-    try {
-      inAppCustomDataRetenoListener = inAppCustomData -> {
-        WritableMap eventData = Arguments.createMap();
-        eventData.putString("url", inAppCustomData.getUrl());
-        eventData.putString("inapp_source", inAppCustomData.getSource());
-        eventData.putString("inapp_id", inAppCustomData.getInAppId());
-        WritableMap customDataMap = Arguments.createMap();
-        if (inAppCustomData.getData() != null) {
-          for (Map.Entry<String, String> entry : inAppCustomData.getData().entrySet()) {
-            customDataMap.putString(entry.getKey(), entry.getValue());
-          }
-        }
-        eventData.putMap("customData", customDataMap);
-        sendEventToJS("reteno-in-app-custom-data-received", eventData);
-      };
-      RetenoNotifications.INSTANCE.getInAppCustomDataReceived().addListener(inAppCustomDataRetenoListener);
-    } catch (Exception e) {
-      Log.w(NAME, "Could not register in-app custom data listener", e);
     }
   }
 
@@ -579,15 +557,6 @@ public class RetenoSdkModule extends NativeRetenoSdkSpec {
       }
     } catch (Exception e) {
       Log.w(NAME, "Could not unregister custom push listener", e);
-    }
-
-    try {
-      if (inAppCustomDataRetenoListener != null) {
-        RetenoNotifications.INSTANCE.getInAppCustomDataReceived().removeListener(inAppCustomDataRetenoListener);
-        inAppCustomDataRetenoListener = null;
-      }
-    } catch (Exception e) {
-      Log.w(NAME, "Could not unregister in-app custom data listener", e);
     }
   }
 
@@ -947,8 +916,8 @@ public class RetenoSdkModule extends NativeRetenoSdkSpec {
   @ReactMethod
   public void initializeEventHandler(Promise promise) {
     try {
-      RetenoEventQueue.getInstance().setInitialized(sharedReactContext);
       setupRetenoNotificationsListeners();
+      RetenoEventQueue.getInstance().setInitialized(sharedReactContext);
       promise.resolve(true);
     } catch (Exception e) {
       promise.reject("Reteno Android SDK initializeEventHandler Error", e);

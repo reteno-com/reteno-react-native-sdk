@@ -77,9 +77,23 @@ open class RetenoSdk: RCTEventEmitter {
 
     private func setupRetenoCallbacks() {
         Reteno.addLinkHandler { linkInfo in
+            var eventData: [String: Any] = [
+                "customData": linkInfo.customData as Any,
+                "url": linkInfo.url?.absoluteString as Any
+            ]
+
+            switch linkInfo.source {
+            case .inAppMessage:
+                eventData["source"] = "inAppMessage"
+            case .pushNotification:
+                eventData["source"] = "pushNotification"
+            @unknown default:
+                break
+            }
+
             EventEmitter.sharedInstance.dispatch(
                 name: "reteno-in-app-custom-data-received",
-                body: ["customData": linkInfo.customData, "url": linkInfo.url?.absoluteString as Any]
+                body: eventData
             )
             if RetenoSdk.autoOpenLinks, let url = linkInfo.url {
                 UIApplication.shared.open(url)
@@ -108,6 +122,10 @@ open class RetenoSdk: RCTEventEmitter {
 
     @objc private func handleLinkReceived(_ notification: Notification) {
         guard let userInfo = notification.userInfo else { return }
+        // Historically this fired from a global Reteno.addLinkHandler set up in AppDelegate,
+        // which forwarded every link (push and in-app), not just the one that cold-launched
+        // the app — so we cannot assume a single source here. Forward whatever the producer
+        // sent as-is rather than guessing; nothing in the current SDK posts this notification.
         EventEmitter.sharedInstance.dispatch(
             name: "reteno-in-app-custom-data-received",
             body: userInfo
