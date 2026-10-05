@@ -182,10 +182,15 @@ The setting is stored natively, so it survives restarts. If you expose it as a t
 type InAppCustomData = {
   customData?: Record<string, any>; // custom data attached to the message
   url?: string; // the URL that was clicked
+  source?: "inAppMessage" | "pushNotification"; // origin of the link interaction
   inapp_id?: string; // in-app message ID (Android)
-  inapp_source?: "DISPLAY_RULES" | "PUSH_NOTIFICATION"; // source (Android)
+  inapp_source?: "DISPLAY_RULES" | "PUSH_NOTIFICATION"; // how the in-app was shown (Android)
 };
 ```
+
+`source` identifies whether the link interaction itself came from an in-app
+message or a push notification. `inapp_source` is a separate Android-only field
+that identifies whether an in-app was shown by display rules or by a push click.
 
 ### Cold start (app launched by tapping a push)
 
@@ -196,6 +201,8 @@ The two platforms behave differently here, and handling both the same way causes
 **iOS — the click listener does not fire.** Listeners do not exist yet at the moment iOS delivers the tap. When the SDK later replays that push during initialization it re-runs its own processing — click attribution and push-triggered in-app messages — but it does not re-invoke the JavaScript callback. Read the launching push explicitly with `getInitialNotification()`, which resolves with the payload of the push that instantiated the app, or `null` if the app was started any other way.
 
 > **Do not call `getInitialNotification()` unconditionally.** On Android it returns the same push that already reached your click listener, so handling both paths navigates twice for a single tap. Guard it by platform.
+
+Since `v3.0.2`, on Android `getInitialNotification()` resolves only for a launch from a Reteno push, identified by the `es_interaction_id` extra. If the launch intent carries only extras from other SDKs, such as a Branch deep link, it resolves with `null`.
 
 ```ts
 import { useEffect } from "react";

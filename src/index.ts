@@ -143,10 +143,14 @@ export type NotificationPermissionStatus =
   | 'DENIED'
   | 'PERMANENTLY_DENIED';
 
+/** Identifies where a link interaction itself originated. */
+export type LinkEventSource = 'inAppMessage' | 'pushNotification';
+
 export type InAppCustomData = {
   customData?: Record<string, unknown>;
   inapp_id?: string;
   inapp_source?: 'DISPLAY_RULES' | 'PUSH_NOTIFICATION';
+  source?: LinkEventSource;
   url?: string;
 };
 

@@ -12,10 +12,12 @@ import {
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import {
   events,
+  inApp,
   initialize,
   logScreenView,
   push,
 } from 'reteno-react-native-sdk';
+import type { InAppCustomData } from 'reteno-react-native-sdk';
 import AttributesScreen from './screens/attributes';
 import EventsScreen from './screens/events';
 import HomeScreen from './screens/home';
@@ -33,6 +35,10 @@ import ProductAddedToWishlistEventScreen from './screens/ecomEventsScreens/Produ
 import CartUpdateScreen from './screens/ecomEventsScreens/CartUpdateScreen';
 import OrderCreatedScreen from './screens/ecomEventsScreens/OrderCreatedEventScreen';
 import SearchRequestEventScreen from './screens/ecomEventsScreens/SearchRequestEventScreen';
+import {
+  LinkEventMonitorContext,
+  LinkEventRecord,
+} from './LinkEventMonitor';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const RETENO_API_KEY = '630A66AF-C1D3-4F2A-ACC1-0D51C38D2B05';
@@ -44,8 +50,24 @@ type NavigationProps = {
 function Navigation({ appVersion }: NavigationProps) {
   const navigationRef = useNavigationContainerRef();
   const routeNameRef = React.useRef<string | undefined>(undefined);
+  const [linkEvents, setLinkEvents] = React.useState<LinkEventRecord[]>([]);
+
+  const addLinkEvent = React.useCallback((data: InAppCustomData) => {
+    const event: LinkEventRecord = {
+      id: Date.now() + Math.random(),
+      receivedAt: new Date().toISOString(),
+      data,
+    };
+    setLinkEvents(previousEvents => [event, ...previousEvents].slice(0, 20));
+  }, []);
+
+  const clearLinkEvents = React.useCallback(() => setLinkEvents([]), []);
 
   React.useEffect(() => {
+    // Register before initializeEventHandler so queued Android events and cold-start
+    // link events can be inspected later from the In-App Messages screen.
+    const linkEventSubscription = inApp.onCustomData(addLinkEvent);
+
     const initReteno = async () => {
       try {
         await initialize({
@@ -65,7 +87,7 @@ function Navigation({ appVersion }: NavigationProps) {
             sessionEndEventsEnabled: false,
           },
         });
-        events.initializeEventHandler();
+        await events.initializeEventHandler();
         await push.registerForRemoteNotifications();
       } catch (error) {
         console.error('Reteno initialize failed', error);
@@ -84,96 +106,102 @@ function Navigation({ appVersion }: NavigationProps) {
         }
       });
     }
-  }, []);
+
+    return () => linkEventSubscription.remove();
+  }, [addLinkEvent]);
 
   return (
-    <KeyboardAvoidingView
-      enabled={Platform.OS === 'ios'}
-      behavior="padding"
-      style={styles.container}
+    <LinkEventMonitorContext.Provider
+      value={{ events: linkEvents, clearEvents: clearLinkEvents }}
     >
-      <NavigationContainer
-        ref={navigationRef}
-        onReady={async () => {
-          routeNameRef.current = navigationRef.current?.getCurrentRoute()?.name;
-          const currentRouteName =
-            navigationRef.current?.getCurrentRoute()?.name;
-          await logScreenView(currentRouteName ?? '');
-        }}
-        onStateChange={async () => {
-          const previousRouteName = routeNameRef.current;
-          const currentRouteName =
-            navigationRef.current?.getCurrentRoute()?.name;
-          if (previousRouteName !== currentRouteName) {
-            await logScreenView(currentRouteName ?? '');
-          }
-          routeNameRef.current = currentRouteName;
-        }}
+      <KeyboardAvoidingView
+        enabled={Platform.OS === 'ios'}
+        behavior="padding"
+        style={styles.container}
       >
-        <Stack.Navigator
-          initialRouteName={ScreenNames.home}
-          screenOptions={{
-            headerRight: () =>
-              appVersion ? <Text style={styles.versionText}>{String(appVersion)}</Text> : null,
+        <NavigationContainer
+          ref={navigationRef}
+          onReady={async () => {
+            routeNameRef.current = navigationRef.current?.getCurrentRoute()?.name;
+            const currentRouteName =
+              navigationRef.current?.getCurrentRoute()?.name;
+            await logScreenView(currentRouteName ?? '');
+          }}
+          onStateChange={async () => {
+            const previousRouteName = routeNameRef.current;
+            const currentRouteName =
+              navigationRef.current?.getCurrentRoute()?.name;
+            if (previousRouteName !== currentRouteName) {
+              await logScreenView(currentRouteName ?? '');
+            }
+            routeNameRef.current = currentRouteName;
           }}
         >
-          <Stack.Screen name={ScreenNames.home} component={HomeScreen} />
-          <Stack.Screen
-            name={ScreenNames.ecomEvents}
-            component={EcomEventsScreen}
-          />
-          <Stack.Screen
-            name={ScreenNames.ViewedEventScreen}
-            component={ViewedEventScreen}
-          />
-          <Stack.Screen
-            name={ScreenNames.ProductCategoryViewedScreen}
-            component={ProductCategoryViewedScreen}
-          />
-          <Stack.Screen
-            name={ScreenNames.ProductAddedToWishlistEventScreen}
-            component={ProductAddedToWishlistEventScreen}
-          />
-          <Stack.Screen
-            name={ScreenNames.SearchRequestEventScreen}
-            component={SearchRequestEventScreen}
-          />
-          <Stack.Screen
-            name={ScreenNames.CartUpdateScreenEventScreen}
-            component={CartUpdateScreen}
-          />
-          <Stack.Screen
-            name={ScreenNames.OrderCreatedScreen}
-            component={OrderCreatedScreen}
-          />
-          <Stack.Screen
-            name={ScreenNames.attributes}
-            component={AttributesScreen}
-          />
-          <Stack.Screen name={ScreenNames.events} component={EventsScreen} />
-          <Stack.Screen
-            name={ScreenNames.anonymousUserAttributes}
-            component={AnonymousUserAttributes}
-          />
-          <Stack.Screen
-            name={ScreenNames.pushNotifications}
-            component={PushNotificationsScreen}
-          />
-          <Stack.Screen
-            name={ScreenNames.inAppMessages}
-            component={InAppMessagesScreen}
-          />
-          <Stack.Screen
-            name={ScreenNames.appInbox}
-            component={AppInboxScreen}
-          />
-          <Stack.Screen
-            name={ScreenNames.recommendations}
-            component={RecommendationsScreen}
-          />
-        </Stack.Navigator>
-      </NavigationContainer>
-    </KeyboardAvoidingView>
+          <Stack.Navigator
+            initialRouteName={ScreenNames.home}
+            screenOptions={{
+              headerRight: () =>
+                appVersion ? <Text style={styles.versionText}>{String(appVersion)}</Text> : null,
+            }}
+          >
+            <Stack.Screen name={ScreenNames.home} component={HomeScreen} />
+            <Stack.Screen
+              name={ScreenNames.ecomEvents}
+              component={EcomEventsScreen}
+            />
+            <Stack.Screen
+              name={ScreenNames.ViewedEventScreen}
+              component={ViewedEventScreen}
+            />
+            <Stack.Screen
+              name={ScreenNames.ProductCategoryViewedScreen}
+              component={ProductCategoryViewedScreen}
+            />
+            <Stack.Screen
+              name={ScreenNames.ProductAddedToWishlistEventScreen}
+              component={ProductAddedToWishlistEventScreen}
+            />
+            <Stack.Screen
+              name={ScreenNames.SearchRequestEventScreen}
+              component={SearchRequestEventScreen}
+            />
+            <Stack.Screen
+              name={ScreenNames.CartUpdateScreenEventScreen}
+              component={CartUpdateScreen}
+            />
+            <Stack.Screen
+              name={ScreenNames.OrderCreatedScreen}
+              component={OrderCreatedScreen}
+            />
+            <Stack.Screen
+              name={ScreenNames.attributes}
+              component={AttributesScreen}
+            />
+            <Stack.Screen name={ScreenNames.events} component={EventsScreen} />
+            <Stack.Screen
+              name={ScreenNames.anonymousUserAttributes}
+              component={AnonymousUserAttributes}
+            />
+            <Stack.Screen
+              name={ScreenNames.pushNotifications}
+              component={PushNotificationsScreen}
+            />
+            <Stack.Screen
+              name={ScreenNames.inAppMessages}
+              component={InAppMessagesScreen}
+            />
+            <Stack.Screen
+              name={ScreenNames.appInbox}
+              component={AppInboxScreen}
+            />
+            <Stack.Screen
+              name={ScreenNames.recommendations}
+              component={RecommendationsScreen}
+            />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </KeyboardAvoidingView>
+    </LinkEventMonitorContext.Provider>
   );
 }
 

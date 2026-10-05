@@ -42,6 +42,12 @@ export default StyleSheet.create({
     marginTop: 2,
     fontSize: 12,
   },
+  sourceValue: {
+    color: '#047857',
+    marginTop: 4,
+    fontSize: 16,
+    fontWeight: '700',
+  },
   keyboardAvoidingView: {
     flex: 1,
   },
