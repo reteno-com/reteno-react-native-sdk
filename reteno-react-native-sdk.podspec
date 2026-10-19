@@ -15,7 +15,7 @@ Pod::Spec.new do |s|
 
   s.source_files = "ios/**/*.{h,m,mm,swift}"
 
-  s.dependency 'Reteno', '2.7.5'
+  s.dependency 'Reteno', '2.7.6'
 
   install_modules_dependencies(s)
 end
