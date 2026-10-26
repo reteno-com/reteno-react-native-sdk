@@ -50,14 +50,14 @@ Add them explicitly only if:
 
 ```groovy
 dependencies {
-    implementation 'com.reteno:fcm:2.10.2'
+    implementation 'com.reteno:fcm:2.11.0'
     ...
     implementation "com.google.firebase:firebase-messaging:23.1.0"
     implementation "com.google.firebase:firebase-messaging-ktx:23.1.0"
 }
 ```
 
-> **If you do declare it, pin `com.reteno:fcm` to the version bundled with your `reteno-react-native-sdk` release** — `2.10.2` for `v3.1.2`. If you declare a different version, Gradle resolves to the higher of the two and silently swaps the native SDK underneath the React Native bridge for one that was not tested against it. The bundled version for each release is listed in the [setup overview](./README.md).
+> **If you do declare it, pin `com.reteno:fcm` to the version bundled with your `reteno-react-native-sdk` release** — `2.11.0` for `v3.1.3`. If you declare a different version, Gradle resolves to the higher of the two and silently swaps the native SDK underneath the React Native bridge for one that was not tested against it. The bundled version for each release is listed in the [setup overview](./README.md).
 
 | **Library**                     | **Description**                                                       |
 | ------------------------------- | --------------------------------------------------------------------- |

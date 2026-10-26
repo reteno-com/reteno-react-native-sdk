@@ -12,9 +12,9 @@
 - iOS 15.0 or later — this is the deployment target required by both the `reteno-react-native-sdk` podspec and the bundled native `Reteno` 2.7.7 pod
 - Android 8.0 or later (API 26) — SDK functionality is unavailable below this level. The artifacts declare `minSdkVersion 21`, so integrating Reteno does not force you to raise your own `minSdkVersion`; the SDK is simply inactive on older devices — see [Android setup](./Android.md#requirements)
 
-##### Native SDK versions in `reteno-react-native-sdk` `v3.1.2`:
+##### Native SDK versions in `reteno-react-native-sdk` `v3.1.3`:
 
-- Reteno Android SDK 2.10.2
+- Reteno Android SDK 2.11.0
 - Reteno iOS SDK 2.7.7
 
 ## Getting started with Reteno SDK / Setup guide
