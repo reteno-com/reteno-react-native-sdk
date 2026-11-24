@@ -1953,7 +1953,7 @@ PODS:
     - ReactNativeDependencies
   - ReactNativeDependencies (0.86.2)
   - Reteno (2.7.7)
-  - reteno-react-native-sdk (3.1.4):
+  - reteno-react-native-sdk (3.1.5):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -2421,7 +2421,7 @@ SPEC CHECKSUMS:
   ReactCommon: 9002f006f571256348994183f7d4387aa7cf84e8
   ReactNativeDependencies: 2bd6854ade79bf1b60586d1ab7813a389df1b6bf
   Reteno: f7b5b2023b10fbe6d7b4494b41f39ed603d10c7c
-  reteno-react-native-sdk: 8cd737519f39e7413521a28651ea1fc6b7fe3025
+  reteno-react-native-sdk: 825c8b36723e55265e2f95b594dd094a5b16c2b1
   RNFBApp: a1cbbdf38129ebfa8b9ccb9aa0c28484ef70d6aa
   RNFBMessaging: 92eb411bbd83987129b3c314c5c7012c8fec518a
   RNScreens: c58f17578c73435d8c00998cac0d89ad8105263c
